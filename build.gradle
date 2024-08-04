@@ -2,13 +2,13 @@ defaultTasks 'compileJava', 'compileTestJava'
 
 buildscript {
     repositories {
-    	maven {
-      		url "https://plugins.gradle.org/m2/"
-    	}
-  	}
-	dependencies {
-    	classpath "me.champeau.jmh:jmh-gradle-plugin:0.7.2"
-	}
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "me.champeau.jmh:jmh-gradle-plugin:0.7.2"
+    }
 }
 
 apply plugin: "me.champeau.jmh"
@@ -16,19 +16,19 @@ apply plugin: 'java-library'
 apply plugin: 'eclipse'
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.2'
+    testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.2'
 }
 
 tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
 }
 
 tasks.withType(Test) {
-	exclude '**/perf/*.class'
+    exclude '**/perf/*.class'
 }
 
 jmh {
