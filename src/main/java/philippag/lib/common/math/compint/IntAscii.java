@@ -722,6 +722,11 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
         return obj instanceof IntAscii o && equals(o);
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode(); // that's ok
+    }
+
     /*
      * CharSequence API
      */

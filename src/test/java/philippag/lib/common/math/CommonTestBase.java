@@ -18,8 +18,8 @@ public abstract class CommonTestBase {
         }
     }
 
-    protected boolean isPerformanceTest() {
-        return false;
+    private boolean isPerformanceTest() {
+        return getClass().getName().endsWith("Performance");
     }
 
     public static int random(Random rnd, int min, int max) {

@@ -473,6 +473,11 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         return obj instanceof Int9 o && equals(o);
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode(); // that's ok
+    }
+
     public void clear() {
         offset = data.length - 1; // make all space at the left available
         length = 1;

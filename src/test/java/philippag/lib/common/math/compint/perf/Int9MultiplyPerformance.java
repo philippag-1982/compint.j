@@ -13,11 +13,6 @@ import philippag.lib.common.math.compint.Int9;
 
 public class Int9MultiplyPerformance extends CommonTestBase {
 
-    @Override
-    protected boolean isPerformanceTest() {
-        return true;
-    }
-
     private static final String[] BINARY_ARGS_BIG = {
             "589034583485345", "58903457894375873489578943534",
             "589034583485345492349238423842374237462346", "58903457894375873489578943534432949234823472374263462343526",

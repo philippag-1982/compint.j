@@ -14,11 +14,6 @@ import philippag.lib.common.math.compint.IntAscii;
 
 public class BigIntMemoryPerformance extends CommonTestBase {
 
-    @Override
-    protected boolean isPerformanceTest() {
-        return true;
-    }
-
     @Test
     public void stringOps() {
         int[] lengths = { 1 << 18, 1 << 24, 1 << 28, 1 << 30, 0x7FFF_0000 };

@@ -18,11 +18,6 @@ import philippag.lib.common.math.compint.IntAscii;
 
 public class BigIntPerformance extends CommonTestBase {
 
-    @Override
-    protected boolean isPerformanceTest() {
-        return true;
-    }
-
     private static final Int9 ONE = Int9.fromInt(1);
 
     private static final String[] BINARY_ARGS_BIG = {
