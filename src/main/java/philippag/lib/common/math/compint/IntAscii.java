@@ -35,7 +35,7 @@ import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitArraySink;
 import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
 
 /**
- * Big Integer implementation using base 10.
+ * Big Integer implementation using base 10 (or any other base out of [2..256]).
  * Values are stored as ASCII bytes/strings.
  * This makes to/from string conversion trivial and extremely fast,
  * as well as random char access,

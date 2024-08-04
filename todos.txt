@@ -1,3 +1,4 @@
+[ ] setup gradle.yml
 [ ] report perf numbers in README
 [ ] document these perf tricks:
     - deprecated String byte[] methods
