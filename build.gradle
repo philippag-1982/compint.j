@@ -1,5 +1,17 @@
 defaultTasks 'compileJava', 'compileTestJava'
 
+buildscript {
+    repositories {
+    	maven {
+      		url "https://plugins.gradle.org/m2/"
+    	}
+  	}
+	dependencies {
+    	classpath "me.champeau.jmh:jmh-gradle-plugin:0.7.2"
+	}
+}
+
+apply plugin: "me.champeau.jmh"
 apply plugin: 'java-library'
 apply plugin: 'eclipse'
 
@@ -17,4 +29,9 @@ tasks.withType(JavaCompile) {
 
 tasks.withType(Test) {
 	exclude '**/*Performance.class'
+}
+
+jmh {
+    failOnError.set(true)
+    profilers.add("gc")
 }
