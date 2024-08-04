@@ -1,0 +1,6 @@
+[ ] report perf numbers in README
+[ ] If IntAscii is useful, it lacks the test code quality of Int9
+[ ] If IntAscii is useful, it lacks functionality of Int9 (like primitive overloads)
+[ ] Port more of "perf" package to JMH
+[ ] Implement Int9::divide(Int9, Int9)
+[ ] proper implementation of Int9::pow
