@@ -13,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import philippag.lib.common.math.CommonTestBase;
 import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitArraySink;
 
 public class Int9Test extends CommonTestBase {

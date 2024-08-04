@@ -1,4 +1,4 @@
-package philippag.lib.common.math.compint;
+package philippag.lib.common.math.compint.perf;
 
 import java.math.BigInteger;
 import java.util.Locale;
@@ -7,6 +7,9 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 import org.junit.Test;
+
+import philippag.lib.common.math.CommonTestBase;
+import philippag.lib.common.math.compint.IntAscii;
 
 public class IntAsciiMultiplyPerformance extends CommonTestBase {
 

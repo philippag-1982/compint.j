@@ -11,6 +11,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import philippag.lib.common.math.CommonTestBase;
 import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitArraySink;
 import philippag.lib.common.math.compint.IntAscii.BaseConversion;
 import philippag.lib.common.math.compint.IntAscii.SpecialBaseConversions;

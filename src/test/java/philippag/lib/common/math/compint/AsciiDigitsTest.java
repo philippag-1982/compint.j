@@ -6,6 +6,7 @@ import java.util.function.Function;
 import org.junit.Assert;
 import org.junit.Test;
 
+import philippag.lib.common.math.CommonTestBase;
 import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
 
 public class AsciiDigitsTest extends CommonTestBase {

@@ -1,10 +1,10 @@
-package philippag.lib.common.math.compint;
+package philippag.lib.common.math;
 
 import java.util.Random;
 
-abstract class CommonTestBase {
+public abstract class CommonTestBase {
 
-	CommonTestBase()  {
+	protected CommonTestBase()  {
 		boolean b = false;
 		assert (b = true);
 		if (isPerformanceTest()) {
@@ -18,19 +18,19 @@ abstract class CommonTestBase {
 		}
 	}
 
-	boolean isPerformanceTest() {
+	protected boolean isPerformanceTest() {
 		return false;
 	}
 
-	static int random(Random rnd, int min, int max) {
+	public static int random(Random rnd, int min, int max) {
 		return  rnd.nextInt(max - min + 1) + min;
 	}
 
-	static long random(Random rnd, long min, long max) {
+	public static long random(Random rnd, long min, long max) {
 		return  rnd.nextLong(max - min + 1) + min;
 	}
 
-	static String randomNumericString(Random rnd, int minLength, int maxLength) {
+	public static String randomNumericString(Random rnd, int minLength, int maxLength) {
 		return new String(randomNumericChars(rnd, minLength, maxLength));
 	}
 
@@ -46,7 +46,7 @@ abstract class CommonTestBase {
 		return chars;
 	}
 
-	static boolean stringsEqual(CharSequence left, CharSequence right) {
+	public static boolean stringsEqual(CharSequence left, CharSequence right) {
 		int len = left.length();
 		if (len != right.length()) {
 			return false;
