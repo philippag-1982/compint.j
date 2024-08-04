@@ -9,3 +9,13 @@
 [ ] Port more of "perf" package to JMH
 [ ] Implement Int9::divide(Int9, Int9)
 [ ] proper implementation of Int9::pow
+[ ] mention bigint competition repos:
+    https://github.com/daidodo/huge-long-number/tree/master C++
+    https://github.com/libj/math/tree/master - Java, insanely complicated, many dependencies
+    https://github.com/bwakell/Huldra/tree/master - Java, minimalistic
+    https://github.com/mtommila/apfloat (Apint) - insanely complicated, many dependencies
+    https://github.com/dscho/jscience/tree/master (LargeInteger) - Java, insanely complicated, many dependencies
+[ ] base 1E9 idea taken from:
+    https://github.com/michaelg29/cmathematics
+    "C/C++ Math Library", episode 7 "Big Integer Generic Bases"
+    https://www.youtube.com/watch?v=_S_iRJ-vHgo&list=PLysLvOneEETMjrK5N-PLIYhZKwmxjGs2-&index=7
