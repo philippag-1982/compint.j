@@ -1,4 +1,9 @@
 [ ] report perf numbers in README
+[ ] document these perf tricks:
+    - deprecated String byte[] methods
+    - trailing zeroes form
+    - trailing zeroes form for fromScientific
+    - mutability in general (inPlace methods) 
 [ ] If IntAscii is useful, it lacks the test code quality of Int9
 [ ] If IntAscii is useful, it lacks functionality of Int9 (like primitive overloads)
 [ ] Port more of "perf" package to JMH
