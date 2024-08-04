@@ -3,7 +3,19 @@
     - deprecated String byte[] methods
     - trailing zeroes form
     - trailing zeroes form for fromScientific
-    - mutability in general (inPlace methods) 
+    - mutability in general (inPlace methods)
+[ ] document special features:
+    - random access to digits
+    - quick to/from string conversion
+[ ] document use cases:
+    - Int9: BigInteger replacement, esp. for REPLs
+    - IntAscii: processing data files containing e.e. Base64 "numbers"
+[ ] try ToomCook multiplication algorithm to see if it truly
+    outperforms BigInteger w/o also measing string parsing
+    (btw it's interesting that Int9 karatsuba almost reaches
+    BigInteger tom-cook perf, it seems to scale comparably)
+[ ] if Int9 is useful, research if logical ops like AND/OR
+    as well as bit random access are feasible
 [ ] If IntAscii is useful, it lacks the test code quality of Int9
 [ ] If IntAscii is useful, it lacks functionality of Int9 (like primitive overloads)
 [ ] Port more of "perf" package to JMH
@@ -19,3 +31,8 @@
     https://github.com/michaelg29/cmathematics
     "C/C++ Math Library", episode 7 "Big Integer Generic Bases"
     https://www.youtube.com/watch?v=_S_iRJ-vHgo&list=PLysLvOneEETMjrK5N-PLIYhZKwmxjGs2-&index=7
+[ ] try if "Int8" approach performs better
+    instead of div,mod with 9, we have 8 digits and can use shifts.
+    mainly could benefit random access charAt()
+[ ] !!! port to a language that has `int128`
+[ ] maybe get rid of get() and set() for perf
