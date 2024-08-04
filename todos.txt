@@ -1,3 +1,5 @@
+[ ] mention division via multiplcation trick:
+    https://ridiculousfish.com/blog/posts/labor-of-division-episode-i.html
 [ ] setup gradle.yml
 [ ] report perf numbers in README
 [ ] document these perf tricks:
