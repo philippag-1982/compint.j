@@ -29,68 +29,68 @@ import org.openjdk.jmh.infra.Blackhole;
 @State(Scope.Benchmark)
 public class Int9MultiplyBenchmark {
 
-	private static final String[] ARGS = {
-			"589034583485345", "58903457894375873489578943534",
-			"589034583485345492349238423842374237462346", "58903457894375873489578943534432949234823472374263462343526",
-			"5".repeat(10_000), "6".repeat(100),
-			"5".repeat(100_000), "6".repeat(50_000),
-			"8".repeat(400_000), "3".repeat(150_000),
-	};
+    private static final String[] ARGS = {
+            "589034583485345", "58903457894375873489578943534",
+            "589034583485345492349238423842374237462346", "58903457894375873489578943534432949234823472374263462343526",
+            "5".repeat(10_000), "6".repeat(100),
+            "5".repeat(100_000), "6".repeat(50_000),
+            "8".repeat(400_000), "3".repeat(150_000),
+    };
 
-	private static int REPEATS = 1;
+    private static int REPEATS = 1;
 
-	@Param({"1", "10", "50", "200"})
-	public int karatsubaThreshold;
+    @Param({"1", "10", "50", "200"})
+    public int karatsubaThreshold;
 
-	@Param({"1", "4", "8", "16", "999"})
-	public int maxDepth;
+    @Param({"1", "4", "8", "16", "999"})
+    public int maxDepth;
 
-	private ForkJoinPool forkJoinPool;
+    private ForkJoinPool forkJoinPool;
 
-	@Setup
-	public void setup() {
-		forkJoinPool = new ForkJoinPool();
-	}
+    @Setup
+    public void setup() {
+        forkJoinPool = new ForkJoinPool();
+    }
 
     @Benchmark
     public void jdkBigInteger(Blackhole blackhole) {
-		binary(BigInteger::new, BigInteger::multiply, blackhole);
+        binary(BigInteger::new, BigInteger::multiply, blackhole);
     }
 
     @Benchmark
     public void multiplySimple(Blackhole blackhole) {
-		binary(Int9::fromString, Int9::multiplySimple, blackhole);
+        binary(Int9::fromString, Int9::multiplySimple, blackhole);
     }
 
     @Benchmark
     public void multiplyKaratsuba(Blackhole blackhole) {
-    	BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
-    	binary(Int9::fromString, operator, blackhole);
+        BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
+        binary(Int9::fromString, operator, blackhole);
     }
 
     @Benchmark
     public void parallelMultiplyKaratsuba(Blackhole blackhole) {
-    	BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
-    	binary(Int9::fromString, operator, blackhole);
+        BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
+        binary(Int9::fromString, operator, blackhole);
     }
 
-	private static <T> void binary(Function<String, T> factory, BinaryOperator<T> operator, Blackhole blackhole) {
-		operator = symm(operator);
+    private static <T> void binary(Function<String, T> factory, BinaryOperator<T> operator, Blackhole blackhole) {
+        operator = symm(operator);
 
-		for (int i = 0; i < REPEATS; i++) {
-			for (int j = 0; j < ARGS.length;) {
-				T lhs = factory.apply(ARGS[j++]);
-				T rhs = factory.apply(ARGS[j++]);
-				T result = operator.apply(lhs, rhs);
-				blackhole.consume(result);
-			}
-		}
-	}
+        for (int i = 0; i < REPEATS; i++) {
+            for (int j = 0; j < ARGS.length;) {
+                T lhs = factory.apply(ARGS[j++]);
+                T rhs = factory.apply(ARGS[j++]);
+                T result = operator.apply(lhs, rhs);
+                blackhole.consume(result);
+            }
+        }
+    }
 
-	private static <T> BinaryOperator<T> symm(BinaryOperator<T> operator) {
-		return (lhs, rhs) -> {
-			operator.apply(rhs, lhs);
-			return operator.apply(lhs, rhs);
-		};
-	}
+    private static <T> BinaryOperator<T> symm(BinaryOperator<T> operator) {
+        return (lhs, rhs) -> {
+            operator.apply(rhs, lhs);
+            return operator.apply(lhs, rhs);
+        };
+    }
 }
