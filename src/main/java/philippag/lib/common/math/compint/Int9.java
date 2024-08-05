@@ -375,7 +375,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             i = Math.max(fromIndex, i - SIZE);
             int value = IntegerFormat.parse(str, i, end);
             if (value > 0 && result == null) {
-                result = new int[j + 1];  // "trailingZeroesForm": alloc only for non-zero digits at the right
+                result = new int[j + 1];  // "trailingZeroesForm" storage optimization: alloc only for non-zero digits at the right
             }
             if (result != null) {
                 result[j] = value;
@@ -546,7 +546,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     }
 
     private int[] copyFullSizeArray() {
-        // undo optimization of trimming trailing zeroes
+        // undo "trailingZeroesForm" storage optimization
         int[] newData = new int[length];
         System.arraycopy(data, offset, newData, 0, Math.min(length, data.length));
         return newData;
@@ -554,7 +554,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
     public Int9 copy() {
         // copy only relevant region
-        // does not undo optimization of trimming trailing zeroes
+        // does not undo "trailingZeroesForm" storage optimization
         return new Int9(Arrays.copyOfRange(data, offset, extent()), 0, length).setNegative(negative);
     }
 
