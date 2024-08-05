@@ -956,16 +956,16 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             return lhs.copy();
         }
         int length = 1 + Math.max(lhs.length, rhs.length); // always need one more space for 999_999_999 + 1 case!
-        var result = new Int9(new int[length]);
+        int[] result = new int[length];
         int accumulator = 0;
 
         for (int i = length - 1, j = lhs.length - 1, k = rhs.length - 1; i >= 0; --i, --j, --k) {
             accumulator = lhs.get0(j) + rhs.get0(k) + AddWithCarry.carry(accumulator);
-            result.set(i, AddWithCarry.value(accumulator));
+            result[i] = AddWithCarry.value(accumulator);
         }
 
         assert AddWithCarry.carry(accumulator) == 0;
-        return result.canonicalize();
+        return new Int9(result).canonicalize();
     }
 
     public static Int9 subtract(Int9 lhs, Int9 rhs) {
@@ -995,16 +995,16 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         int length = lhs.length;
-        var result = new Int9(new int[length]);
+        int[] result = new int[length];
         int accumulator = 0;
 
         for (int i = length - 1, j = rhs.length - 1; i >= 0; --i, --j) {
             accumulator = lhs.get(i) - rhs.get0(j) + SubtractWithCarry.carry(accumulator);
-            result.set(i, SubtractWithCarry.value(accumulator));
+            result[i] = SubtractWithCarry.value(accumulator);
         }
 
         assert SubtractWithCarry.carry(accumulator) == 0;
-        return result.canonicalize();
+        return new Int9(result).canonicalize();
     }
 
     private Int9 multiplySign(Int9 lhs, Int9 rhs) {
