@@ -1,4 +1,4 @@
-package philippag.lib.common.math.compint.perf;
+package philippag.lib.common.math.compint;
 
 import java.math.BigInteger;
 import java.util.Locale;
@@ -9,7 +9,6 @@ import java.util.function.Function;
 import org.junit.Test;
 
 import philippag.lib.common.math.CommonTestBase;
-import philippag.lib.common.math.compint.Int9;
 
 public class Int9MultiplyPerformance extends CommonTestBase {
 

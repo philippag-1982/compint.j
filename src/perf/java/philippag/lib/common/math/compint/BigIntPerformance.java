@@ -1,4 +1,4 @@
-package philippag.lib.common.math.compint.perf;
+package philippag.lib.common.math.compint;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -13,8 +13,6 @@ import org.junit.After;
 import org.junit.Test;
 
 import philippag.lib.common.math.CommonTestBase;
-import philippag.lib.common.math.compint.Int9;
-import philippag.lib.common.math.compint.IntAscii;
 
 public class BigIntPerformance extends CommonTestBase {
 

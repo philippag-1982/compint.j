@@ -23,14 +23,24 @@ dependencies {
     testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.2'
 }
 
+sourceSets.test.java.srcDirs += 'src/perf/java'
+task 'perf' (type: Test)
+
+tasks.withType(Test) {
+    if ("test".equals(it.name)) {
+        jvmArgs '-ea'
+        exclude '**/*Performance.class'
+    } else if ("perf".equals(it.name)) {
+        jvmArgs '-da', '-Xmx8G'
+        exclude '**/*Test.class'
+        testLogging.showStandardStreams = true
+    }
+}
+
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
     options.compilerArgs.add('-Werror');
     options.compilerArgs.add('-Xlint:all');
-}
-
-tasks.withType(Test) {
-    exclude '**/perf/*.class'
 }
 
 jmh {

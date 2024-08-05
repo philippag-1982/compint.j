@@ -1,4 +1,4 @@
-package philippag.lib.common.math.compint.perf;
+package philippag.lib.common.math.compint;
 
 import java.math.BigInteger;
 import java.util.Locale;
@@ -9,8 +9,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import philippag.lib.common.math.CommonTestBase;
-import philippag.lib.common.math.compint.Int9;
-import philippag.lib.common.math.compint.IntAscii;
 
 public class BigIntMemoryPerformance extends CommonTestBase {
 
@@ -59,7 +57,7 @@ public class BigIntMemoryPerformance extends CommonTestBase {
             x.toHexByteArray();
             Assert.fail("Expecting IllegalStateException");
         } catch (IllegalStateException e) {
-            System.out.println(e);
+            //System.out.println(e);
         }
 
         System.out.printf("[IntAscii] modification completed successfully for length %,d\n", length);
