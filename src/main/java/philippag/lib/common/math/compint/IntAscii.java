@@ -74,6 +74,11 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
         this.length = length;
     }
 
+    public boolean isZero() {
+        assert data[offset] > 0 || length == 1; // canonical form
+        return data[offset] == 0;
+    }
+
     @Override
     public boolean stream(AsciiDigitArraySink sink) {
         return sink.accept(data, offset, length);
@@ -289,7 +294,9 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
     }
 
     private IntAscii shiftLeft(int by) {
-        length += by;
+        if (!isZero()) {
+            length += by;
+        }
         return this;
     }
 

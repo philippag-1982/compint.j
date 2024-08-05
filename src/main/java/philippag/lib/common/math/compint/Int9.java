@@ -230,7 +230,9 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     }
 
     private Int9 shiftLeft(int by) {
-        length += by;
+        if (!isZero()) {
+            length += by;
+        }
         return this;
     }
 
