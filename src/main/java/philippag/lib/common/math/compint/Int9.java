@@ -368,21 +368,21 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             throw new NumberFormatException("No digits in input string");
         }
         int length = Calc.lengthForDigits(digits);
-        Int9 num = null;
+        int[] result = null;
 
         for (int i = toIndex, j = length - 1; j >= 0; --j) {
             int end = i;
             i = Math.max(fromIndex, i - SIZE);
             int value = IntegerFormat.parse(str, i, end);
-            if (value > 0 && num == null) {
-                num = new Int9(new int[j + 1], 0, length); // alloc only for non-zero digits at the right
+            if (value > 0 && result == null) {
+                result = new int[j + 1];  // "trailingZeroesForm": alloc only for non-zero digits at the right
             }
-            if (num != null) {
-                num.set(j, value);
+            if (result != null) {
+                result[j] = value;
             }
         }
 
-        return num == null ? Constants.ZERO() : num.setNegative(negative);
+        return result == null ? Constants.ZERO() : new Int9(result, 0, length).setNegative(negative);
     }
 
     public boolean isInt() {
