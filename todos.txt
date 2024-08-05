@@ -1,8 +1,7 @@
-[ ] mention division via multiplcation trick:
-    https://ridiculousfish.com/blog/posts/labor-of-division-episode-i.html
-[ ] setup gradle.yml
 [ ] report perf numbers in README
-[ ] document these perf tricks:
+[ ] document these perf tricks: 
+    - division via multiplication
+      https://ridiculousfish.com/blog/posts/labor-of-division-episode-i.html 
     - deprecated String byte[] methods
     - trailing zeroes form
     - trailing zeroes form for fromScientific
@@ -24,7 +23,7 @@
 [ ] Port more of "perf" package to JMH
 [ ] Implement Int9::divide(Int9, Int9)
 [ ] proper implementation of Int9::pow
-[ ] mention bigint competition repos:
+[ ] mention bigint "competition" repos:
     https://github.com/daidodo/huge-long-number/tree/master C++
     https://github.com/libj/math/tree/master - Java, insanely complicated, many dependencies
     https://github.com/bwakell/Huldra/tree/master - Java, minimalistic

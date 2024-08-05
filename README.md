@@ -7,7 +7,7 @@ This research library provides alternative implementations to `java.math.BigInte
 - `gradle` - compile main and test classes
 - `gradle test` - run all the unit tests
 - `gradle jmh` - run all JMH benckmarks
-- `gradle perf` - run all custom benckmarks
+- `gradle perf --rerun-tasks` - run all custom benckmarks
 - `gradle jar` - create a JAR inside the `build/` folder
 - `gradle tasks` - see which tasks are available
 
