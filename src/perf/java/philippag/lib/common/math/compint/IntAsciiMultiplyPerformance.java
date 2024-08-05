@@ -21,139 +21,35 @@ public class IntAsciiMultiplyPerformance extends CommonTestBase {
 
     @Test
     public void mul() {
+        ForkJoinPool pool = new ForkJoinPool();
         int REPEATS = 1;
         var ARGS = BINARY_ARGS_BIG;
-        for (int i = 0; i < 5; i++) {
-            binary("    MUL", IntAscii::fromString, IntAscii::multiplySimple, REPEATS, ARGS);
-            binary("     K5", IntAscii::fromString, Mul::k5, REPEATS, ARGS);
-            binary("    K50", IntAscii::fromString, Mul::k50, REPEATS, ARGS);
-            binary("    K75", IntAscii::fromString, Mul::k75, REPEATS, ARGS);
-            binary("   K100", IntAscii::fromString, Mul::k100, REPEATS, ARGS);
-            binary("   K200", IntAscii::fromString, Mul::k200, REPEATS, ARGS);
+        for (int i = 0; i < 3; i++) {
+            binary("multiplySimple", IntAscii::fromString, IntAscii::multiplySimple, REPEATS, ARGS);
 
-            binary("   P1K5", IntAscii::fromString, ParallelMul.MaxDepth1::k5, REPEATS, ARGS);
-            binary("  P1K50", IntAscii::fromString, ParallelMul.MaxDepth1::k50, REPEATS, ARGS);
-            binary("  P1K75", IntAscii::fromString, ParallelMul.MaxDepth1::k75, REPEATS, ARGS);
-            binary(" P1K100", IntAscii::fromString, ParallelMul.MaxDepth1::k100, REPEATS, ARGS);
-            binary(" P1K200", IntAscii::fromString, ParallelMul.MaxDepth1::k200, REPEATS, ARGS);
+            binary("multiplyKaratsuba T=5", IntAscii::fromString, (lhs, rhs) -> IntAscii.multiplyKaratsuba(lhs, rhs, 5), REPEATS, ARGS);
+            binary("multiplyKaratsuba T=50", IntAscii::fromString, (lhs, rhs) -> IntAscii.multiplyKaratsuba(lhs, rhs, 50), REPEATS, ARGS);
+            binary("multiplyKaratsuba T=100", IntAscii::fromString, (lhs, rhs) -> IntAscii.multiplyKaratsuba(lhs, rhs, 100), REPEATS, ARGS);
 
-            binary("   P4K5", IntAscii::fromString, ParallelMul.MaxDepth4::k5, REPEATS, ARGS);
-            binary("  P4K50", IntAscii::fromString, ParallelMul.MaxDepth4::k50, REPEATS, ARGS);
-            binary("  P4K75", IntAscii::fromString, ParallelMul.MaxDepth4::k75, REPEATS, ARGS);
-            binary(" P4K100", IntAscii::fromString, ParallelMul.MaxDepth4::k100, REPEATS, ARGS);
-            binary(" P4K200", IntAscii::fromString, ParallelMul.MaxDepth4::k200, REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=5 D=1", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 5, 1, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=50 D=1", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 50, 1, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=100 D=1", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 100, 1, pool), REPEATS, ARGS);
 
-            binary("   P6K5", IntAscii::fromString, ParallelMul.MaxDepth6::k5, REPEATS, ARGS);
-            binary("  P6K50", IntAscii::fromString, ParallelMul.MaxDepth6::k50, REPEATS, ARGS);
-            binary("  P6K75", IntAscii::fromString, ParallelMul.MaxDepth6::k75, REPEATS, ARGS);
-            binary(" P6K100", IntAscii::fromString, ParallelMul.MaxDepth6::k100, REPEATS, ARGS);
-            binary(" P6K200", IntAscii::fromString, ParallelMul.MaxDepth6::k200, REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=5 D=4", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 5, 4, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=50 D=4", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 50, 4, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=100 D=4", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 100, 4, pool), REPEATS, ARGS);
 
-            binary(" P991K5", IntAscii::fromString, ParallelMul.MaxDepth99::k5, REPEATS, ARGS);
-            binary(" P99K50", IntAscii::fromString, ParallelMul.MaxDepth99::k50, REPEATS, ARGS);
-            binary(" P99K75", IntAscii::fromString, ParallelMul.MaxDepth99::k75, REPEATS, ARGS);
-            binary("P99K100", IntAscii::fromString, ParallelMul.MaxDepth99::k100, REPEATS, ARGS);
-            binary("P99K200", IntAscii::fromString, ParallelMul.MaxDepth99::k200, REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=5 D=16", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 5, 16, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=50 D=16", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 50, 16, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=100 D=16", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 100, 16, pool), REPEATS, ARGS);
 
-            binary("    JDK", BigInteger::new, BigInteger::multiply, REPEATS, ARGS);
-            System.out.println("=".repeat(100));
-        }
-    }
+            binary("parallelMultiplyKaratsuba T=5 D=999", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 5, 999, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=50 D=999", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 50, 999, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=100 D=999", IntAscii::fromString, (lhs, rhs) -> IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 100, 999, pool), REPEATS, ARGS);
 
-    private static class Mul {
-
-        private static IntAscii k5(IntAscii lhs, IntAscii rhs) {
-            return IntAscii.multiplyKaratsuba(lhs, rhs, 5);
-        }
-        private static IntAscii k50(IntAscii lhs, IntAscii rhs) {
-            return IntAscii.multiplyKaratsuba(lhs, rhs, 50);
-        }
-        private static IntAscii k75(IntAscii lhs, IntAscii rhs) {
-            return IntAscii.multiplyKaratsuba(lhs, rhs, 75);
-        }
-        private static IntAscii k100(IntAscii lhs, IntAscii rhs) {
-            return IntAscii.multiplyKaratsuba(lhs, rhs, 100);
-        }
-        private static IntAscii k200(IntAscii lhs, IntAscii rhs) {
-            return IntAscii.multiplyKaratsuba(lhs, rhs, 200);
-        }
-    }
-
-    private static class ParallelMul {
-
-        private static ForkJoinPool pool = new ForkJoinPool();
-
-        private static ForkJoinPool pool() {
-            return pool;
-        }
-
-        private static class MaxDepth1 {
-            private static IntAscii k5(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 5, 1, pool());
-            }
-            private static IntAscii k50(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 50, 1, pool());
-            }
-            private static IntAscii k75(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 75, 1, pool());
-            }
-            private static IntAscii k100(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 100, 1, pool());
-            }
-            private static IntAscii k200(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 200, 1, pool());
-            }
-        }
-        private static class MaxDepth4 {
-            private static IntAscii k5(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 5, 4, pool());
-            }
-            private static IntAscii k50(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 50, 4, pool());
-            }
-            private static IntAscii k75(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 75, 4, pool());
-            }
-            private static IntAscii k100(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 100, 4, pool());
-            }
-            private static IntAscii k200(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 200, 4, pool());
-            }
-        }
-        private static class MaxDepth6 {
-            private static IntAscii k5(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 5, 6, pool());
-            }
-            private static IntAscii k50(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 50, 6, pool());
-            }
-            private static IntAscii k75(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 75, 6, pool());
-            }
-            private static IntAscii k100(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 100, 6, pool());
-            }
-            private static IntAscii k200(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 200, 6, pool());
-            }
-        }
-        private static class MaxDepth99 {
-            private static IntAscii k5(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 5, 99, pool());
-            }
-            private static IntAscii k50(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 50, 99, pool());
-            }
-            private static IntAscii k75(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 75, 99, pool());
-            }
-            private static IntAscii k100(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 100, 99, pool());
-            }
-            private static IntAscii k200(IntAscii lhs, IntAscii rhs) {
-                return IntAscii.parallelMultiplyKaratsuba(lhs, rhs, 200, 99, pool());
-            }
+            binary("JDK java.math.BigInteger", BigInteger::new, BigInteger::multiply, REPEATS, ARGS);
+            System.out.println("=".repeat(120));
+            System.out.println();
         }
     }
 
@@ -178,7 +74,7 @@ public class IntAsciiMultiplyPerformance extends CommonTestBase {
         }
 
         t0 = System.nanoTime() - t0;
-        System.out.printf(Locale.ROOT, "[%s] %,15d total %,15d op %,15d diff\n", desc, t0 / 1000, top / 1000, (t0 - top) / 1000);
+        System.out.printf(Locale.ROOT, "%40s %,15d total %,15d op %,15d diff\n", desc, t0 / 1000, top / 1000, (t0 - top) / 1000);
     }
 
     private static <T> BinaryOperator<T> symm(BinaryOperator<T> operator) {

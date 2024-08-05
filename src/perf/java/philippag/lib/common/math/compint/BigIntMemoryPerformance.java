@@ -17,12 +17,12 @@ public class BigIntMemoryPerformance extends CommonTestBase {
         int[] lengths = { 1 << 18, 1 << 24, 1 << 28, 1 << 30, 0x7FFF_0000 };
         for (int i = 0; i < 3; i++) {
             for (int length : lengths) {
-                str("Int9 ", length, Int9::fromString);
-                str("Ascii", length, IntAscii::fromString);
+                str("Int9", length, Int9::fromString);
+                str("IntAscii", length, IntAscii::fromString);
                 if (length == lengths[0]) {
-                    str("JDK  ", length, BigInteger::new);
+                    str("BigInteger", length, BigInteger::new);
                 }
-                System.out.println("=".repeat(120));
+                System.out.println("=".repeat(130));
             }
             System.out.println();
         }
@@ -70,12 +70,12 @@ public class BigIntMemoryPerformance extends CommonTestBase {
         long t = System.nanoTime();
         var x = factory.apply(str);
         t = System.nanoTime() - t;
-        System.out.printf(Locale.ROOT, "[%s] %,20d chars %,20d micros %,20d nanos [%s]\n", desc, length, t / 1000, t, "from string construction");
+        System.out.printf(Locale.ROOT, "%12s %25s %,20d chars %,20d micros %,20d nanos\n", desc, "from string construction", length, t / 1000, t);
 
         t = System.nanoTime();
         String str2 = x.toString();
         t = System.nanoTime() - t;
-        System.out.printf(Locale.ROOT, "[%s] %,20d chars %,20d micros %,20d nanos [%s]\n", desc, length, t / 1000, t, "to string conversion");
+        System.out.printf(Locale.ROOT, "%12s %25s %,20d chars %,20d micros %,20d nanos\n", desc, "to string conversion", length, t / 1000, t);
 
         Assert.assertEquals(str, str2);
 
@@ -90,7 +90,7 @@ public class BigIntMemoryPerformance extends CommonTestBase {
                 }
             }
             t = System.nanoTime() - t;
-            System.out.printf(Locale.ROOT, "[%s] %,20d chars %,20d micros %,20d nanos [%s]\n", desc, length, t / 1000, t, "random access");
+            System.out.printf(Locale.ROOT, "%12s %25s %,20d chars %,20d micros %,20d nanos\n", desc, "random access", length, t / 1000, t);
             if (wrong > 0) {
                 throw new AssertionError();
             }

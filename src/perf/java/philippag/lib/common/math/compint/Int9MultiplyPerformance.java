@@ -22,119 +22,35 @@ public class Int9MultiplyPerformance extends CommonTestBase {
 
     @Test
     public void mul() {
+        ForkJoinPool pool = new ForkJoinPool();
         int REPEATS = 1;
         var ARGS = BINARY_ARGS_BIG;
-        for (int i = 0; i < 5; i++) {
-            binary("    MUL", Int9::fromString, Int9::multiplySimple, REPEATS, ARGS);
-            binary("     K5", Int9::fromString, Mul::k5, REPEATS, ARGS);
-            binary("    K50", Int9::fromString, Mul::k50, REPEATS, ARGS);
-            binary("    K75", Int9::fromString, Mul::k75, REPEATS, ARGS);
-            binary("   K100", Int9::fromString, Mul::k100, REPEATS, ARGS);
+        for (int i = 0; i < 3; i++) {
+            binary("multiplySimple", Int9::fromString, Int9::multiplySimple, REPEATS, ARGS);
 
-            binary("   P1K5", Int9::fromString, ParallelMul.MaxDepth1::k5, REPEATS, ARGS);
-            binary("  P1K50", Int9::fromString, ParallelMul.MaxDepth1::k50, REPEATS, ARGS);
-            binary("  P1K75", Int9::fromString, ParallelMul.MaxDepth1::k75, REPEATS, ARGS);
-            binary(" P1K100", Int9::fromString, ParallelMul.MaxDepth1::k100, REPEATS, ARGS);
+            binary("multiplyKaratsuba T=5", Int9::fromString, (lhs, rhs) -> Int9.multiplyKaratsuba(lhs, rhs, 5), REPEATS, ARGS);
+            binary("multiplyKaratsuba T=50", Int9::fromString, (lhs, rhs) -> Int9.multiplyKaratsuba(lhs, rhs, 50), REPEATS, ARGS);
+            binary("multiplyKaratsuba T=100", Int9::fromString, (lhs, rhs) -> Int9.multiplyKaratsuba(lhs, rhs, 100), REPEATS, ARGS);
 
-            binary("   P4K5", Int9::fromString, ParallelMul.MaxDepth4::k5, REPEATS, ARGS);
-            binary("  P4K50", Int9::fromString, ParallelMul.MaxDepth4::k50, REPEATS, ARGS);
-            binary("  P4K75", Int9::fromString, ParallelMul.MaxDepth4::k75, REPEATS, ARGS);
-            binary(" P4K100", Int9::fromString, ParallelMul.MaxDepth4::k100, REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=5 D=1", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 5, 1, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=50 D=1", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 50, 1, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=100 D=1", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 100, 1, pool), REPEATS, ARGS);
 
-            binary("   P6K5", Int9::fromString, ParallelMul.MaxDepth6::k5, REPEATS, ARGS);
-            binary("  P6K50", Int9::fromString, ParallelMul.MaxDepth6::k50, REPEATS, ARGS);
-            binary("  P6K75", Int9::fromString, ParallelMul.MaxDepth6::k75, REPEATS, ARGS);
-            binary(" P6K100", Int9::fromString, ParallelMul.MaxDepth6::k100, REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=5 D=4", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 5, 4, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=50 D=4", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 50, 4, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=100 D=4", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 100, 4, pool), REPEATS, ARGS);
 
-            binary(" P991K5", Int9::fromString, ParallelMul.MaxDepth99::k5, REPEATS, ARGS);
-            binary(" P99K50", Int9::fromString, ParallelMul.MaxDepth99::k50, REPEATS, ARGS);
-            binary(" P99K75", Int9::fromString, ParallelMul.MaxDepth99::k75, REPEATS, ARGS);
-            binary("P99K100", Int9::fromString, ParallelMul.MaxDepth99::k100, REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=5 D=16", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 5, 16, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=50 D=16", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 50, 16, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=100 D=16", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 100, 16, pool), REPEATS, ARGS);
 
-            binary("    JDK", BigInteger::new, BigInteger::multiply, REPEATS, ARGS);
-            System.out.println("=".repeat(100));
-        }
-    }
+            binary("parallelMultiplyKaratsuba T=5 D=999", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 5, 999, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=50 D=999", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 50, 999, pool), REPEATS, ARGS);
+            binary("parallelMultiplyKaratsuba T=100 D=999", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 100, 999, pool), REPEATS, ARGS);
 
-    private static class Mul {
-
-        private static Int9 k5(Int9 lhs, Int9 rhs) {
-            return Int9.multiplyKaratsuba(lhs, rhs, 5);
-        }
-        private static Int9 k50(Int9 lhs, Int9 rhs) {
-            return Int9.multiplyKaratsuba(lhs, rhs, 50);
-        }
-        private static Int9 k75(Int9 lhs, Int9 rhs) {
-            return Int9.multiplyKaratsuba(lhs, rhs, 75);
-        }
-        private static Int9 k100(Int9 lhs, Int9 rhs) {
-            return Int9.multiplyKaratsuba(lhs, rhs, 100);
-        }
-    }
-
-    private static class ParallelMul {
-
-        private static ForkJoinPool pool = new ForkJoinPool();
-
-        private static ForkJoinPool pool() {
-            return pool;
-        }
-
-        private static class MaxDepth1 {
-            private static Int9 k5(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 5, 1, pool());
-            }
-            private static Int9 k50(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 50, 1, pool());
-            }
-            private static Int9 k75(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 75, 1, pool());
-            }
-            private static Int9 k100(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 100, 1, pool());
-            }
-        }
-        private static class MaxDepth4 {
-            private static Int9 k5(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 5, 4, pool());
-            }
-            private static Int9 k50(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 50, 4, pool());
-            }
-            private static Int9 k75(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 75, 4, pool());
-            }
-            private static Int9 k100(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 100, 4, pool());
-            }
-        }
-        private static class MaxDepth6 {
-            private static Int9 k5(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 5, 6, pool());
-            }
-            private static Int9 k50(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 50, 6, pool());
-            }
-            private static Int9 k75(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 75, 6, pool());
-            }
-            private static Int9 k100(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 100, 6, pool());
-            }
-        }
-        private static class MaxDepth99 {
-            private static Int9 k5(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 5, 99, pool());
-            }
-            private static Int9 k50(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 50, 99, pool());
-            }
-            private static Int9 k75(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 75, 99, pool());
-            }
-            private static Int9 k100(Int9 lhs, Int9 rhs) {
-                return Int9.parallelMultiplyKaratsuba(lhs, rhs, 100, 99, pool());
-            }
+            binary("JDK java.math.BigInteger", BigInteger::new, BigInteger::multiply, REPEATS, ARGS);
+            System.out.println("=".repeat(120));
+            System.out.println();
         }
     }
 
@@ -159,7 +75,7 @@ public class Int9MultiplyPerformance extends CommonTestBase {
         }
 
         t0 = System.nanoTime() - t0;
-        System.out.printf(Locale.ROOT, "[%s] %,15d total %,15d op %,15d diff\n", desc, t0 / 1000, top / 1000, (t0 - top) / 1000);
+        System.out.printf(Locale.ROOT, "%40s %,15d total %,15d op %,15d diff\n", desc, t0 / 1000, top / 1000, (t0 - top) / 1000);
     }
 
     private static <T> BinaryOperator<T> symm(BinaryOperator<T> operator) {

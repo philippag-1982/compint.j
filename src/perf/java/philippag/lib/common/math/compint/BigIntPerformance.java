@@ -63,90 +63,90 @@ public class BigIntPerformance extends CommonTestBase {
         int REPEATS = 100;
         var ARGS = BINARY_ARGS_LONG;
         boolean symm = false;
-        binary(symm, "Int9  POW", Int9::fromString, Pow::pow, REPEATS, ARGS);
-        binary(symm, "Int9 PPOW", Int9::fromString, Pow::ppow, REPEATS, ARGS);
-        binary(symm, "JDK   POW", BigInteger::new, Pow::pow, REPEATS, ARGS);
+        binary(symm, "Int9", "pow", Int9::fromString, Pow::pow, REPEATS, ARGS);
+        binary(symm, "Int9", "parallelPow", Int9::fromString, Pow::ppow, REPEATS, ARGS);
+        binary(symm, "BigInteger", "pow", BigInteger::new, Pow::pow, REPEATS, ARGS);
     }
 
     @Test
-    public void div() {
+    public void divide() {
         int REPEATS = 1_000;
         var ARGS = BINARY_ARGS_BIG_LEFT;
         boolean symm = false;
-        binary(symm, "Int9  DIV", Int9::fromString, Div::div, REPEATS, ARGS);
-        binary(symm, "JDK   DIV", BigInteger::new, BigInteger::divide, REPEATS, ARGS);
+        binary(symm, "Int9", "divideInPlace", Int9::fromString, Div::div, REPEATS, ARGS);
+        binary(symm, "BigInteger", "divide", BigInteger::new, BigInteger::divide, REPEATS, ARGS);
     }
 
     @Test
-    public void mul() {
+    public void multiply() {
         int REPEATS = 10;
         var ARGS = BINARY_ARGS_BIG;
-        binary("Int9  MUL", Int9::fromString, Int9::multiplySimple, REPEATS, ARGS);
-        binary("Int9  MRP", Int9::fromString, Int9::multiplyRussianPeasant, REPEATS, ARGS);
-        binary("Int9  MAK", Int9::fromString, Int9::multiplyKaratsuba, REPEATS, ARGS);
-        binary("Ascii MUL", IntAscii::fromString, IntAscii::multiplySimple, REPEATS, ARGS);
-        binary("Ascii MAK", IntAscii::fromString, IntAscii::multiplyKaratsuba, REPEATS, ARGS);
-        binary("JDK   MUL", BigInteger::new, BigInteger::multiply, REPEATS, ARGS);
+        binary("Int9", "multiplySimple", Int9::fromString, Int9::multiplySimple, REPEATS, ARGS);
+        binary("Int9","multiplyRussianPeasant", Int9::fromString, Int9::multiplyRussianPeasant, REPEATS, ARGS);
+        binary("Int9", "multiplyKaratsuba", Int9::fromString, Int9::multiplyKaratsuba, REPEATS, ARGS);
+        binary("IntAscii", "multiplySimple", IntAscii::fromString, IntAscii::multiplySimple, REPEATS, ARGS);
+        binary("IntAscii", "multiplyKaratsuba", IntAscii::fromString, IntAscii::multiplyKaratsuba, REPEATS, ARGS);
+        binary("BigInteger", "multiply", BigInteger::new, BigInteger::multiply, REPEATS, ARGS);
     }
 
     @Test
     public void add() {
         int REPEATS = 100;
         var ARGS = BINARY_ARGS_BIG;
-        binary("Int9  ADD", Int9::fromString, Add::add, REPEATS, ARGS);
-        binary("Ascii ADD", IntAscii::fromString, Add::add, REPEATS, BINARY_ARGS_BIG);
-        binary("JDK   ADD", BigInteger::new, BigInteger::add, REPEATS, BINARY_ARGS_BIG);
+        binary("Int9", "add", Int9::fromString, Add::add, REPEATS, ARGS);
+        binary("IntAscii", "add", IntAscii::fromString, Add::add, REPEATS, BINARY_ARGS_BIG);
+        binary("BigInteger", "add", BigInteger::new, BigInteger::add, REPEATS, BINARY_ARGS_BIG);
     }
 
     @Test
     public void addInPlace() {
         int REPEATS = 100_000;
         var ARGS = BINARY_ARGS_LONG_NEG;
-        binary    ("Int9  AIP", Int9::fromString, AddInPlace::add, REPEATS, ARGS);
-        binaryLong("Int9 pAIP", Int9::fromString, Int9::addInPlace, REPEATS, ARGS);
-        binary    ("Ascii AIP", IntAscii::fromString, AddInPlace::add, REPEATS, ARGS);
+        binary    ("Int9", "addInPlace(Int9)", Int9::fromString, AddInPlace::add, REPEATS, ARGS);
+        binaryLong("Int9", "addInPlace(long)", Int9::fromString, Int9::addInPlace, REPEATS, ARGS);
+        binary    ("IntAscii", "addInPlace(IntAscii)", IntAscii::fromString, AddInPlace::add, REPEATS, ARGS);
     }
 
     @Test
     public void subtractInPlace() {
         int REPEATS = 100_000;
         var ARGS = BINARY_ARGS_LONG_NEG;
-        binary    ("Int9  SIP", Int9::fromString, AddInPlace::subtract, REPEATS, ARGS);
-        binaryLong("Int9 pSIP", Int9::fromString, Int9::subtractInPlace, REPEATS, ARGS);
+        binary    ("Int9", "subtractInPlace(Int9)", Int9::fromString, AddInPlace::subtract, REPEATS, ARGS);
+        binaryLong("Int9", "subtractInPlace(long)", Int9::fromString, Int9::subtractInPlace, REPEATS, ARGS);
     }
 
     @Test
-    public void incdec() {
+    public void incrementDecrement() {
         int REPEATS = 10_000;
         var ARGS = UNARY_ARGS_BIG;
 
-        unary("Int9  INC   ", Int9::fromString, Int9::incrementInPlace, REPEATS, ARGS);
-        unary("Int9 pAIP(1)", Int9::fromString, Inc::addOne, REPEATS, ARGS);
-        unary("Int9  AIP(1)", Int9::fromString, Inc::addOneObj, REPEATS, ARGS);
-        unary("Int9  ADD(1)", Int9::fromString, Inc::addOneFun, REPEATS, ARGS);
+        unary("Int9", "incrementInPlace", Int9::fromString, Int9::incrementInPlace, REPEATS, ARGS);
+        unary("Int9", "addInPlace(1L)", Int9::fromString, IncDec::addOne, REPEATS, ARGS);
+        unary("Int9", "addInPlace(ONE)", Int9::fromString, IncDec::addOneObj, REPEATS, ARGS);
+        unary("Int9", "add(ONE)", Int9::fromString, IncDec::addOneFun, REPEATS, ARGS);
 
-        unary("Int9  DEC   ", Int9::fromString, Int9::decrementInPlace, REPEATS, ARGS);
-        unary("Int9 pSIP(1)", Int9::fromString, Inc::subtractOne, REPEATS, ARGS);
-        unary("Int9  SIP(1)", Int9::fromString, Inc::subtractOneObj, REPEATS, ARGS);
-        unary("Int9  SUB(1)", Int9::fromString, Inc::subtractOneFun, REPEATS, ARGS);
+        unary("Int9", "decrementInPlace", Int9::fromString, Int9::decrementInPlace, REPEATS, ARGS);
+        unary("Int9", "subtractInPlace(1L)", Int9::fromString, IncDec::subtractOne, REPEATS, ARGS);
+        unary("Int9", "subtractInPlace(ONE)", Int9::fromString, IncDec::subtractOneObj, REPEATS, ARGS);
+        unary("Int9", "subtract(ONE)", Int9::fromString, IncDec::subtractOneFun, REPEATS, ARGS);
     }
 
     @Test
-    public void str() {
+    public void numberToString() {
         int REPEATS = 100;
         var ARGS = UNARY_ARGS_BIG;
-        unary("Int9  STR", Int9::fromString, Object::toString, REPEATS, ARGS);
-        unary("Ascii STR", IntAscii::fromString, Object::toString, REPEATS, ARGS);
-        unary("JDK   STR", BigInteger::new, Object::toString, REPEATS, ARGS);
+        unary("Int9", "toString", Int9::fromString, Object::toString, REPEATS, ARGS);
+        unary("IntAscii", "toString", IntAscii::fromString, Object::toString, REPEATS, ARGS);
+        unary("BigInteger", "toString", BigInteger::new, Object::toString, REPEATS, ARGS);
     }
 
     @Test
-    public void stream() throws IOException {
+    public void streamDigits() throws IOException {
         int REPEATS = 100;
         var ARGS = UNARY_ARGS_BIG;
-        unary("Int9  STM", Int9::fromString, Streams::take, REPEATS, ARGS);
-        unary("Ascii STM", IntAscii::fromString, Streams::take, REPEATS, ARGS);
-        unary("JDK   STM", BigInteger::new, Streams::take, REPEATS, ARGS);
+        unary("Int9", "streamDigits", Int9::fromString, Streams::take, REPEATS, ARGS);
+        unary("IntAscii","streamDigits", IntAscii::fromString, Streams::take, REPEATS, ARGS);
+        unary("BigInteger", "streamDigits", BigInteger::new, Streams::take, REPEATS, ARGS);
     }
 
     private static class Div {
@@ -204,7 +204,7 @@ public class BigIntPerformance extends CommonTestBase {
         }
     }
 
-    private static class Inc {
+    private static class IncDec {
 
         private static void addOne(Int9 x) {
             x.addInPlace(1);
@@ -252,11 +252,11 @@ public class BigIntPerformance extends CommonTestBase {
         }
     }
 
-    private static <T> void binary(String desc, Function<String, T> factory, BinaryOperator<T> operator, int REPEATS, String[] ARGS) {
-        binary(/*symm*/ true, desc, factory, operator, REPEATS, ARGS);
+    private static <T> void binary(String impl, String op, Function<String, T> factory, BinaryOperator<T> operator, int REPEATS, String[] ARGS) {
+        binary(/*symm*/ true, impl, op, factory, operator, REPEATS, ARGS);
     }
 
-    private static <T> void binary(boolean symm, String desc, Function<String, T> factory, BinaryOperator<T> operator, int REPEATS, String[] ARGS) {
+    private static <T> void binary(boolean symm, String impl, String op, Function<String, T> factory, BinaryOperator<T> operator, int REPEATS, String[] ARGS) {
         long t0 = System.nanoTime();
         long top = 0;
 
@@ -279,7 +279,7 @@ public class BigIntPerformance extends CommonTestBase {
         }
 
         t0 = System.nanoTime() - t0;
-        System.out.printf(Locale.ROOT, "[%12s] %,15d total %,15d op %,15d diff\n", desc, t0 / 1000, top / 1000, (t0 - top) / 1000);
+        System.out.printf(Locale.ROOT, "%12s %25s %,15d total %,15d op %,15d diff\n", impl, op, t0 / 1000, top / 1000, (t0 - top) / 1000);
     }
 
     private interface LongOperator<T> {
@@ -287,7 +287,7 @@ public class BigIntPerformance extends CommonTestBase {
         void apply(T value, long arg);
     }
 
-    private static <T> void binaryLong(String desc, Function<String, T> factory, LongOperator<T> operator, int REPEATS, String[] ARGS) {
+    private static <T> void binaryLong(String impl, String op, Function<String, T> factory, LongOperator<T> operator, int REPEATS, String[] ARGS) {
         long t0 = System.nanoTime();
         long top = 0;
 
@@ -305,7 +305,7 @@ public class BigIntPerformance extends CommonTestBase {
         }
 
         t0 = System.nanoTime() - t0;
-        System.out.printf(Locale.ROOT, "[%12s] %,15d total %,15d op %,15d diff\n", desc, t0 / 1000, top / 1000, (t0 - top) / 1000);
+        System.out.printf(Locale.ROOT, "%12s %25s %,15d total %,15d op %,15d diff\n", impl, op, t0 / 1000, top / 1000, (t0 - top) / 1000);
     }
 
     private static <T> BinaryOperator<T> symm(BinaryOperator<T> operator) {
@@ -315,7 +315,7 @@ public class BigIntPerformance extends CommonTestBase {
         };
     }
 
-    private static <T> void unary(String desc, Function<String, T> factory, Consumer<T> action, int REPEATS, String[] ARGS) {
+    private static <T> void unary(String impl, String op, Function<String, T> factory, Consumer<T> action, int REPEATS, String[] ARGS) {
         long t0 = System.nanoTime();
         long top = 0;
 
@@ -333,12 +333,11 @@ public class BigIntPerformance extends CommonTestBase {
         }
 
         t0 = System.nanoTime() - t0;
-        System.out.printf(Locale.ROOT, "[%12s] %,15d total %,15d op %,15d diff\n", desc, t0 / 1000, top / 1000, (t0 - top) / 1000);
+        System.out.printf(Locale.ROOT, "%12s %25s %,15d total %,15d op %,15d diff\n", impl, op, t0 / 1000, top / 1000, (t0 - top) / 1000);
     }
 
     @After
     public void after() {
-        System.out.println("-".repeat(100));
-        System.out.println();
+        System.out.println("=".repeat(120));
     }
 }
