@@ -1,3 +1,4 @@
+[ ] different (higher) threshold for parallelMultiplyKaratsuba
 [ ] report perf numbers in README
 [ ] document these perf tricks: 
     - division via multiplication
