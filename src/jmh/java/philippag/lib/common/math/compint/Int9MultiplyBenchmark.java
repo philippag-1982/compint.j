@@ -1,5 +1,6 @@
 package philippag.lib.common.math.compint;
 
+import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +22,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@BenchmarkMode({Mode.SingleShotTime, Mode.AverageTime})
+@BenchmarkMode(Mode.AverageTime)
 @Measurement(iterations = 3, time = 3, timeUnit = TimeUnit.SECONDS)
 @Warmup(iterations = 3, time = 3, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
@@ -37,12 +38,10 @@ public class Int9MultiplyBenchmark {
             "8".repeat(400_000), "3".repeat(150_000),
     };
 
-    private static int REPEATS = 1;
-
-    @Param({"1", "10", "50", "200"})
+    @Param({"10", "50", "200"})
     public int karatsubaThreshold;
 
-    @Param({"1", "4", "8", "16", "999"})
+    @Param({"1", "4", "16", "999"})
     public int maxDepth;
 
     private ForkJoinPool forkJoinPool;
@@ -52,24 +51,75 @@ public class Int9MultiplyBenchmark {
         forkJoinPool = new ForkJoinPool();
     }
 
+    @State(Scope.Benchmark)
+    public static abstract class Args<T> {
+
+        T[] args;
+
+        @Setup
+        public final void setup() {
+            args = args();
+        }
+
+        abstract T[] args();
+    }
+
+    public static class ArgsBigInteger extends Args<BigInteger> {
+
+        @Override
+        BigInteger[] args() {
+            return parse(BigInteger::new, BigInteger.class);
+        }
+    }
+
+    public static class ArgsInt9 extends Args<Int9> {
+
+        @Override
+        Int9[] args() {
+            return parse(Int9::fromString, Int9.class);
+        }
+    }
+
     @Benchmark
-    public void jdkBigInteger(Blackhole blackhole) {
+    public void multiplyJdkBigInteger(ArgsBigInteger args, Blackhole blackhole) {
+        binary(args.args, BigInteger::multiply, blackhole);
+    }
+
+    @Benchmark
+    public void parseAndMultiplyJdkBigInteger(Blackhole blackhole) {
         binary(BigInteger::new, BigInteger::multiply, blackhole);
     }
 
     @Benchmark
-    public void multiplySimple(Blackhole blackhole) {
+    public void multiplySimple(ArgsInt9 args, Blackhole blackhole) {
+        binary(args.args, Int9::multiplySimple, blackhole);
+    }
+
+    @Benchmark
+    public void parseAndMultiplySimple(Blackhole blackhole) {
         binary(Int9::fromString, Int9::multiplySimple, blackhole);
     }
 
     @Benchmark
-    public void multiplyKaratsuba(Blackhole blackhole) {
+    public void multiplyKaratsuba(ArgsInt9 args, Blackhole blackhole) {
+        BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
+        binary(args.args, operator, blackhole);
+    }
+
+    @Benchmark
+    public void parseAndMultiplyKaratsuba(Blackhole blackhole) {
         BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
         binary(Int9::fromString, operator, blackhole);
     }
 
     @Benchmark
-    public void parallelMultiplyKaratsuba(Blackhole blackhole) {
+    public void parallelMultiplyKaratsuba(ArgsInt9 args, Blackhole blackhole) {
+        BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
+        binary(args.args, operator, blackhole);
+    }
+
+    @Benchmark
+    public void parseAndParallelMultiplyKaratsuba(Blackhole blackhole) {
         BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
         binary(Int9::fromString, operator, blackhole);
     }
@@ -77,13 +127,22 @@ public class Int9MultiplyBenchmark {
     private static <T> void binary(Function<String, T> factory, BinaryOperator<T> operator, Blackhole blackhole) {
         operator = symm(operator);
 
-        for (int i = 0; i < REPEATS; i++) {
-            for (int j = 0; j < ARGS.length;) {
-                T lhs = factory.apply(ARGS[j++]);
-                T rhs = factory.apply(ARGS[j++]);
-                T result = operator.apply(lhs, rhs);
-                blackhole.consume(result);
-            }
+        for (int j = 0; j < ARGS.length;) {
+            T lhs = factory.apply(ARGS[j++]);
+            T rhs = factory.apply(ARGS[j++]);
+            T result = operator.apply(lhs, rhs);
+            blackhole.consume(result);
+        }
+    }
+
+    private static <T> void binary(T[] args, BinaryOperator<T> operator, Blackhole blackhole) {
+        operator = symm(operator);
+
+        for (int j = 0; j < args.length;) {
+            T lhs = args[j++];
+            T rhs = args[j++];
+            T result = operator.apply(lhs, rhs);
+            blackhole.consume(result);
         }
     }
 
@@ -92,5 +151,16 @@ public class Int9MultiplyBenchmark {
             operator.apply(rhs, lhs);
             return operator.apply(lhs, rhs);
         };
+    }
+
+    private static <T> T[] parse(Function<String, T> factory, Class<T> cls) {
+        @SuppressWarnings("unchecked")
+        T[] result = (T[]) Array.newInstance(cls, ARGS.length);
+
+        for (int i = 0; i < result.length; i++) {
+            result[i] = factory.apply(ARGS[i]);
+        }
+
+        return result;
     }
 }
