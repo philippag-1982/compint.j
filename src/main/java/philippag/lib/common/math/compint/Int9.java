@@ -1137,6 +1137,33 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         return carry > 0;
     }
 
+    // returns true if number had to grow by one place
+    public void doubleInPlace() {
+        ensureCapacity(1); // one extra space might be needed
+        doubleInPlaceImpl();
+    }
+
+    private void doubleInPlaceImpl() {
+        int carry = 0;
+        for (int i = offset + length - 1; i >= offset; i--) {
+            int value = data[i];
+            int product = value << 1; // value * 2, safe inside int
+            if (product >= BASE) {
+                product -= BASE;
+                assert product < BASE;
+                data[i] = carry + product;
+                carry = 1;
+            } else {
+                data[i] = carry + product;
+                carry = 0;
+            }
+        }
+
+        if (carry > 0) {
+            expand(carry);
+        }
+    }
+
     // divides in-place
     // returns remainder
     // Note: divisor cannot be long, otherwise the "carry * BASE1" multiplication might overflow.
@@ -1202,33 +1229,6 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             data[i] = (int) quot;
         }
         return carry;
-    }
-
-    // returns true if number had to grow by one place
-    public void doubleInPlace() {
-        ensureCapacity(1); // one extra space might be needed
-        doubleInPlaceImpl();
-    }
-
-    private void doubleInPlaceImpl() {
-        int carry = 0;
-        for (int i = offset + length - 1; i >= offset; i--) {
-            int value = data[i];
-            int product = value << 1; // value * 2, safe inside int
-            if (product >= BASE) {
-                product -= BASE;
-                assert product < BASE;
-                data[i] = carry + product;
-                carry = 1;
-            } else {
-                data[i] = carry + product;
-                carry = 0;
-            }
-        }
-
-        if (carry > 0) {
-            expand(carry);
-        }
     }
 
     public boolean isEven() {
