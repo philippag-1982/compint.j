@@ -1,19 +1,19 @@
-defaultTasks 'compileJava', 'compileTestJava'
+defaultTasks 'compileJava', 'compileTestJava', 'compileJmhJava'
+
+apply plugin: 'me.champeau.jmh'
+apply plugin: 'java-library'
+apply plugin: 'eclipse'
 
 buildscript {
     repositories {
         maven {
-            url "https://plugins.gradle.org/m2/"
+            url 'https://plugins.gradle.org/m2/'
         }
     }
     dependencies {
-        classpath "me.champeau.jmh:jmh-gradle-plugin:0.7.2"
+        classpath 'me.champeau.jmh:jmh-gradle-plugin:0.7.2'
     }
 }
-
-apply plugin: "me.champeau.jmh"
-apply plugin: 'java-library'
-apply plugin: 'eclipse'
 
 repositories {
     mavenCentral()
@@ -27,10 +27,10 @@ sourceSets.test.java.srcDirs += 'src/perf/java'
 task 'perf' (type: Test)
 
 tasks.withType(Test) {
-    if ("test".equals(it.name)) {
+    if ('test'.equals(it.name)) {
         jvmArgs '-ea'
         exclude '**/*Performance.class'
-    } else if ("perf".equals(it.name)) {
+    } else if ('perf'.equals(it.name)) {
         jvmArgs '-da', '-Xmx8G'
         exclude '**/*Test.class'
         testLogging.showStandardStreams = true
@@ -45,5 +45,6 @@ tasks.withType(JavaCompile) {
 
 jmh {
     failOnError.set(true)
-    profilers.add("gc")
+    //profilers.add('gc')
+    //profilers.add('stack')
 }
