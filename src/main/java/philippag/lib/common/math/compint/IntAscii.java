@@ -209,20 +209,23 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
 
     @SuppressWarnings("deprecation")
     public static IntAscii fromString(BaseConversion base, String str, int fromIndex, int toIndex) {
+        while (fromIndex < toIndex - 1 && str.charAt(fromIndex) == '0') {
+            fromIndex++;
+        }
         int length = toIndex - fromIndex;
         if (length <= 0) {
             throw new NumberFormatException("Empty input string");
         }
         byte[] bytes = new byte[length];
         str.getBytes(fromIndex, toIndex, bytes, 0);
-        return new IntAscii(base, bytes).canonicalize();
+        return new IntAscii(base, bytes);
     }
 
-    public static IntAscii fromBytes(byte... b) {
+    public static IntAscii fromBytes(byte[] b) {
         return fromBytes(StandardBaseConversions.DECIMAL, b);
     }
 
-    public static IntAscii fromBytes(BaseConversion base, byte... b) {
+    public static IntAscii fromBytes(BaseConversion base, byte[] b) {
         return fromBytes(b, 0, b.length);
     }
 
@@ -231,9 +234,6 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
     }
 
     public static IntAscii fromBytes(BaseConversion base, byte[] b, int offset, int length) {
-        if (length == 0) {
-            throw new IllegalArgumentException("Empty input array");
-        }
         return new IntAscii(base, b, offset, length).canonicalize();
     }
 

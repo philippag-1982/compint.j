@@ -58,6 +58,20 @@ public class IntAsciiTest extends CommonTestBase {
     }
 
     @Test
+    public void leadingZeroes() {
+        checkDebugStr("IntAscii {digits=1, offset=0, length=1, capacity=1, data=[49]}", "1", "00000000000000000001");
+        checkDebugStr("IntAscii {digits=1, offset=0, length=1, capacity=1, data=[49]}", "1", "0000000000000000000000000000000000001");
+        checkDebugStr("IntAscii {digits=1, offset=0, length=1, capacity=1, data=[48]}", "0", "0000000000000000000000000000000000000");
+        checkDebugStr("IntAscii {digits=1, offset=0, length=1, capacity=1, data=[48]}", "0", "0");
+    }
+
+    private static void checkDebugStr(String expected, String expectedStr, String input) {
+        IntAscii value = IntAscii.fromString(input);
+        Assert.assertEquals(expected, value.toDebugString());
+        Assert.assertEquals(expectedStr.toString(), value.toString());
+    }
+
+    @Test
     public void subSeqNoWriteThrough() {
         String original = "123456789012345678901234567890123456789012345678901234567890";
         var x = IntAscii.fromString(original);

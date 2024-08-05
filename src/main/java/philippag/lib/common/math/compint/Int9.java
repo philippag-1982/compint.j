@@ -382,7 +382,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             }
         }
 
-        return num == null ? Constants.ZERO() : num.setNegative(negative).canonicalize();
+        return num == null ? Constants.ZERO() : num.setNegative(negative);
     }
 
     public boolean isInt() {
