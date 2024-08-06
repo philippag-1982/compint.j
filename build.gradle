@@ -45,6 +45,7 @@ tasks.withType(JavaCompile) {
 
 jmh {
     failOnError.set(true)
+    includeTests.set(true)
     //profilers.add('gc')
     //profilers.add('stack')
 }
