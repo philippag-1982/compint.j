@@ -131,7 +131,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     //does not include sign
     @Override
     public int countDigits() {
-        return firstDigitLength() + (length - 1) * SIZE;
+        return firstDigitLength() + SizeOp.mul(length - 1);
     }
 
     //does not include sign
@@ -1431,8 +1431,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         return (negative ? 1 : 0) + countDigits();
     }
 
-    // random access to a digit w/o needed to materialize a string
-    // this is optimized by not having any divisions.
+    // random access to a digit w/o needing to materialize a string
+    // this is optimized to not have any divisions.
     @Override
     public char charAt(int index) {
         if (negative) {
@@ -1444,9 +1444,9 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         // correct for variable length of first element in data[]
         index += SIZE - firstDigitLength();
 
-        int div9 = DivTable.div9(index);
-        int idx = offset + div9;
-        return idx < data.length ? IntegerFormat.at(data[idx], DivTable.mod9(div9, index)) : '0';
+        int div = SizeOp.div(index);
+        int idx = offset + div;
+        return idx < data.length ? IntegerFormat.at(data[idx], SizeOp.mod(div, index)) : '0';
     }
 
     @Override
@@ -1479,9 +1479,9 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         static int lengthForDigits(int digits) {
-            int div9 = DivTable.div9(digits);
-            int mod9 = DivTable.mod9(div9, digits);
-            return div9 + (mod9 == 0 ? 0 : 1);
+            int div = SizeOp.div(digits);
+            int mod = SizeOp.mod(div, digits);
+            return div + (mod == 0 ? 0 : 1);
         }
 
         static int addInPlaceCapacity(int lhs, int rhs) {
@@ -1563,7 +1563,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         static int length(int n) {
-            // we only have to handle up to 9 digits
+            assert n < BASE;
             return n < 100_000 ?         n <        100 ? n <        10 ? 1 : 2 : n <       1_000 ? 3
                  : n <  10_000 ? 4 : 5 : n < 10_000_000 ? n < 1_000_000 ? 6 : 7 : n < 100_000_000 ? 8 : 9;
         }
@@ -1609,15 +1609,6 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             return (int) ((input * MOD_INV[idx]) >> SHR[idx]);
         }
 
-        static int div9(int input) {
-            assert input >> 31 == 0; // so we don't need the subtraction part
-            return (int) ((input * 0x38e38e39L) >> 33);
-        }
-
-        static int mod9(int div9, int input) {
-            return input - (div9 + (div9 << 3));
-        }
-
         static int div10(int input) {
             assert input >> 31 == 0; // so we don't need the subtraction part
             return (int) ((input * 0x66666667L) >> 34);
@@ -1629,6 +1620,23 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
         static int mod10(int div10, int input) {
             return input - ((div10 + (div10 << 2)) << 1);
+        }
+    }
+
+    // operations with SIZE as right operand
+    private static class SizeOp {
+
+        static int mul(int input) {
+            return (input << 3) + input;
+        }
+
+        static int div(int input) {
+            assert input >> 31 == 0; // so we don't need the subtraction part
+            return (int) ((input * 0x38e38e39L) >> 33);
+        }
+
+        static int mod(int div, int input) {
+            return input - (div + (div << 3));
         }
     }
 }
