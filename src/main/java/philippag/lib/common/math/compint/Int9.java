@@ -1191,6 +1191,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         long carry;
         if (Calc.isPowerOfTwo(divisor)) {
             carry = divideInPlaceAbsShiftAnd(divisor);
+        } else if (divisor == 3) {
+            carry = divideInPlaceAbsBy3();
         } else {
             carry = divideInPlaceAbsDivMod(divisor);
         }
@@ -1213,6 +1215,18 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             long value = data[i] + carry * BASE1;
             long quot = value >> shift;
             carry     = value & mask;
+            assert quot == (int) quot;
+            data[i] = (int) quot;
+        }
+        return carry;
+    }
+
+    private long divideInPlaceAbsBy3() {
+        long carry = 0;
+        for (int i = offset, max = offset + length; i < max; i++) {
+            long value = data[i] + carry * BASE1;
+            long quot = DivTable.div3(value);
+            carry     = DivTable.mod3(quot, value);
             assert quot == (int) quot;
             data[i] = (int) quot;
         }
@@ -1620,6 +1634,14 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
         static int mod10(int div10, int input) {
             return input - ((div10 + (div10 << 2)) << 1);
+        }
+
+        static long div3(long input) {
+            return (input * 0xAAAAAAABL) >> 33;
+        }
+
+        static long mod3(long div3, long input) {
+            return input - (div3 + (div3 << 1));
         }
     }
 

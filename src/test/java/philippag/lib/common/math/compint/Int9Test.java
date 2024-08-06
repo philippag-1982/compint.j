@@ -160,6 +160,19 @@ public class Int9Test extends CommonTestBase {
     }
 
     @Test
+    public void divideInPlaceBy3Exact() {
+        for (int i = 0; i < 10_000_000; i++) {
+            checkDivideInPlace(i, 3);
+            checkDivideInPlaceBy3Exact(i);
+        }
+
+        for (long i = Long.MAX_VALUE - 10_000; i < Long.MAX_VALUE; i++) {
+            checkDivideInPlace(i, 3);
+            checkDivideInPlaceBy3Exact(i);
+        }
+    }
+
+    @Test
     public void divideInPlace() {
         checkDivideInPlace(1_000_000_000_000_000_000L, 3);
         checkDivideInPlace(1_000_000_000_000L, 3);
@@ -234,6 +247,17 @@ public class Int9Test extends CommonTestBase {
                 }
             }
         }
+    }
+
+    private static void checkDivideInPlaceBy3Exact(long divisor) {
+        checkDivideInPlaceBy3Exact(""+divisor);
+    }
+
+    private static void checkDivideInPlaceBy3Exact(String divisorStr) {
+        var divisor = Int9.fromString(divisorStr).multiply(Int9.fromInt(3));
+        int remainder = divisor.divideInPlace(3);
+        Assert.assertEquals(divisorStr, divisor.toString());
+        Assert.assertEquals(0, remainder);
     }
 
     private static void checkDivideInPlace(long divisor, int dividend) {
@@ -1216,6 +1240,8 @@ public class Int9Test extends CommonTestBase {
             checkMulStr(""+lhs, ""+-rhs);
             checkMulStr(""+-lhs, ""+-rhs);
             checkDivideInPlace(lhs, (int) rhs + 1); // prevent / by zero
+            checkDivideInPlace(lhs, 3);
+            checkDivideInPlaceBy3Exact(lhs);
 
             checkHalfAndDouble(lhs);
             checkAddStr(""+lhs, ""+rhs);
@@ -1591,6 +1617,8 @@ public class Int9Test extends CommonTestBase {
                 checkDivideInPlace(lhs, "2812");
                 checkDivideInPlace(lhs, "1");
                 checkDivideInPlace(lhs, "-1");
+                checkDivideInPlace(lhs, "3");
+                checkDivideInPlaceBy3Exact(lhs);
 
                 for (String constant : constants) {
                     rhs = constant;
