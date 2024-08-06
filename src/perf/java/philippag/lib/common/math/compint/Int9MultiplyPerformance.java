@@ -48,7 +48,8 @@ public class Int9MultiplyPerformance extends CommonTestBase {
             binary("parallelMultiplyKaratsuba T=50 D=999", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 50, 999, pool), REPEATS, ARGS);
             binary("parallelMultiplyKaratsuba T=100 D=999", Int9::fromString, (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, 100, 999, pool), REPEATS, ARGS);
 
-            binary("JDK java.math.BigInteger", BigInteger::new, BigInteger::multiply, REPEATS, ARGS);
+            binary("multiply java.math.BigInteger", BigInteger::new, BigInteger::multiply, REPEATS, ARGS);
+            binary("parallelMultiply java.math.BigInteger", BigInteger::new, BigInteger::parallelMultiply, REPEATS, ARGS);
             System.out.println("=".repeat(120));
             System.out.println();
         }

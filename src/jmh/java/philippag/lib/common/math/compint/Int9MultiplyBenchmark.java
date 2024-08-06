@@ -86,8 +86,18 @@ public class Int9MultiplyBenchmark {
     }
 
     @Benchmark
+    public void parallelMultiplyJdkBigInteger(ArgsBigInteger args, Blackhole blackhole) {
+        binary(args.args, BigInteger::parallelMultiply, blackhole);
+    }
+
+    @Benchmark
     public void parseAndMultiplyJdkBigInteger(Blackhole blackhole) {
         binary(BigInteger::new, BigInteger::multiply, blackhole);
+    }
+
+    @Benchmark
+    public void parseAndParallelMultiplyJdkBigInteger(Blackhole blackhole) {
+        binary(BigInteger::new, BigInteger::parallelMultiply, blackhole);
     }
 
     @Benchmark
