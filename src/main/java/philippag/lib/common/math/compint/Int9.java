@@ -131,7 +131,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     //does not include sign
     @Override
     public int countDigits() {
-        return firstDigitLength() + SizeOp.mul(length - 1);
+        return firstDigitLength() + DivMulTable.mul9(length - 1);
     }
 
     //does not include sign
@@ -1225,8 +1225,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         long carry = 0;
         for (int i = offset, max = offset + length; i < max; i++) {
             long value = data[i] + carry * BASE1;
-            long quot = DivTable.div3(value);
-            carry     = DivTable.mod3(quot, value);
+            long quot = DivMulTable.div3(value);
+            carry     = DivMulTable.mod3(quot, value);
             assert quot == (int) quot;
             data[i] = (int) quot;
         }
@@ -1458,9 +1458,9 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         // correct for variable length of first element in data[]
         index += SIZE - firstDigitLength();
 
-        int div = SizeOp.div(index);
-        int idx = offset + div;
-        return idx < data.length ? IntegerFormat.at(data[idx], SizeOp.mod(div, index)) : '0';
+        int div9 = DivMulTable.div9(index);
+        int idx = offset + div9;
+        return idx < data.length ? IntegerFormat.at(data[idx], DivMulTable.mod9(div9, index)) : '0';
     }
 
     @Override
@@ -1493,9 +1493,9 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         static int lengthForDigits(int digits) {
-            int div = SizeOp.div(digits);
-            int mod = SizeOp.mod(div, digits);
-            return div + (mod == 0 ? 0 : 1);
+            int div9 = DivMulTable.div9(digits);
+            int mod9 = DivMulTable.mod9(div9, digits);
+            return div9 + (mod9 == 0 ? 0 : 1);
         }
 
         static int addInPlaceCapacity(int lhs, int rhs) {
@@ -1552,7 +1552,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
                 if (!('0' <= c && c <= '9')) {
                     throw new NumberFormatException("Non-digit character '" + c + "' at index " + i);
                 }
-                result = 10 * result + c - '0';
+                result = DivMulTable.mul10(result) + c - '0';
             }
 
             return result;
@@ -1561,7 +1561,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         // equivalent to String.valueOf(digit).charAt(idx)
         static char at(int digit, int idx) {
             assert 0 <= idx && idx < SIZE : idx;
-            return (char) (DivTable.mod10(DivTable.divPower10(digit, idx)) + '0');
+            return (char) (DivMulTable.mod10(DivMulTable.divPower10(digit, idx)) + '0');
         }
 
         static void format(byte[] dest, int n, int left, int right) {
@@ -1569,8 +1569,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
                 if (n == 0) {
                     dest[i] = '0';
                 } else {
-                    int div10 = DivTable.div10(n);
-                    dest[i] = (byte) (DivTable.mod10(div10, n) + '0');
+                    int div10 = DivMulTable.div10(n);
+                    dest[i] = (byte) (DivMulTable.mod10(div10, n) + '0');
                     n = div10;
                 }
             }
@@ -1590,7 +1590,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
      * The "magic numbers" are actually -(modular inverses)- reciprocal numbers.
      * They were found using Compiler Explorer.
      */
-    private static class DivTable {
+    private static class DivMulTable {
 
         private static final int[] MOD_INV = { // MOD_INV[i] == (1 << SHR[i]) / POWERS_OF_TEN[i] + 1; // except for last one
         /*1E8*/ 0x55e63b89,
@@ -1633,7 +1633,11 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         static int mod10(int div10, int input) {
-            return input - ((div10 + (div10 << 2)) << 1); // input - div10 * 10
+            return input - mul10(div10);
+        }
+
+        static int mul10(int input) {
+            return ((input + (input << 2)) << 1);
         }
 
         static long div3(long input) {
@@ -1641,24 +1645,24 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         static long mod3(long div3, long input) {
-            return input - (div3 + (div3 << 1)); // input - div3 * 3
-        }
-    }
-
-    // operations with SIZE as right operand
-    private static class SizeOp {
-
-        static int mul(int input) {
-            return (input << 3) + input;
+            return input - mul3(div3);
         }
 
-        static int div(int input) {
+        static long mul3(long input) {
+            return (input + (input << 1));
+        }
+
+        static int div9(int input) {
             assert input >> 31 == 0; // so we don't need the subtraction part
             return (int) ((input * 0x38e38e39L) >> 33);
         }
 
-        static int mod(int div, int input) {
-            return input - (div + (div << 3)); // input - div * SIZE
+        static int mod9(int div9, int input) {
+            return input - mul9(div9);
+        }
+
+        static int mul9(int input) {
+            return (input << 3) + input;
         }
     }
 }
