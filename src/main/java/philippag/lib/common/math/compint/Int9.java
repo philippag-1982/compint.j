@@ -1633,7 +1633,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         static int mod10(int div10, int input) {
-            return input - ((div10 + (div10 << 2)) << 1);
+            return input - ((div10 + (div10 << 2)) << 1); // input - div10 * 10
         }
 
         static long div3(long input) {
@@ -1641,7 +1641,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         static long mod3(long div3, long input) {
-            return input - (div3 + (div3 << 1));
+            return input - (div3 + (div3 << 1)); // input - div3 * 3
         }
     }
 
@@ -1658,7 +1658,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         static int mod(int div, int input) {
-            return input - (div + (div << 3));
+            return input - (div + (div << 3)); // input - div * SIZE
         }
     }
 }
