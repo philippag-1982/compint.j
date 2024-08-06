@@ -30,13 +30,19 @@ import org.openjdk.jmh.infra.Blackhole;
 @State(Scope.Benchmark)
 public class Int9MultiplyBenchmark {
 
-    private static final String[] ARGS = {
-            "589034583485345", "58903457894375873489578943534",
-            "589034583485345492349238423842374237462346", "58903457894375873489578943534432949234823472374263462343526",
-            "5".repeat(10_000), "6".repeat(100),
-            "5".repeat(100_000), "6".repeat(50_000),
-            "8".repeat(400_000), "3".repeat(150_000),
-    };
+    private static class Args {
+
+        private static final String[] STRING = {
+                "589034583485345", "58903457894375873489578943534",
+                "589034583485345492349238423842374237462346", "58903457894375873489578943534432949234823472374263462343526",
+                "5".repeat(10_000), "6".repeat(100),
+                "5".repeat(100_000), "6".repeat(50_000),
+                "8".repeat(400_000), "3".repeat(150_000),
+        };
+
+        private static final BigInteger[] BIG_INTEGER = parse(STRING, BigInteger::new, BigInteger.class);
+        private static final Int9[] INT_9 = parse(STRING, Int9::fromString, Int9.class);
+    }
 
 //    @Param({"10", "50", "200"})
     @Param({"50"})
@@ -53,90 +59,61 @@ public class Int9MultiplyBenchmark {
         forkJoinPool = new ForkJoinPool();
     }
 
-    @State(Scope.Benchmark)
-    public static abstract class Args<T> {
-
-        T[] args;
-
-        @Setup
-        public final void setup() {
-            args = args();
-        }
-
-        abstract T[] args();
-    }
-
-    public static class ArgsBigInteger extends Args<BigInteger> {
-
-        @Override
-        BigInteger[] args() {
-            return parse(BigInteger::new, BigInteger.class);
-        }
-    }
-
-    public static class ArgsInt9 extends Args<Int9> {
-
-        @Override
-        Int9[] args() {
-            return parse(Int9::fromString, Int9.class);
-        }
+    @Benchmark
+    public void multiplyJdkBigInteger(Blackhole blackhole) {
+        perform(Args.BIG_INTEGER, BigInteger::multiply, blackhole);
     }
 
     @Benchmark
-    public void multiplyJdkBigInteger(ArgsBigInteger args, Blackhole blackhole) {
-        binary(args.args, BigInteger::multiply, blackhole);
-    }
-
-    @Benchmark
-    public void parallelMultiplyJdkBigInteger(ArgsBigInteger args, Blackhole blackhole) {
-        binary(args.args, BigInteger::parallelMultiply, blackhole);
+    public void parallelMultiplyJdkBigInteger(Blackhole blackhole) {
+        perform(Args.BIG_INTEGER, BigInteger::parallelMultiply, blackhole);
     }
 
     @Benchmark
     public void parseAndMultiplyJdkBigInteger(Blackhole blackhole) {
-        binary(BigInteger::new, BigInteger::multiply, blackhole);
+        parseAndPerform(Args.STRING, BigInteger::new, BigInteger::multiply, blackhole);
     }
 
     @Benchmark
     public void parseAndParallelMultiplyJdkBigInteger(Blackhole blackhole) {
-        binary(BigInteger::new, BigInteger::parallelMultiply, blackhole);
+        parseAndPerform(Args.STRING, BigInteger::new, BigInteger::parallelMultiply, blackhole);
     }
 
     @Benchmark
-    public void multiplySimple(ArgsInt9 args, Blackhole blackhole) {
-        binary(args.args, Int9::multiplySimple, blackhole);
+    public void multiplySimpleInt9(Blackhole blackhole) {
+        perform(Args.INT_9, Int9::multiplySimple, blackhole);
     }
 
     @Benchmark
-    public void parseAndMultiplySimple(Blackhole blackhole) {
-        binary(Int9::fromString, Int9::multiplySimple, blackhole);
+    public void parseAndMultiplySimpleInt9(Blackhole blackhole) {
+        parseAndPerform(Args.STRING, Int9::fromString, Int9::multiplySimple, blackhole);
     }
 
     @Benchmark
-    public void multiplyKaratsuba(ArgsInt9 args, Blackhole blackhole) {
+    public void multiplyKaratsubaInt9(Blackhole blackhole) {
         BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
-        binary(args.args, operator, blackhole);
+        perform(Args.INT_9, operator, blackhole);
     }
 
     @Benchmark
-    public void parseAndMultiplyKaratsuba(Blackhole blackhole) {
+    public void parseAndMultiplyKaratsubaInt9(Blackhole blackhole) {
         BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
-        binary(Int9::fromString, operator, blackhole);
+        parseAndPerform(Args.STRING, Int9::fromString, operator, blackhole);
     }
 
     @Benchmark
-    public void parallelMultiplyKaratsuba(ArgsInt9 args, Blackhole blackhole) {
+    public void parallelMultiplyKaratsubaInt9(Blackhole blackhole) {
         BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
-        binary(args.args, operator, blackhole);
+        perform(Args.INT_9, operator, blackhole);
     }
 
     @Benchmark
-    public void parseAndParallelMultiplyKaratsuba(Blackhole blackhole) {
+    public void parseAndParallelMultiplyKaratsubaInt9(Blackhole blackhole) {
         BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
-        binary(Int9::fromString, operator, blackhole);
+        parseAndPerform(Args.STRING, Int9::fromString, operator, blackhole);
     }
 
-    private static <T> void binary(Function<String, T> factory, BinaryOperator<T> operator, Blackhole blackhole) {
+    private static <T> void parseAndPerform(String[] ARGS, Function<String, T> factory, BinaryOperator<T> operator, Blackhole blackhole) {
         operator = symm(operator);
 
         for (int j = 0; j < ARGS.length;) {
@@ -147,7 +124,7 @@ public class Int9MultiplyBenchmark {
         }
     }
 
-    private static <T> void binary(T[] args, BinaryOperator<T> operator, Blackhole blackhole) {
+    private static <T> void perform(T[] args, BinaryOperator<T> operator, Blackhole blackhole) {
         operator = symm(operator);
 
         for (int j = 0; j < args.length;) {
@@ -165,7 +142,7 @@ public class Int9MultiplyBenchmark {
         };
     }
 
-    private static <T> T[] parse(Function<String, T> factory, Class<T> cls) {
+    private static <T> T[] parse(String[] ARGS, Function<String, T> factory, Class<T> cls) {
         @SuppressWarnings("unchecked")
         T[] result = (T[]) Array.newInstance(cls, ARGS.length);
 
