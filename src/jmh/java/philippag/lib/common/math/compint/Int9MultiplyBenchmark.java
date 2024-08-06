@@ -22,7 +22,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@BenchmarkMode(Mode.AverageTime)
+@BenchmarkMode({Mode.AverageTime, Mode.SingleShotTime})
 @Measurement(iterations = 3, time = 3, timeUnit = TimeUnit.SECONDS)
 @Warmup(iterations = 3, time = 3, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
@@ -38,10 +38,12 @@ public class Int9MultiplyBenchmark {
             "8".repeat(400_000), "3".repeat(150_000),
     };
 
-    @Param({"10", "50", "200"})
+//    @Param({"10", "50", "200"})
+    @Param({"50"})
     public int karatsubaThreshold;
 
-    @Param({"1", "4", "16", "999"})
+//    @Param({"1", "4", "16", "999"})
+    @Param({"16"})
     public int maxDepth;
 
     private ForkJoinPool forkJoinPool;

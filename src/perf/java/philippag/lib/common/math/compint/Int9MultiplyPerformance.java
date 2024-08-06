@@ -50,6 +50,7 @@ public class Int9MultiplyPerformance extends CommonTestBase {
 
             binary("multiply java.math.BigInteger", BigInteger::new, BigInteger::multiply, REPEATS, ARGS);
             binary("parallelMultiply java.math.BigInteger", BigInteger::new, BigInteger::parallelMultiply, REPEATS, ARGS);
+
             System.out.println("=".repeat(120));
             System.out.println();
         }

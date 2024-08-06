@@ -13,23 +13,7 @@ import philippag.lib.common.math.CommonTestBase;
 public class BigIntMemoryPerformance extends CommonTestBase {
 
     @Test
-    public void stringOps() {
-        int[] lengths = { 1 << 18, 1 << 24, 1 << 28, 1 << 30, 0x7FFF_0000 };
-        for (int i = 0; i < 3; i++) {
-            for (int length : lengths) {
-                str("Int9", length, Int9::fromString);
-                str("IntAscii", length, IntAscii::fromString);
-                if (length == lengths[0]) {
-                    str("BigInteger", length, BigInteger::new);
-                }
-                System.out.println("=".repeat(130));
-            }
-            System.out.println();
-        }
-    }
-
-    @Test
-    public void hugeModify9() {
+    public void hugeModifyInt9() {
         int length = 1 << 30;
         String str = "1".repeat(length);
         var x = Int9.fromString(str);
@@ -43,7 +27,7 @@ public class BigIntMemoryPerformance extends CommonTestBase {
     }
 
     @Test
-    public void hugeModifyAscii() {
+    public void hugeModifyIntAscii() {
         int length = 1 << 30;
         String str = "1".repeat(length);
         var x = IntAscii.fromString(str);
@@ -63,10 +47,26 @@ public class BigIntMemoryPerformance extends CommonTestBase {
         System.out.printf("[IntAscii] modification completed successfully for length %,d\n", length);
     }
 
-    static Random rnd = new Random();
+    @Test
+    public void stringOps() {
+        var rnd = new Random();
+        int[] lengths = { 1 << 18, 1 << 24, 1 << 28, 1 << 30, 0x7FFF_0000 };
+        for (int i = 0; i < 3; i++) {
+            for (int length : lengths) {
+                String str = randomNumericString(rnd, length, length);
+                str("Int9", str, Int9::fromString);
+                str("IntAscii", str, IntAscii::fromString);
+                if (length == lengths[0]) {
+                    str("BigInteger", str, BigInteger::new);
+                }
+                System.out.println("=".repeat(130));
+            }
+            System.out.println();
+        }
+    }
 
-    private static <T> void str(String desc, int length, Function<String, T> factory) {
-        String str = randomNumericString(rnd, length, length);
+    private static <T> void str(String desc, String str, Function<String, T> factory) {
+        int length = str.length();
         long t = System.nanoTime();
         var x = factory.apply(str);
         t = System.nanoTime() - t;
@@ -79,9 +79,9 @@ public class BigIntMemoryPerformance extends CommonTestBase {
 
         Assert.assertEquals(str, str2);
 
-        if (x instanceof CharSequence cs) {
-            int wrong = 0;
-            t = System.nanoTime();
+        int wrong = 0;
+        t = System.nanoTime();
+        if (x instanceof Int9 cs) {
             for (int i = 0, len = cs.length(); i < len; i++) {
                 char c = cs.charAt(i);
                 if (c < '0' || c > '9') {
@@ -89,11 +89,21 @@ public class BigIntMemoryPerformance extends CommonTestBase {
                     wrong++;
                 }
             }
-            t = System.nanoTime() - t;
-            System.out.printf(Locale.ROOT, "%12s %25s %,20d chars %,20d micros %,20d nanos\n", desc, "random access", length, t / 1000, t);
-            if (wrong > 0) {
-                throw new AssertionError();
+        } else if (x instanceof IntAscii cs) {
+            for (int i = 0, len = cs.length(); i < len; i++) {
+                char c = cs.charAt(i);
+                if (c < '0' || c > '9') {
+                    // i.e. blackhole.consume()
+                    wrong++;
+                }
             }
+        } else {
+            return;
+        }
+        t = System.nanoTime() - t;
+        System.out.printf(Locale.ROOT, "%12s %25s %,20d chars %,20d micros %,20d nanos\n", desc, "random access", length, t / 1000, t);
+        if (wrong > 0) {
+            throw new AssertionError();
         }
     }
 }
