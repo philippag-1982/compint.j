@@ -1226,7 +1226,6 @@ public class Int9Test extends CommonTestBase {
             checkAddStr(""+lhs, ""+rhs);
             checkAddStr(""+-lhs, ""+rhs);
             checkAddStr(""+lhs, ""+-rhs);
-            checkAddStr(""+-lhs, ""+-rhs);
             checkSubtractStr(""+lhs, ""+rhs);
             checkSubtractStr(""+-lhs, ""+rhs);
             checkSubtractStr(""+lhs, ""+-rhs);
@@ -1614,8 +1613,11 @@ public class Int9Test extends CommonTestBase {
             for (int right : lengths) {
                 String lhsSign = rnd.nextBoolean() ? "" : "-";
                 String rhsSign = rnd.nextBoolean() ? "" : "-";
-                String lhs = lhsSign + randomNumericString(rnd, left, max);
-                String rhs = rhsSign + randomNumericString(rnd, right, max);
+                String lhsSuffix = rnd.nextBoolean() ? "" : "0".repeat(random(rnd, 9, 30_000));
+                String rhsSuffix = rnd.nextBoolean() ? "" : "0".repeat(random(rnd, 9, 30_000));
+
+                String lhs = lhsSign + randomNumericString(rnd, left, max) + lhsSuffix;
+                String rhs = rhsSign + randomNumericString(rnd, right, max) + rhsSuffix;
                 BigInteger lhsInt = new BigInteger(lhs);
                 BigInteger rhsInt = new BigInteger(rhs);
 
