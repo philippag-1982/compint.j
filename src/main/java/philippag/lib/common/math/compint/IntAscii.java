@@ -62,11 +62,11 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
     }
 
     private IntAscii(BaseConversion base, byte[] data, int offset, int length) {
-        if (offset < 0) {
-            throw new IllegalArgumentException("Negative offset: " + offset);
+        if (offset < 0 || offset >= data.length) {
+            throw new IllegalArgumentException("offset out of range: " + offset);
         }
         if (length <= 0) {
-            throw new IllegalArgumentException("Zero or negative length: " + length);
+            throw new IllegalArgumentException("zero or negative length: " + length);
         }
         this.base = Objects.requireNonNull(base, "base");
         this.data = Objects.requireNonNull(data, "data");
@@ -76,7 +76,7 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
 
     public boolean isZero() {
         assert data[offset] > 0 || length == 1; // canonical form
-        return data[offset] == 0;
+        return data[offset] == 0 || data[offset] == base.ZERO;
     }
 
     @Override
@@ -514,7 +514,8 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
         if ((n >> 1) >= length) {
             return this;
         } else {
-            return new IntAscii(base, data, offset + ((n + 1) >> 1) + length - n, n >> 1).canonicalize();
+            int newOffset = offset + ((n + 1) >> 1) + length - n;
+            return newOffset < data.length ? new IntAscii(base, data, newOffset, n >> 1).canonicalize() : ZERO;
         }
     }
 

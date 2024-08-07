@@ -698,6 +698,17 @@ public class IntAsciiTest extends CommonTestBase {
     }
 
     @Test
+    public void rightPartRegression() {
+        var x = IntAscii.fromString(AsciiDigits.fromScientific("1E30").toString());
+        for (int n = 1; n < 62; n++) {
+            Assert.assertTrue(x.rightPart(n).isZero());
+        }
+        for (int n = 62; n < 150; n++) {
+            Assert.assertSame(x, x.rightPart(n));
+        }
+    }
+
+    @Test
     public void leftRightPart() {
         checkLeftRightPart("[1, 2]", "[3, 4]", "[0]", "[5, 6]", new int[] {1,2,3,4}, new int[] {5,6});
         checkLeftRightPart("[1]", "[2, 3]", "[5, 6, 7]", "[8, 9]", new int[] {1,2,3}, new int[] {5,6,7,8,9});

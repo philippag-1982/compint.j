@@ -371,6 +371,17 @@ public class Int9Test extends CommonTestBase {
     }
 
     @Test
+    public void rightPartRegression() {
+        var x = Int9.fromScientific("1E30");
+        for (int n = 1; n < 8; n++) {
+            Assert.assertEquals("0", x.rightPart(n).toString());
+        }
+        for (int n = 8; n < 10; n++) {
+            Assert.assertSame(x, x.rightPart(n));
+        }
+    }
+
+    @Test
     public void leftRightPart() {
         checkLeftRightPart("[1, 2]", "[3, 4]", "[0]", "[5, 6]", new int[] {1,2,3,4}, new int[] {5,6});
         checkLeftRightPart("[1]", "[2, 3]", "[5, 6, 7]", "[8, 9]", new int[] {1,2,3}, new int[] {5,6,7,8,9});
@@ -1562,6 +1573,8 @@ public class Int9Test extends CommonTestBase {
         checkMulStrNew("2", "-200000000000000000000000001");
         checkMulStrNew("-2", "-2000000000000000000000000000000001");
         checkMulStrNew("-2", "20000000001");
+
+        checkMulStrNew("10000000000000000000000000000", "2000000000000000000000000000000000000");
     }
 
     private void checkMulStrNew(String lhs, String rhs) {

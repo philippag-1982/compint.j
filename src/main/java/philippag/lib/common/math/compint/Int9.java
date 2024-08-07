@@ -98,11 +98,11 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     }
 
     private Int9(int[] data, int offset, int length) {
-        if (offset < 0) {
-            throw new IllegalArgumentException("Negative offset: " + offset);
+        if (offset < 0 || offset >= data.length) {
+            throw new IllegalArgumentException("offset out of range: " + offset);
         }
         if (length <= 0) {
-            throw new IllegalArgumentException("Zero or negative length: " + length);
+            throw new IllegalArgumentException("zero or negative length: " + length);
         }
         this.data = Objects.requireNonNull(data, "data");
         this.offset = offset;
@@ -271,6 +271,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         while (i < max && data[i] == 0) {
             i++;
         }
+
         length = length - i + offset;
         offset = i;
         firstDigitLength = 0;
@@ -1303,7 +1304,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         if ((n >> 1) >= length) {
             return this;
         } else {
-            return new Int9(data, offset + ((n + 1) >> 1) + length - n, n >> 1).canonicalize();
+            int newOffset = offset + ((n + 1) >> 1) + length - n;
+            return newOffset < data.length ? new Int9(data, newOffset, n >> 1).canonicalize() : ZERO;
         }
     }
 
