@@ -1637,7 +1637,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         static int mul10(int input) {
-            return ((input + (input << 2)) << 1);
+            return (input + (input << 2)) << 1;
         }
 
         static long div3(long input) {
@@ -1649,7 +1649,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         static long mul3(long input) {
-            return (input + (input << 1));
+            return input + (input << 1);
         }
 
         static int div9(int input) {
