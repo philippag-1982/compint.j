@@ -665,8 +665,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         assert length >= rhsLength;
 
         int accumulator = 0;
-        int i = offset + length - 1;
         int rhsMax = rhsOffset + rhsLength;
+        int i = offset + length - 1;
 
         // fix coordinates for "trailingZeroesForm"
         if (rhsMax > rhs.length) {
@@ -675,9 +675,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             rhsMax = rhs.length;
         }
 
-        rhsMax--;
-
-        for (int j = rhsMax; j >= rhsOffset; j--, i--) {
+        for (int j = rhsMax - 1; j >= rhsOffset; j--, i--) {
             accumulator = data[i] + rhs[j] + AddWithCarry.carry(accumulator);
             data[i] = AddWithCarry.value(accumulator);
         }
@@ -792,7 +790,6 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
     private void subtractInPlaceAbsGreaterEqualCore(int[] rhs, int rhsOffset, int rhsLength) {
         int accumulator = 0;
-
         int rhsMax = rhsOffset + rhsLength;
         int i = offset + length - 1;
 
@@ -803,9 +800,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             rhsMax = rhs.length;
         }
 
-        int j = rhsMax - 1;
-
-        for (; j >= rhsOffset; --i, --j) {
+        int j;
+        for (j = rhsMax - 1; j >= rhsOffset; --i, --j) {
             accumulator = data[i] - rhs[j] + SubtractWithCarry.carry(accumulator);
             data[i] = SubtractWithCarry.value(accumulator);
         }
