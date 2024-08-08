@@ -1023,6 +1023,29 @@ public class Int9Test extends CommonTestBase {
     }
 
     @Test
+    public void subtractInPlaceRegression() {
+        String str = "123456789123456789123456789123456789";
+        var big = Int9.fromString(str);
+
+        var small = Int9.fromInt(0);
+
+        /*
+         * we want `small` to have garbage left-over on the left side
+         * after these operations to regression-test `subtractInPlace`
+         */
+        small.addInPlace(0xFFFFF000000L);
+        small.setValue(big);
+        small.clear();
+        small.addInPlace(0xFFFFF000000L);
+
+        big.subtractInPlace(small);
+
+        var expected = new BigInteger(str).subtract(new BigInteger(small.toString()));
+        Assert.assertEquals(expected.toString(), big.toString());
+    }
+
+
+    @Test
     public void subtractStr() {
         checkSubtractStr("0", ""+Long.MAX_VALUE);
         checkSubtractStr(""+Long.MIN_VALUE, "0");

@@ -668,6 +668,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         int i = offset + length - 1;
         int rhsMax = rhsOffset + rhsLength;
 
+        // fix coordinates for "trailingZeroesForm"
         if (rhsMax > rhs.length) {
             i -= rhsMax - rhs.length;
             assert i >= 0;
@@ -786,12 +787,28 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
     private void subtractInPlaceAbsGreaterEqual(Int9 rhs) {
         assert compareToAbs(rhs) >= 0; // we are the bigger number or equal
+        subtractInPlaceAbsGreaterEqualCore(rhs.data, rhs.offset, rhs.length);
+    }
 
+    private void subtractInPlaceAbsGreaterEqualCore(int[] rhs, int rhsOffset, int rhsLength) {
         int accumulator = 0;
 
-        for (int i = length - 1, j = rhs.length - 1; i >= 0; --i, --j) {
-            accumulator = get(i) - rhs.get0(j) + SubtractWithCarry.carry(accumulator);
-            set(i, SubtractWithCarry.value(accumulator));
+        int rhsMax = rhsOffset + rhsLength;
+        int i = offset + length - 1;
+
+        // fix coordinates for "trailingZeroesForm"
+        if (rhsMax > rhs.length) {
+            i -= rhsMax - rhs.length;
+            assert i >= 0;
+            rhsMax = rhs.length;
+        }
+
+        rhsMax--;
+
+        for (int j = rhsMax; i >= 0; --i, --j) {
+            int rhsVal = j < rhsOffset ? 0 : rhs[j]; // TODO factor this out
+            accumulator = data[i] - rhsVal + SubtractWithCarry.carry(accumulator);
+            data[i] = SubtractWithCarry.value(accumulator);
         }
 
         assert SubtractWithCarry.carry(accumulator) == 0;
