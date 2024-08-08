@@ -633,10 +633,16 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     }
 
     private void addInPlaceAbs(Int9 rhs) {
-        if(1==1 && length > rhs.length) {
-            addInPlaceAbsCore(rhs.data, rhs.offset, rhs.length);
-            return;
+        if (length >= rhs.length) {
+            addInPlaceAbsGreaterEqual(rhs);
+        } else {
+            addInPlaceAbsNotGreaterEqual(rhs);
         }
+        canonicalize();
+    }
+
+    // beware: caller must call canonicalize()!
+    private void addInPlaceAbsNotGreaterEqual(Int9 rhs) {
         int accumulator = 0;
         int i = length - 1;
 
@@ -648,36 +654,28 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         if (AddWithCarry.carry(accumulator) > 0) {
             carryRest(accumulator, i);
         }
-        canonicalize();
     }
 
-    private void addInPlaceAbsCore(int[] rhs, int rhsOffset, int rhsLength) {
+    // beware: caller must call canonicalize()!
+    private void addInPlaceAbsGreaterEqual(Int9 rhs) {
+        addInPlaceAbsGreaterEqualCore(rhs.data, rhs.offset, rhs.length);
+    }
+
+    private void addInPlaceAbsGreaterEqualCore(int[] rhs, int rhsOffset, int rhsLength) {
+        assert length >= rhsLength : length + " ! >= " + rhsLength;
+
         int accumulator = 0;
         int i = offset + length - 1;
-        assert length > rhsLength;
 
-        int rhsMax = rhsOffset + rhsLength - 1;
-        for (int j = rhsMax; j >= rhsOffset; j--, i--) {
-            accumulator = data[i] + (j < rhs.length ? rhs[j] : 0) + AddWithCarry.carry(accumulator);
+        for (int j = rhsOffset + rhsLength - 1; j >= rhsOffset; j--, i--) {
+            accumulator = data[i] + (j < rhs.length ? rhs[j] : 0) + AddWithCarry.carry(accumulator); // TODO fix j to elide (j < rhs.length) check
             data[i] = AddWithCarry.value(accumulator);
         }
 
         if (AddWithCarry.carry(accumulator) > 0) {
-            carryRest(accumulator, i - offset);//XXX
+            carryRest(accumulator, i - offset); // carryRest expects "logical" index
         }
-        canonicalize();
     }
-
-    private void carryRest2(int accumulator, int i) {
-        assert AddWithCarry.carry(accumulator) > 0;
-        do {
-            accumulator = data[i] + AddWithCarry.carry(accumulator);
-//            setOrExpand(i, AddWithCarry.value(accumulator));
-            data[i] = AddWithCarry.value(accumulator);
-            i--;
-        } while (AddWithCarry.carry(accumulator) > 0);
-    }
-
 
     public Int9 addInPlace(long rhs) {
         if (rhs == Long.MIN_VALUE) {
@@ -1410,10 +1408,10 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
          * and the right (smallest) part `bd` (expanded to zero power).
          */
         int half = n >> 1;
-        result.addInPlaceAbs(ac.shiftLeft(half << 1));
-        result.addInPlaceAbs(middle.shiftLeft(half));
-        result.addInPlaceAbs(bd);
-        return result;
+        result.addInPlaceAbsGreaterEqual(ac.shiftLeft(half << 1));
+        result.addInPlaceAbsGreaterEqual(middle.shiftLeft(half));
+        result.addInPlaceAbsGreaterEqual(bd);
+        return result.canonicalize();
     }
 
     public static Int9 parallelMultiplyKaratsuba(Int9 lhs, Int9 rhs, ForkJoinPool pool) {
@@ -1476,10 +1474,10 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
          * and the right (smallest) part `bd` (expanded to zero power).
          */
         int half = n >> 1;
-        result.addInPlaceAbs(ac.shiftLeft(half << 1));
-        result.addInPlaceAbs(middle.shiftLeft(half));
-        result.addInPlaceAbs(bd);
-        return result;
+        result.addInPlaceAbsGreaterEqual(ac.shiftLeft(half << 1));
+        result.addInPlaceAbsGreaterEqual(middle.shiftLeft(half));
+        result.addInPlaceAbsGreaterEqual(bd);
+        return result.canonicalize();
     }
 
     @SuppressWarnings("serial")
