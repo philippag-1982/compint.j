@@ -803,11 +803,14 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             rhsMax = rhs.length;
         }
 
-        rhsMax--;
+        int j = rhsMax - 1;
 
-        for (int j = rhsMax; i >= 0; --i, --j) {
-            int rhsVal = j < rhsOffset ? 0 : rhs[j]; // TODO factor this out
-            accumulator = data[i] - rhsVal + SubtractWithCarry.carry(accumulator);
+        for (; j >= rhsOffset; --i, --j) {
+            accumulator = data[i] - rhs[j] + SubtractWithCarry.carry(accumulator);
+            data[i] = SubtractWithCarry.value(accumulator);
+        }
+        for (; i >= 0; --i, --j) {
+            accumulator = data[i] + SubtractWithCarry.carry(accumulator);
             data[i] = SubtractWithCarry.value(accumulator);
         }
 
