@@ -1041,16 +1041,38 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
     // "gradle school" multiplication algorithm aka "long multiplication"
     private static Int9 multiplyImpl(Int9 lhs, Int9 rhs) {
-        int[] result = new int[lhs.length + rhs.length];
-        int carry = 0;
-        int shift = 1;
+        int[] result = multiplyCore(lhs.data, lhs.offset, lhs.length, rhs.data, rhs.offset, rhs.length);
+        return new Int9(result).canonicalize();
+    }
 
-        for (int i = rhs.length - 1; i >= 0; --i, ++shift) {
-            int rhsValue = rhs.get(i);
+    private static int[] multiplyCore(
+            int[] lhs, int lhsOffset, int lhsLength,
+            int[] rhs, int rhsOffset, int rhsLength) {
+
+        int[] result = new int[lhsLength + rhsLength];
+        int lhsMax = lhsOffset + lhsLength;
+        int rhsMax = rhsOffset + rhsLength;
+        int shift = 1;
+        int carry = 0;
+
+        // fix coordinates for "trailingZeroesForm"
+        if (lhsMax > lhs.length) {
+            shift += lhsMax - lhs.length;
+            lhsMax = lhs.length;
+        }
+        if (rhsMax > rhs.length) {
+            shift += rhsMax - rhs.length;
+            rhsMax = rhs.length;
+        }
+        lhsMax--;
+        rhsMax--;
+
+        for (int i = rhsMax; i >= rhsOffset; --i, ++shift) {
+            int rhsValue = rhs[i];
             int k = result.length - shift;
 
-            for (int j = lhs.length - 1; j >= 0; --j, --k) {
-                long lhsValue = lhs.get(j); // force multiplication in long
+            for (int j = lhsMax; j >= lhsOffset; --j, --k) {
+                long lhsValue = lhs[j]; // force multiplication in long
                 long product = carry + lhsValue * rhsValue;
                 carry =               (int) (product / BASE);
                 int sum = result[k] + (int) (product % BASE);
@@ -1070,7 +1092,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         assert carry == 0;
-        return new Int9(result).canonicalize();
+
+        return result;
     }
 
     public static Int9 multiplyRussianPeasant(Int9 lhs, Int9 rhs) {
