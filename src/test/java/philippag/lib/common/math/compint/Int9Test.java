@@ -1612,6 +1612,9 @@ public class Int9Test extends CommonTestBase {
         var expected = new BigInteger(lhsStr).multiply(new BigInteger(rhsStr)).toString();
 
         Assert.assertEquals(expected, Int9.multiplySimple(lhs, rhs).toString());
+        if (!lhs.isNegative() && !rhs.isNegative()) {
+            Assert.assertEquals(expected, Int9.multiplyImpl(lhs, rhs).toString());
+        }
         Assert.assertEquals(expected, Int9.multiplyRussianPeasant(lhs, rhs).toString());
         Assert.assertEquals(expected, Int9.multiplyKaratsuba(lhs, rhs).toString());
         Assert.assertEquals(expected, Int9.multiplyKaratsuba(lhs, rhs, 1).toString());
@@ -1832,6 +1835,9 @@ public class Int9Test extends CommonTestBase {
         long r = Long.parseLong(rhsStr);
         long expected = Math.multiplyExact(l, r);
         Assert.assertEquals(expected, Long.parseLong(Int9.multiplySimple(lhs, rhs).toString()));
+        if (!lhs.isNegative() && !rhs.isNegative()) {
+            Assert.assertEquals(expected, Int9.multiplyImpl(lhs, rhs).toLong());
+        }
         Assert.assertEquals(expected, Long.parseLong(Int9.multiplyRussianPeasant(lhs, rhs).toString()));
         Assert.assertEquals(expected, Long.parseLong(Int9.multiplyKaratsuba(lhs, rhs).toString()));
         Assert.assertEquals(expected, Long.parseLong(Int9.multiplyKaratsuba(lhs, rhs, 1).toString()));
@@ -1892,6 +1898,9 @@ public class Int9Test extends CommonTestBase {
         var lhs = Int9.fromString(lhsStr);
         var rhs = Int9.fromString(rhsStr);
         checkStringRepresentation(expected, Int9.multiplySimple(lhs, rhs));
+        if (!lhs.isNegative() && !rhs.isNegative()) {
+            Assert.assertEquals(expected, Int9.multiplyImpl(lhs, rhs).toString());
+        }
         checkStringRepresentation(expected, Int9.multiplyRussianPeasant(lhs, rhs));
         checkStringRepresentation(expected, Int9.multiplyKaratsuba(lhs, rhs));
         checkStringRepresentation(expected, Int9.multiplyKaratsuba(lhs, rhs, 1));
