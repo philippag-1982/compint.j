@@ -633,6 +633,10 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     }
 
     private void addInPlaceAbs(Int9 rhs) {
+        if(1==1 && length > rhs.length) {
+            addInPlaceAbsCore(rhs.data, rhs.offset, rhs.length);
+            return;
+        }
         int accumulator = 0;
         int i = length - 1;
 
@@ -646,6 +650,34 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
         canonicalize();
     }
+
+    private void addInPlaceAbsCore(int[] rhs, int rhsOffset, int rhsLength) {
+        int accumulator = 0;
+        int i = offset + length - 1;
+        assert length > rhsLength;
+
+        int rhsMax = rhsOffset + rhsLength - 1;
+        for (int j = rhsMax; j >= rhsOffset; j--, i--) {
+            accumulator = data[i] + (j < rhs.length ? rhs[j] : 0) + AddWithCarry.carry(accumulator);
+            data[i] = AddWithCarry.value(accumulator);
+        }
+
+        if (AddWithCarry.carry(accumulator) > 0) {
+            carryRest(accumulator, i - offset);//XXX
+        }
+        canonicalize();
+    }
+
+    private void carryRest2(int accumulator, int i) {
+        assert AddWithCarry.carry(accumulator) > 0;
+        do {
+            accumulator = data[i] + AddWithCarry.carry(accumulator);
+//            setOrExpand(i, AddWithCarry.value(accumulator));
+            data[i] = AddWithCarry.value(accumulator);
+            i--;
+        } while (AddWithCarry.carry(accumulator) > 0);
+    }
+
 
     public Int9 addInPlace(long rhs) {
         if (rhs == Long.MIN_VALUE) {
