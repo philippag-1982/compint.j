@@ -662,13 +662,22 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     }
 
     private void addInPlaceAbsGreaterEqualCore(int[] rhs, int rhsOffset, int rhsLength) {
-        assert length >= rhsLength : length + " ! >= " + rhsLength;
+        assert length >= rhsLength;
 
         int accumulator = 0;
         int i = offset + length - 1;
+        int rhsMax = rhsOffset + rhsLength;
 
-        for (int j = rhsOffset + rhsLength - 1; j >= rhsOffset; j--, i--) {
-            accumulator = data[i] + (j < rhs.length ? rhs[j] : 0) + AddWithCarry.carry(accumulator); // TODO fix j to elide (j < rhs.length) check
+        if (rhsMax > rhs.length) {
+            i -= rhsMax - rhs.length;
+            assert i >= 0;
+            rhsMax = rhs.length;
+        }
+
+        rhsMax--;
+
+        for (int j = rhsMax; j >= rhsOffset; j--, i--) {
+            accumulator = data[i] + rhs[j] + AddWithCarry.carry(accumulator);
             data[i] = AddWithCarry.value(accumulator);
         }
 
