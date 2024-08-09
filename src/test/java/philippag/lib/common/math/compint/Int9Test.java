@@ -884,6 +884,8 @@ public class Int9Test extends CommonTestBase {
 
     @Test
     public void addStr() {
+        checkAddStr("100000000000000", "3000000000");
+
         checkAddStr("0", ""+Long.MIN_VALUE);
         checkAddStr("0", ""+Long.MAX_VALUE);
         checkAddStr("-1", "1");
@@ -1044,7 +1046,6 @@ public class Int9Test extends CommonTestBase {
         Assert.assertEquals(expected.toString(), big.toString());
     }
 
-
     @Test
     public void subtractStr() {
         checkSubtractStr("0", ""+Long.MAX_VALUE);
@@ -1093,6 +1094,7 @@ public class Int9Test extends CommonTestBase {
 
         checkSubtractStr("-100", "20");
         checkSubtractStr("-100", "200");
+        checkSubtractStr("-100000000000000", "20000000000");
         checkSubtractStr("-10000000000000", "200");
         checkSubtractStr("-100", "2000000000000");
         checkSubtractStr("-100", "100");
