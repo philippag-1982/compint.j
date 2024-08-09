@@ -1619,6 +1619,7 @@ public class Int9Test extends CommonTestBase {
         Assert.assertEquals(expected, Int9.multiplyKaratsuba(lhs, rhs).toString());
         Assert.assertEquals(expected, Int9.multiplyKaratsuba(lhs, rhs, 1).toString());
         Assert.assertEquals(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, pool()).toString());
+        Assert.assertEquals(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, 1, 2, pool()).toString());
     }
 
     @Test
@@ -1842,6 +1843,7 @@ public class Int9Test extends CommonTestBase {
         Assert.assertEquals(expected, Long.parseLong(Int9.multiplyKaratsuba(lhs, rhs).toString()));
         Assert.assertEquals(expected, Long.parseLong(Int9.multiplyKaratsuba(lhs, rhs, 1).toString()));
         Assert.assertEquals(expected, Long.parseLong(Int9.parallelMultiplyKaratsuba(lhs, rhs, pool()).toString()));
+        Assert.assertEquals(expected, Long.parseLong(Int9.parallelMultiplyKaratsuba(lhs, rhs, 1, 2, pool()).toString()));
     }
 
     private static void checkAddStrBig(String expected, String lhsStr, String rhsStr) {
@@ -1905,6 +1907,7 @@ public class Int9Test extends CommonTestBase {
         checkStringRepresentation(expected, Int9.multiplyKaratsuba(lhs, rhs));
         checkStringRepresentation(expected, Int9.multiplyKaratsuba(lhs, rhs, 1));
         checkStringRepresentation(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, pool()));
+        checkStringRepresentation(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, 1, 2, pool()));
     }
 
     private static void checkStringRepresentation(String input, Int9 value) {
