@@ -1187,8 +1187,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
      * for similarly-sized terms.
      */
     private static Int9 multiplyRussianPeasantImpl(Int9 lhs, Int9 rhs) {
-        int length = lhs.length + rhs.length;
-        var sum = new Int9(new int[length]);
+        var sum = new Int9(new int[lhs.length + rhs.length]);
 
         // we must copy b/c adding and halving is destructive.
         // we preallocate the rhs with double it's size
