@@ -1010,15 +1010,26 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             return rhs.copy();
         } else if (rhs.isZero()) {
             return lhs.copy();
+        } else if (lhs.length >= rhs.length) {
+            return addAbsLongerEqual(lhs, rhs);
+        } else {
+            return addAbsLongerEqual(rhs, lhs);
         }
-        int length = 1 + Math.max(lhs.length, rhs.length); // always need one more space for 999_999_999 + 1 case!
-        int[] result = new int[length];
+    }
+
+    private static Int9 addAbsLongerEqual(Int9 lhs, Int9 rhs) {
+        assert lhs.length >= rhs.length;
+
+        int[] result = new int[1 + lhs.length];  // always need one more space for 999_999_999 + 1 case!
         int accumulator = 0;
 
-        for (int i = length - 1, j = lhs.length - 1, k = rhs.length - 1; i >= 0; --i, --j, --k) {
-            accumulator = lhs.get0(j) + rhs.get0(k) + AddWithCarry.carry(accumulator);
-            result[i] = AddWithCarry.value(accumulator);
+        for (int i = lhs.length - 1, j = rhs.length - 1; i >= 0; --i, --j) {
+            accumulator = lhs.get(i) + rhs.get0(j) + AddWithCarry.carry(accumulator);
+            result[1 + i] = AddWithCarry.value(accumulator);
         }
+
+        accumulator = AddWithCarry.carry(accumulator);
+        result[0] = AddWithCarry.value(accumulator);
 
         assert AddWithCarry.carry(accumulator) == 0;
         return new Int9(result).canonicalize();
