@@ -66,7 +66,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     private static final long BASE1 = BASE;
     private static final long BASE2 = BASE1 * BASE1;
     private static final int SIZE = 9;
-    private static final int KARATSUBA_THRESHOLD = 75;
+    private static final int KARATSUBA_THRESHOLD = 40;
 
     // never return to user!
     private static final Int9 ZERO     = Constants.ZERO();
@@ -1563,11 +1563,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     private static class Calc {
 
         static int maxDepth(ForkJoinPool pool) {
-            return bitLength(pool.getParallelism());
-        }
-
-        static int bitLength(int w) {
-            return 32 - Integer.numberOfLeadingZeros(w);
+            return Math.min(16, pool.getParallelism());
         }
 
         static int bitLength(long w) {

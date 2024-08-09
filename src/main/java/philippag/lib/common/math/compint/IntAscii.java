@@ -50,7 +50,7 @@ import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
 public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamable, CharSequence {
 
     private static final IntAscii ZERO = new IntAscii(StandardBaseConversions.DECIMAL, new byte[1]); // never pass to user!
-    private static final int KARATSUBA_THRESHOLD = 75;
+    private static final int KARATSUBA_THRESHOLD = 40;
 
     private final BaseConversion base;
     private byte[] data;
@@ -758,11 +758,7 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
     private static class Calc {
 
         static int maxDepth(ForkJoinPool pool) {
-            return bitLength(pool.getParallelism());
-        }
-
-        private static int bitLength(int w) {
-            return 32 - Integer.numberOfLeadingZeros(w);
+            return Math.min(16, pool.getParallelism());
         }
 
         static BaseConversion baseOf(IntAscii lhs, IntAscii rhs) {
