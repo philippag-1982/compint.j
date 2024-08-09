@@ -1563,7 +1563,11 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     private static class Calc {
 
         static int maxDepth(ForkJoinPool pool) {
-            return Math.min(16, pool.getParallelism());
+            return maxDepth(pool.getParallelism());
+        }
+
+        static int maxDepth(int parallelism) {
+            return bitLength(parallelism) << 1; // e.g. 4=>6, 8=>8, 16=>10
         }
 
         static int bitLength(long w) {
