@@ -634,15 +634,15 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
     private void addInPlaceAbs(Int9 rhs) {
         if (length >= rhs.length) {
-            addInPlaceAbsGreaterEqual(rhs);
+            addInPlaceAbsLongerEqual(rhs);
         } else {
-            addInPlaceAbsNotGreaterEqual(rhs);
+            addInPlaceAbsShorter(rhs);
         }
         canonicalize();
     }
 
     // beware: caller must call canonicalize()!
-    private void addInPlaceAbsNotGreaterEqual(Int9 rhs) {
+    private void addInPlaceAbsShorter(Int9 rhs) {
         int accumulator = 0;
         int i = length - 1;
 
@@ -657,11 +657,11 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     }
 
     // beware: caller must call canonicalize()!
-    private void addInPlaceAbsGreaterEqual(Int9 rhs) {
-        addInPlaceAbsGreaterEqualCore(rhs.data, rhs.offset, rhs.length);
+    private void addInPlaceAbsLongerEqual(Int9 rhs) {
+        addInPlaceAbsLongerEqualCore(rhs.data, rhs.offset, rhs.length);
     }
 
-    private void addInPlaceAbsGreaterEqualCore(int[] rhs, int rhsOffset, int rhsLength) {
+    private void addInPlaceAbsLongerEqualCore(int[] rhs, int rhsOffset, int rhsLength) {
         assert length >= rhsLength;
 
         int accumulator = 0;
@@ -1189,7 +1189,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         do {
             proceed = lhs.compareToAbs(ONE) > 0;
             if (!lhs.isEven()) {
-                sum.addInPlaceAbsGreaterEqual(rhs);
+                sum.addInPlaceAbsLongerEqual(rhs);
             }
             lhs.halfInPlaceImpl();
             rhs.doubleInPlaceImpl();
@@ -1434,9 +1434,9 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
          * and the right (smallest) part `bd` (expanded to zero power).
          */
         int half = n >> 1;
-        result.addInPlaceAbsGreaterEqual(ac.shiftLeft(half << 1));
-        result.addInPlaceAbsGreaterEqual(middle.shiftLeft(half));
-        result.addInPlaceAbsGreaterEqual(bd);
+        result.addInPlaceAbsLongerEqual(ac.shiftLeft(half << 1));
+        result.addInPlaceAbsLongerEqual(middle.shiftLeft(half));
+        result.addInPlaceAbsLongerEqual(bd);
         return result.canonicalize();
     }
 
@@ -1500,9 +1500,9 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
          * and the right (smallest) part `bd` (expanded to zero power).
          */
         int half = n >> 1;
-        result.addInPlaceAbsGreaterEqual(ac.shiftLeft(half << 1));
-        result.addInPlaceAbsGreaterEqual(middle.shiftLeft(half));
-        result.addInPlaceAbsGreaterEqual(bd);
+        result.addInPlaceAbsLongerEqual(ac.shiftLeft(half << 1));
+        result.addInPlaceAbsLongerEqual(middle.shiftLeft(half));
+        result.addInPlaceAbsLongerEqual(bd);
         return result.canonicalize();
     }
 
