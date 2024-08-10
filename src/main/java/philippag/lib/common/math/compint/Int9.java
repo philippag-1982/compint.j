@@ -1027,11 +1027,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             accumulator = lhs.get(i) + rhs.get0(j) + AddWithCarry.carry(accumulator);
             result[1 + i] = AddWithCarry.value(accumulator);
         }
+        result[0] = AddWithCarry.carry(accumulator);
 
-        accumulator = AddWithCarry.carry(accumulator);
-        result[0] = AddWithCarry.value(accumulator);
-
-        assert AddWithCarry.carry(accumulator) == 0;
         return new Int9(result).canonicalize();
     }
 
