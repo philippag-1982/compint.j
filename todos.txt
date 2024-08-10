@@ -30,6 +30,7 @@
     https://github.com/bwakell/Huldra/tree/master - Java, minimalistic
     https://github.com/mtommila/apfloat (Apint) - insanely complicated, many dependencies
     https://github.com/dscho/jscience/tree/master (LargeInteger) - Java, insanely complicated, many dependencies
+    https://github.com/tbuktu/bigint
 [ ] base 1E9 idea taken from:
     https://github.com/michaelg29/cmathematics
     "C/C++ Math Library", episode 7 "Big Integer Generic Bases"
