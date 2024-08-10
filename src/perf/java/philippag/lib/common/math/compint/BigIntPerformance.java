@@ -21,7 +21,7 @@ public class BigIntPerformance extends CommonTestBase {
     private static final String[] BINARY_ARGS_BIG = {
             "589034583485345", "58903457894375873489578943534",
             "589034583485345492349238423842374237462346", "58903457894375873489578943534432949234823472374263462343526",
-            "5".repeat(10_000), "6".repeat(100),
+            "5".repeat(10_000), "6".repeat(5_000),
     };
 
     private static final String[] BINARY_ARGS_BIG_LEFT = {
