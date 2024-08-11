@@ -742,21 +742,26 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             digit = more ? (int) (rhs % BASE) : (int) rhs;
             --i;
             assert i >= 0; // correctly presized
-            accumulator = (i < offset ? 0 : data[i]) + digit + AddWithCarry.carry(accumulator);
-            data[i] = AddWithCarry.value(accumulator);
+            if (i >= offset) {
+                accumulator = data[i] + digit + AddWithCarry.carry(accumulator);
+                data[i] = AddWithCarry.value(accumulator);
+            } else {
+                accumulator = digit + AddWithCarry.carry(accumulator);
+                expandWith(AddWithCarry.value(accumulator));
+            }
             if (more) {
                 rhs /= BASE;
                 assert rhs < BASE;
                 digit = (int) rhs;
                 --i;
                 assert i >= 0; // correctly presized
-                accumulator = (i < offset ? 0 : data[i]) + digit + AddWithCarry.carry(accumulator);
-                data[i] = AddWithCarry.value(accumulator);
-            }
-
-            if (i < offset) { // we did grow to the left
-                expandBy(offset - i);
-                assert i == offset;
+                if (i >= offset) {
+                    accumulator = data[i] + digit + AddWithCarry.carry(accumulator);
+                    data[i] = AddWithCarry.value(accumulator);
+                } else {
+                    accumulator = digit + AddWithCarry.carry(accumulator);
+                    expandWith(AddWithCarry.value(accumulator));
+                }
             }
         }
 
