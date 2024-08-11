@@ -646,9 +646,14 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         int accumulator = 0;
         int i = length - 1;
 
-        for (int j = rhs.length - 1; j >= 0; j--, i--) {
-            accumulator = get0(i) + rhs.get(j) + AddWithCarry.carry(accumulator);
-            setOrExpand(i, AddWithCarry.value(accumulator));
+        int j = rhs.length - 1;
+        for (; i >= 0; j--, i--) {
+            accumulator = get(i) + rhs.get(j) + AddWithCarry.carry(accumulator);
+            set(i, AddWithCarry.value(accumulator));
+        }
+        for (; j >= 0; j--) {
+            accumulator = rhs.get(j) + AddWithCarry.carry(accumulator);
+            expand(AddWithCarry.value(accumulator));
         }
 
         if (AddWithCarry.carry(accumulator) > 0) {
@@ -820,9 +825,15 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
         int accumulator = 0;
 
-        for (int i = length - 1, j = rhs.length - 1; j >= 0; --j, --i) {
-            accumulator = get0(i) - rhs.get(j) + SubtractWithCarryComplement.carry(accumulator);
-            setOrExpand(i, SubtractWithCarryComplement.value(accumulator));
+        int i = length - 1;
+        int j = rhs.length - 1;
+        for (; i >= 0; --j, --i) {
+            accumulator = get(i) - rhs.get(j) + SubtractWithCarryComplement.carry(accumulator);
+            set(i, SubtractWithCarryComplement.value(accumulator));
+        }
+        for (; j >= 0; --j) {
+            accumulator = -rhs.get(j) + SubtractWithCarryComplement.carry(accumulator);
+            expand(SubtractWithCarryComplement.value(accumulator));
         }
 
         assert SubtractWithCarryComplement.carry(accumulator) == 0;
@@ -895,9 +906,15 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
         int accumulator = 0;
 
-        for (int i = length - 1; rhs > 0; --i) {
-            accumulator = get0(i) - (int) (rhs % BASE) + SubtractWithCarryComplement.carry(accumulator);
-            setOrExpand(i, SubtractWithCarryComplement.value(accumulator));
+        int i = length - 1;
+        for (; i >= 0; --i) {
+            accumulator = get(i) - (int) (rhs % BASE) + SubtractWithCarryComplement.carry(accumulator);
+            set(i, SubtractWithCarryComplement.value(accumulator));
+            rhs /= BASE;
+        }
+        for (; rhs > 0;) {
+            accumulator =  -(int) (rhs % BASE) + SubtractWithCarryComplement.carry(accumulator);
+            expand(SubtractWithCarryComplement.value(accumulator));
             rhs /= BASE;
         }
 
@@ -1023,8 +1040,14 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         int[] result = new int[1 + lhs.length];  // always need one more space for 999_999_999 + 1 case!
         int accumulator = 0;
 
-        for (int i = lhs.length - 1, j = rhs.length - 1; i >= 0; --i, --j) {
-            accumulator = lhs.get(i) + rhs.get0(j) + AddWithCarry.carry(accumulator);
+        int i = lhs.length - 1;
+        int j = rhs.length - 1;
+        for (; j >= 0; --i, --j) {
+            accumulator = lhs.get(i) + rhs.get(j) + AddWithCarry.carry(accumulator);
+            result[1 + i] = AddWithCarry.value(accumulator);
+        }
+        for (; i >= 0; --i) {
+            accumulator = lhs.get(i) + AddWithCarry.carry(accumulator);
             result[1 + i] = AddWithCarry.value(accumulator);
         }
         result[0] = AddWithCarry.carry(accumulator);
@@ -1062,8 +1085,14 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         int[] result = new int[length];
         int accumulator = 0;
 
-        for (int i = length - 1, j = rhs.length - 1; i >= 0; --i, --j) {
-            accumulator = lhs.get(i) - rhs.get0(j) + SubtractWithCarry.carry(accumulator);
+        int i = length - 1;
+        int j = rhs.length - 1;
+        for (; j >= 0; --i, --j) {
+            accumulator = lhs.get(i) - rhs.get(j) + SubtractWithCarry.carry(accumulator);
+            result[i] = SubtractWithCarry.value(accumulator);
+        }
+        for (; i >= 0; --i) {
+            accumulator = lhs.get(i) + SubtractWithCarry.carry(accumulator);
             result[i] = SubtractWithCarry.value(accumulator);
         }
 
