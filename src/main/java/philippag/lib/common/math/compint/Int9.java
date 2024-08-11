@@ -223,10 +223,20 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         return AsciiDigits.toScientific(this, precision);
     }
 
-    private void expand(int value) {
+    private void expandWith(int value) {
         assert offset > 0;
         data[--offset] = value;
         length++;
+    }
+
+    private void expandBy(int by) {
+        assert by >= 0;
+        if (by == 0) {
+            return;
+        }
+        offset -= by;
+        assert offset >= 0;
+        length += by;
     }
 
     private Int9 shiftLeft(int by) {
@@ -248,7 +258,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
     private void setOrExpand(int i, int value) {
         if (i < 0) {
-            expand(value);
+            expandWith(value);
         } else {
             set(i, value);
         }
@@ -528,20 +538,20 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         length = newLength;
         firstDigitLength = 0;
 
-        int i = newLength - 1;
+        int i = offset + newLength - 1;
         boolean more = value >= BASE;
         int digit = more ? (int) (value % BASE) : (int) value;
-        set(i, digit);
+        data[i] = digit;
         if (more) {
             value /= BASE;
             more = value >= BASE;
             digit = more ? (int) (value % BASE) : (int) value;
-            set(--i, digit);
+            data[--i] = digit;
             if (more) {
                 value /= BASE;
                 assert value < BASE;
                 digit = (int) value;
-                set(--i, digit);
+                data[--i] = digit;
             }
         }
     }
@@ -589,12 +599,18 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     }
 
     private void carryRest(int accumulator, int i) {
-        assert AddWithCarry.carry(accumulator) > 0;
-        do {
-            accumulator = getOrZero(i) + AddWithCarry.carry(accumulator);
-            setOrExpand(i, AddWithCarry.value(accumulator));
-            --i;
-        } while (AddWithCarry.carry(accumulator) > 0);
+        int carry = AddWithCarry.carry(accumulator);
+        assert carry > 0;
+
+        for (; i >= offset && carry > 0; --i) {
+            accumulator = data[i] + carry;
+            data[i] = AddWithCarry.value(accumulator);
+            carry = AddWithCarry.carry(accumulator);
+        }
+
+        if (carry > 0) {
+            expandWith(carry);
+        }
     }
 
     /* =================
@@ -644,16 +660,17 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     // beware: caller must call canonicalize()!
     private void addInPlaceAbsShorter(Int9 rhs) {
         int accumulator = 0;
-        int i = length - 1;
+        int i = offset + length - 1;
         int j = rhs.length - 1;
 
-        for (; i >= 0; --j, --i) {
-            accumulator = get(i) + rhs.get(j) + AddWithCarry.carry(accumulator);
-            set(i, AddWithCarry.value(accumulator));
+        for (; i >= offset; --j, --i) {
+            accumulator = data[i] + rhs.get(j) + AddWithCarry.carry(accumulator);
+            data[i] = AddWithCarry.value(accumulator);
         }
-        for (; j >= 0; --j) {
+        expandBy(j + 1);
+        for (; j >= 0; --j, --i) {
             accumulator = rhs.get(j) + AddWithCarry.carry(accumulator);
-            expand(AddWithCarry.value(accumulator));
+            data[i] = AddWithCarry.value(accumulator);
         }
 
         if (AddWithCarry.carry(accumulator) > 0) {
@@ -686,7 +703,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         if (AddWithCarry.carry(accumulator) > 0) {
-            carryRest(accumulator, i - offset); // carryRest expects "logical" index
+            carryRest(accumulator, i);
         }
     }
 
@@ -753,7 +770,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         if (AddWithCarry.carry(accumulator) > 0) {
-            carryRest(accumulator, --i);
+            carryRest(accumulator, offset + i - 1);//XXX
         }
         canonicalize();
     }
@@ -823,16 +840,17 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         assert compareToAbs(rhs) < 0; // we are the smaller number
 
         int accumulator = 0;
-        int i = length - 1;
+        int i = offset + length - 1;
         int j = rhs.length - 1;
 
-        for (; i >= 0; --j, --i) {
-            accumulator = get(i) - rhs.get(j) + SubtractWithCarryComplement.carry(accumulator);
-            set(i, SubtractWithCarryComplement.value(accumulator));
+        for (; i >= offset; --j, --i) {
+            accumulator = data[i] - rhs.get(j) + SubtractWithCarryComplement.carry(accumulator);
+            data[i] = SubtractWithCarryComplement.value(accumulator);
         }
-        for (; j >= 0; --j) {
+        expandBy(j + 1);
+        for (; j >= 0; --j, --i) {
             accumulator = -rhs.get(j) + SubtractWithCarryComplement.carry(accumulator);
-            expand(SubtractWithCarryComplement.value(accumulator));
+            data[i] = SubtractWithCarryComplement.value(accumulator);
         }
 
         assert SubtractWithCarryComplement.carry(accumulator) == 0;
@@ -882,17 +900,17 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         assert compareToAbsImpl(rhs) >= 0; // we are the bigger number or equal
 
         int accumulator = 0;
-        int i = length - 1;
+        int i = offset + length - 1;
 
         for (; rhs > 0; --i) {
-            accumulator = get(i) - (int) (rhs % BASE) + SubtractWithCarry.carry(accumulator);
-            set(i, SubtractWithCarry.value(accumulator));
+            accumulator = data[i] - (int) (rhs % BASE) + SubtractWithCarry.carry(accumulator);
+            data[i] = SubtractWithCarry.value(accumulator);
             rhs /= BASE;
         }
         // split loop after rhs is zero, div/mod are expensive!
-        for (; i >= 0; --i) {
-            accumulator = get(i) + SubtractWithCarry.carry(accumulator);
-            set(i, SubtractWithCarry.value(accumulator));
+        for (; i >= offset; --i) {
+            accumulator = data[i] + SubtractWithCarry.carry(accumulator);
+            data[i] = SubtractWithCarry.value(accumulator);
         }
 
         assert SubtractWithCarry.carry(accumulator) == 0;
@@ -904,16 +922,17 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         assert compareToAbsImpl(rhs) < 0; // we are the smaller number
 
         int accumulator = 0;
-        int i = length - 1;
+        int i = offset + length - 1;
 
-        for (; i >= 0; --i) {
-            accumulator = get(i) - (int) (rhs % BASE) + SubtractWithCarryComplement.carry(accumulator);
-            set(i, SubtractWithCarryComplement.value(accumulator));
+        for (; i >= offset; --i) {
+            accumulator = data[i] - (int) (rhs % BASE) + SubtractWithCarryComplement.carry(accumulator);
+            data[i] = SubtractWithCarryComplement.value(accumulator);
             rhs /= BASE;
         }
+
         for (; rhs > 0;) {
             accumulator =  -(int) (rhs % BASE) + SubtractWithCarryComplement.carry(accumulator);
-            expand(SubtractWithCarryComplement.value(accumulator));
+            expandWith(SubtractWithCarryComplement.value(accumulator));
             rhs /= BASE;
         }
 
@@ -1272,7 +1291,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         if (carry > 0) {
-            expand(carry);
+            expandWith(carry);
         }
     }
 
