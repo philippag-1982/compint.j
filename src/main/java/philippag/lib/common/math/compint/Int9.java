@@ -645,8 +645,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     private void addInPlaceAbsShorter(Int9 rhs) {
         int accumulator = 0;
         int i = length - 1;
-
         int j = rhs.length - 1;
+
         for (; i >= 0; j--, i--) {
             accumulator = get(i) + rhs.get(j) + AddWithCarry.carry(accumulator);
             set(i, AddWithCarry.value(accumulator));
@@ -805,12 +805,11 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             rhsMax = rhs.length;
         }
 
-        int j = rhsMax - 1;
-        for (; j >= rhsOffset; --i, --j) {
+        for (int j = rhsMax - 1; j >= rhsOffset; --i, --j) {
             accumulator = data[i] - rhs[j] + SubtractWithCarry.carry(accumulator);
             data[i] = SubtractWithCarry.value(accumulator);
         }
-        for (; i >= offset; --i, --j) {
+        for (; i >= offset; --i) {
             accumulator = data[i] + SubtractWithCarry.carry(accumulator);
             data[i] = SubtractWithCarry.value(accumulator);
         }
@@ -824,9 +823,9 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         assert compareToAbs(rhs) < 0; // we are the smaller number
 
         int accumulator = 0;
-
         int i = length - 1;
         int j = rhs.length - 1;
+
         for (; i >= 0; --j, --i) {
             accumulator = get(i) - rhs.get(j) + SubtractWithCarryComplement.carry(accumulator);
             set(i, SubtractWithCarryComplement.value(accumulator));
@@ -905,8 +904,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         assert compareToAbsImpl(rhs) < 0; // we are the smaller number
 
         int accumulator = 0;
-
         int i = length - 1;
+
         for (; i >= 0; --i) {
             accumulator = get(i) - (int) (rhs % BASE) + SubtractWithCarryComplement.carry(accumulator);
             set(i, SubtractWithCarryComplement.value(accumulator));
@@ -1039,10 +1038,9 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
         int[] result = new int[1 + lhs.length];  // always need one more space for 999_999_999 + 1 case!
         int accumulator = 0;
-
         int i = lhs.length - 1;
-        int j = rhs.length - 1;
-        for (; j >= 0; --i, --j) {
+
+        for (int j = rhs.length - 1; j >= 0; --i, --j) {
             accumulator = lhs.get(i) + rhs.get(j) + AddWithCarry.carry(accumulator);
             result[1 + i] = AddWithCarry.value(accumulator);
         }
@@ -1081,13 +1079,11 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             return lhs.copy();
         }
 
-        int length = lhs.length;
-        int[] result = new int[length];
+        int[] result = new int[lhs.length];
         int accumulator = 0;
+        int i = result.length - 1;
 
-        int i = length - 1;
-        int j = rhs.length - 1;
-        for (; j >= 0; --i, --j) {
+        for (int j = rhs.length - 1; j >= 0; --i, --j) {
             accumulator = lhs.get(i) - rhs.get(j) + SubtractWithCarry.carry(accumulator);
             result[i] = SubtractWithCarry.value(accumulator);
         }
