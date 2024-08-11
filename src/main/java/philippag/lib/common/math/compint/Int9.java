@@ -236,7 +236,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         return this;
     }
 
-    private int get0(int idx) {
+    private int getOrZero(int idx) {
         return idx < 0 ? 0 : get(idx);
     }
 
@@ -591,7 +591,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     private void carryRest(int accumulator, int i) {
         assert AddWithCarry.carry(accumulator) > 0;
         do {
-            accumulator = get0(i) + AddWithCarry.carry(accumulator);
+            accumulator = getOrZero(i) + AddWithCarry.carry(accumulator);
             setOrExpand(i, AddWithCarry.value(accumulator));
             i--;
         } while (AddWithCarry.carry(accumulator) > 0);
@@ -741,13 +741,13 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             rhs /= BASE;
             more = rhs >= BASE;
             digit = more ? (int) (rhs % BASE) : (int) rhs;
-            accumulator = get0(--i) + digit + AddWithCarry.carry(accumulator);
+            accumulator = getOrZero(--i) + digit + AddWithCarry.carry(accumulator);
             setOrExpand(i, AddWithCarry.value(accumulator));
             if (more) {
                 rhs /= BASE;
                 assert rhs < BASE;
                 digit = (int) rhs;
-                accumulator = get0(--i) + digit + AddWithCarry.carry(accumulator);
+                accumulator = getOrZero(--i) + digit + AddWithCarry.carry(accumulator);
                 setOrExpand(i, AddWithCarry.value(accumulator));
             }
         }
