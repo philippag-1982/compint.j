@@ -593,7 +593,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         do {
             accumulator = getOrZero(i) + AddWithCarry.carry(accumulator);
             setOrExpand(i, AddWithCarry.value(accumulator));
-            i--;
+            --i;
         } while (AddWithCarry.carry(accumulator) > 0);
     }
 
@@ -647,11 +647,11 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         int i = length - 1;
         int j = rhs.length - 1;
 
-        for (; i >= 0; j--, i--) {
+        for (; i >= 0; --j, --i) {
             accumulator = get(i) + rhs.get(j) + AddWithCarry.carry(accumulator);
             set(i, AddWithCarry.value(accumulator));
         }
-        for (; j >= 0; j--) {
+        for (; j >= 0; --j) {
             accumulator = rhs.get(j) + AddWithCarry.carry(accumulator);
             expand(AddWithCarry.value(accumulator));
         }
@@ -680,7 +680,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             rhsMax = rhs.length;
         }
 
-        for (int j = rhsMax - 1; j >= rhsOffset; j--, i--) {
+        for (int j = rhsMax - 1; j >= rhsOffset; --j, --i) {
             accumulator = data[i] + rhs[j] + AddWithCarry.carry(accumulator);
             data[i] = AddWithCarry.value(accumulator);
         }
@@ -1257,7 +1257,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
     private void doubleInPlaceImpl() {
         int carry = 0;
-        for (int i = offset + length - 1; i >= offset; i--) {
+        for (int i = offset + length - 1; i >= offset; --i) {
             int value = data[i];
             int product = value << 1; // value * 2, safe inside int
             if (product >= BASE) {
@@ -1678,7 +1678,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         static void format(byte[] dest, int n, int left, int right) {
-            for (int i = right - 1; i >= left; i--) {
+            for (int i = right - 1; i >= left; --i) {
                 if (n == 0) {
                     dest[i] = '0';
                 } else {
