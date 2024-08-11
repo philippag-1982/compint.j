@@ -1103,12 +1103,12 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     }
 
     //@VisibleForTesting
-    // "gradle school" multiplication algorithm aka "long multiplication"
     static Int9 multiplyImpl(Int9 lhs, Int9 rhs) {
         int[] result = multiplyCore(lhs.data, lhs.offset, lhs.length, rhs.data, rhs.offset, rhs.length);
         return new Int9(result).canonicalize();
     }
 
+    // "gradle school" multiplication algorithm aka "long multiplication"
     private static int[] multiplyCore(
             int[] lhs, int lhsOffset, int lhsLength,
             int[] rhs, int rhsOffset, int rhsLength) {
