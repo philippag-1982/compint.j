@@ -44,12 +44,12 @@ public class Int9MultiplyBenchmark {
         private static final Int9[] INT_9 = parse(STRING, Int9::fromString, Int9.class);
     }
 
-//    @Param({"10", "50", "200"})
-    @Param({"50"})
+//    @Param({"10", "40", "80"})
+    @Param({"40"})
     public int karatsubaThreshold;
 
 //    @Param({"1", "4", "16", "999"})
-    @Param({"16"})
+    @Param({"8"})
     public int maxDepth;
 
     private ForkJoinPool forkJoinPool;
