@@ -1,4 +1,4 @@
-[ ] replace `expand` and `setOrExpand` calls in loops with
+[X] replace `expand` and `setOrExpand` calls in loops with
     code that sets `offset` and `length` after the loop 
 [ ] different (higher) threshold for parallelMultiplyKaratsuba
 [ ] report perf numbers in README

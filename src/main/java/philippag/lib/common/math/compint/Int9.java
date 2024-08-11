@@ -246,28 +246,10 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         return this;
     }
 
-    private int getOrZero(int idx) {
-        return idx < 0 ? 0 : get(idx);
-    }
-
     private int get(int idx) {
         assert 0 <= idx && idx < length;
         int index = offset + idx;
         return index < data.length ? data[index] : 0;
-    }
-
-    private void setOrExpand(int i, int value) {
-        if (i < 0) {
-            expandWith(value);
-        } else {
-            set(i, value);
-        }
-    }
-
-    private void set(int idx, int value) {
-        assert 0 <= idx && idx < length;
-        assert 0 <= value && value < BASE;
-        data[offset + idx] = value;
     }
 
     /*
@@ -749,28 +731,37 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
     private void addInPlaceAbs(long rhs) {
         assert rhs > 0;
 
-        int i = length - 1;
+        int i = offset + length - 1;
         boolean more = rhs >= BASE;
         int digit = more ? (int) (rhs % BASE) : (int) rhs;
-        int accumulator = get(i) + digit;
-        set(i, AddWithCarry.value(accumulator));
+        int accumulator = data[i] + digit;
+        data[i] = AddWithCarry.value(accumulator);
         if (more) {
             rhs /= BASE;
             more = rhs >= BASE;
             digit = more ? (int) (rhs % BASE) : (int) rhs;
-            accumulator = getOrZero(--i) + digit + AddWithCarry.carry(accumulator);
-            setOrExpand(i, AddWithCarry.value(accumulator));
+            --i;
+            assert i >= 0; // correctly presized
+            accumulator = (i < offset ? 0 : data[i]) + digit + AddWithCarry.carry(accumulator);
+            data[i] = AddWithCarry.value(accumulator);
             if (more) {
                 rhs /= BASE;
                 assert rhs < BASE;
                 digit = (int) rhs;
-                accumulator = getOrZero(--i) + digit + AddWithCarry.carry(accumulator);
-                setOrExpand(i, AddWithCarry.value(accumulator));
+                --i;
+                assert i >= 0; // correctly presized
+                accumulator = (i < offset ? 0 : data[i]) + digit + AddWithCarry.carry(accumulator);
+                data[i] = AddWithCarry.value(accumulator);
+            }
+
+            if (i < offset) { // we did grow to the left
+                expandBy(offset - i);
+                assert i == offset;
             }
         }
 
         if (AddWithCarry.carry(accumulator) > 0) {
-            carryRest(accumulator, offset + i - 1);//XXX
+            carryRest(accumulator, i - 1);
         }
         canonicalize();
     }
