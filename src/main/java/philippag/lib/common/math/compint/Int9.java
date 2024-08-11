@@ -481,19 +481,19 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         firstDigitLength = 0;
     }
 
-    public void setValue(Int9 value) {
-        int newLength = value.length;
+    public void setValue(Int9 rhs) {
+        int newLength = rhs.length;
         if (data.length < newLength) {
             data = new int[newLength];
         }
         int newOffset = data.length - newLength;
-        int copyLength = value.extent() - value.offset;
-        System.arraycopy(value.data, value.offset, data, newOffset, copyLength);
+        int copyLength = rhs.extent() - rhs.offset;
+        System.arraycopy(rhs.data, rhs.offset, data, newOffset, copyLength);
         Arrays.fill(data, newOffset + copyLength, data.length, 0);
 
         offset = newOffset;
         length = newLength;
-        negative = value.negative;
+        negative = rhs.negative;
         firstDigitLength = 0;
     }
 
