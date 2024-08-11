@@ -497,21 +497,21 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         firstDigitLength = 0;
     }
 
-    public void setValue(long value) {
-        if (value == Long.MIN_VALUE) {
+    public void setValue(long rhs) {
+        if (rhs == Long.MIN_VALUE) {
             setValue(LONG_MIN);
             return;
-        } else if (value == 0) {
+        } else if (rhs == 0) {
             clear();
             return;
         }
 
-        if (negative = value < 0) {
-            value = -value;
+        if (negative = rhs < 0) {
+            rhs = -rhs;
         }
-        assert value > 0;
+        assert rhs > 0;
 
-        int newLength = Calc.lengthOf(value);
+        int newLength = Calc.lengthOf(rhs);
         if (newLength > data.length) {
             data = new int[newLength];
         }
@@ -520,21 +520,12 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         length = newLength;
         firstDigitLength = 0;
 
-        int i = offset + newLength - 1;
-        boolean more = value >= BASE;
-        int digit = more ? (int) (value % BASE) : (int) value;
-        data[i] = digit;
-        if (more) {
-            value /= BASE;
-            more = value >= BASE;
-            digit = more ? (int) (value % BASE) : (int) value;
-            data[--i] = digit;
-            if (more) {
-                value /= BASE;
-                assert value < BASE;
-                digit = (int) value;
-                data[--i] = digit;
-            }
+        int i = offset + length - 1;
+        data[i] = (int) (rhs % BASE);
+
+        while (rhs >= BASE) {
+            rhs /= BASE;
+            data[--i] = (int) (rhs % BASE);
         }
     }
 
@@ -732,19 +723,16 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         assert rhs > 0;
 
         int i = offset + length - 1;
-        boolean more = rhs >= BASE;
-        int digit = more ? (int) (rhs % BASE) : (int) rhs;
-        int accumulator = data[i] + digit;
+        int accumulator = data[i] + (int) (rhs % BASE);
         data[i] = AddWithCarry.value(accumulator);
-        while (more) {
+
+        while (rhs >= BASE) {
             rhs /= BASE;
-            more = rhs >= BASE;
-            digit = more ? (int) (rhs % BASE) : (int) rhs;
             if (--i >= offset) {
-                accumulator = data[i] + digit + AddWithCarry.carry(accumulator);
+                accumulator = data[i] + (int) (rhs % BASE) + AddWithCarry.carry(accumulator);
                 data[i] = AddWithCarry.value(accumulator);
             } else {
-                accumulator = digit + AddWithCarry.carry(accumulator);
+                accumulator = (int) (rhs % BASE) + AddWithCarry.carry(accumulator);
                 expandWith(AddWithCarry.value(accumulator));
             }
         }
@@ -887,7 +875,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             data[i] = SubtractWithCarry.value(accumulator);
             rhs /= BASE;
         }
-        // split loop after rhs is zero, div/mod are expensive!
+
         for (; i >= offset; --i) {
             accumulator = data[i] + SubtractWithCarry.carry(accumulator);
             data[i] = SubtractWithCarry.value(accumulator);
