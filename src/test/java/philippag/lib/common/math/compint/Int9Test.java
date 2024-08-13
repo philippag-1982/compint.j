@@ -1124,6 +1124,8 @@ public class Int9Test extends CommonTestBase {
 
     @Test
     public void addBig() {
+        checkAddBig("1" + "0".repeat(10_000), "9".repeat(10_000), "1");
+
         checkAddBig("300000000000000000000000", "100000000000000000000000", "200000000000000000000000");
 
         checkAddBig("1000000000000000000000005", "1000000000000000000000001", "4");
