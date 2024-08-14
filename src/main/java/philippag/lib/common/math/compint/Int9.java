@@ -898,7 +898,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             rhs /= BASE;
         }
 
-        for (; rhs > 0;) {
+        while (rhs > 0) {
             accumulator =  -(int) (rhs % BASE) + SubtractWithCarryComplement.carry(accumulator);
             expandWith(SubtractWithCarryComplement.value(accumulator));
             rhs /= BASE;
