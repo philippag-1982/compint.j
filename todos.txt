@@ -1,7 +1,6 @@
 [X] replace `expand` and `setOrExpand` calls in loops with
     code that sets `offset` and `length` after the loop 
 [ ] different (higher) threshold for parallelMultiplyKaratsuba
-[ ] report perf numbers in README
 [ ] document these perf tricks: 
     - division via multiplication
       https://ridiculousfish.com/blog/posts/labor-of-division-episode-i.html 
