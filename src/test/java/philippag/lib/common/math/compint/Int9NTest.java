@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.AssumptionViolatedException;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -36,6 +37,9 @@ public class Int9NTest extends CommonTestBase {
 
     @BeforeClass
     public static void constantsBefore() {
+        if (!Int9N.nativeLibAvailable) {
+            throw new AssumptionViolatedException("Native library not available, skipping test");
+        }
         checkConstants();
     }
 

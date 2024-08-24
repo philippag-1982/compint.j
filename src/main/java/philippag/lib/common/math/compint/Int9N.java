@@ -25,7 +25,6 @@ SOFTWARE.
 package philippag.lib.common.math.compint;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
@@ -1124,9 +1123,14 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return new Int9N(result).canonicalize();
     }
 
+    //@VisibleForTesting
+    static boolean nativeLibAvailable;
+
     static {
-        // on Windows, this is a DLL
-    	System.load(new File("build/native/multiply-core.so").getAbsolutePath());
+        File lib = new File("build/native/multiply-core.so"); // on Windows, this is a DLL
+        if (nativeLibAvailable = lib.exists()) {
+            System.load(lib.getAbsolutePath());
+        }
     }
 
     private static native void multiplyCore(
