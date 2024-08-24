@@ -6,23 +6,19 @@
 JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore(
         JNIEnv * env,
         jclass cls,
-        jintArray resultArray,
-        jintArray lhsArray, jint lhsOffset, jint lhsLength,
-        jintArray rhsArray, jint rhsOffset, jint rhsLength) {
+        jintArray resultArray, jint resultLength, jint shift,
+        jintArray lhsArray, jint lhsOffset, jint lhsMax,
+        jintArray rhsArray, jint rhsOffset, jint rhsMax) {
 
-    int resultLength = lhsLength + rhsLength;
-    int lhsMax = lhsOffset + lhsLength - 1;
-    int rhsMax = rhsOffset + rhsLength - 1;
-    int shift = 1;
     jint carry = 0;
     jboolean isCopy;
 
     jint * lhs = (*env)->GetPrimitiveArrayCritical(env, lhsArray, &isCopy);
-//    assert(!isCopy);
+    //assert(!isCopy);
     jint * rhs = (*env)->GetPrimitiveArrayCritical(env, rhsArray, &isCopy);
-//    assert(!isCopy);
+    //assert(!isCopy);
     jint * result = (*env)->GetPrimitiveArrayCritical(env, resultArray, &isCopy);
-//    assert(!isCopy);
+    //assert(!isCopy);
 
     for (int i = rhsMax; i >= rhsOffset; --i, ++shift) {
         jint rhsValue = rhs[i];
@@ -36,20 +32,20 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
             jint sum = result[k] + (jint) (product % BASE);
             if (sum >= BASE) {
                 sum -= BASE;
-//                assert(sum < BASE);
+                //assert(sum < BASE);
                 carry++;
             }
             result[k] = sum;
         }
 
         if (carry > 0) {
-//            assert(result[k] == 0);
+            //assert(result[k] == 0);
             result[k] = carry;
             carry = 0;
         }
     }
 
-//    assert(carry == 0);
+    //assert(carry == 0);
 
     // these are only needed to end the critical section and let GC continue to work... I guess
     // call them in reverse

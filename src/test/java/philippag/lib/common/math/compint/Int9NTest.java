@@ -1946,7 +1946,6 @@ public class Int9NTest extends CommonTestBase {
     }
 
     @Test
-    @Ignore//TODO
     public void trailingZeroesForm() {
         var x = Int9N.fromString("5" + "0".repeat(30));
         Assert.assertEquals("Int9N {digits=31, negative=false, offset=0, length=4, capacity=1, data=[5000]}", x.toDebugString());
@@ -2025,7 +2024,6 @@ public class Int9NTest extends CommonTestBase {
     }
 
     @Test
-    @Ignore // TODO
     public void leadingTrailingZeroes() {
         checkDebugStr("Int9N {digits=1, negative=false, offset=0, length=1, capacity=1, data=[1]}", "1", "00000000000000000001");
         checkDebugStr("Int9N {digits=1, negative=false, offset=0, length=1, capacity=1, data=[1]}", "1", "0000000000000000000000000000000000001");

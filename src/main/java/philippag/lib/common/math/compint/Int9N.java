@@ -59,7 +59,7 @@ import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
  * This class lacks the usual random access to bits, and logical operations,
  * but instead offers random access to decimal digits.
  *
- * TODO...
+ * TODO...desc native aspect
  */
 public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, CharSequence {
 
@@ -365,8 +365,6 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
         int length = Calc.lengthForDigits(digits);
         int[] result = null;
-
-        if(1==1) result = new int[length]; //XXX
 
         for (int i = toIndex, j = length - 1; j >= 0; --j) {
             int end = i;
@@ -1121,8 +1119,30 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
 
     //@VisibleForTesting
     static Int9N multiplyImpl(Int9N lhs, Int9N rhs) {
-        int[] result = multiplyCore(lhs.data, lhs.offset, lhs.length, rhs.data, rhs.offset, rhs.length);
+        int[] result = multiplyImpl(lhs.data, lhs.offset, lhs.length, rhs.data, rhs.offset, rhs.length);
         return new Int9N(result).canonicalize();
+    }
+
+    private static int[] multiplyImpl(
+            int[] lhs, int lhsOffset, int lhsLength,
+            int[] rhs, int rhsOffset, int rhsLength) {
+
+        int[] result = new int[lhsLength + rhsLength];
+        int lhsSize = lhsOffset + lhsLength;
+        int rhsSize = rhsOffset + rhsLength;
+        int shift = 1;
+
+        // fix coordinates for "trailingZeroesForm"
+        if (lhsSize > lhs.length) {
+            shift += lhsSize - lhs.length;
+            lhsSize = lhs.length;
+        }
+        if (rhsSize > rhs.length) {
+            shift += rhsSize - rhs.length;
+            rhsSize = rhs.length;
+        }
+        multiplyCore(result, result.length, shift, lhs, lhsOffset, lhsSize - 1, rhs, rhsOffset, rhsSize - 1);
+        return result;
     }
 
     //@VisibleForTesting
@@ -1136,19 +1156,9 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     private static native void multiplyCore(
-            int[] result,
+            int[] result, int resultLength, int shift,
             int[] lhs, int lhsOffset, int lhsLength,
             int[] rhs, int rhsOffset, int rhsLength);
-
-    // "gradle school" multiplication algorithm aka "long multiplication"
-    private static int[] multiplyCore(
-            int[] lhs, int lhsOffset, int lhsLength,
-            int[] rhs, int rhsOffset, int rhsLength) {
-
-        int[] result = new int[lhsLength + rhsLength];
-        multiplyCore(result, lhs, lhsOffset, lhsLength, rhs, rhsOffset, rhsLength);
-        return result;
-    }
 
     public static Int9N multiplyRussianPeasant(Int9N lhs, Int9N rhs) {
         return multiplyRussianPeasantForward(lhs, rhs).multiplySign(lhs, rhs);

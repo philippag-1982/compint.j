@@ -1116,32 +1116,39 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
     //@VisibleForTesting
     static Int9 multiplyImpl(Int9 lhs, Int9 rhs) {
-        int[] result = multiplyCore(lhs.data, lhs.offset, lhs.length, rhs.data, rhs.offset, rhs.length);
+        int[] result = multiplyImpl(lhs.data, lhs.offset, lhs.length, rhs.data, rhs.offset, rhs.length);
         return new Int9(result).canonicalize();
     }
 
-    // "gradle school" multiplication algorithm aka "long multiplication"
-    private static int[] multiplyCore(
+    private static int[] multiplyImpl(
             int[] lhs, int lhsOffset, int lhsLength,
             int[] rhs, int rhsOffset, int rhsLength) {
 
         int[] result = new int[lhsLength + rhsLength];
-        int lhsMax = lhsOffset + lhsLength;
-        int rhsMax = rhsOffset + rhsLength;
+        int lhsSize = lhsOffset + lhsLength;
+        int rhsSize = rhsOffset + rhsLength;
         int shift = 1;
-        int carry = 0;
 
         // fix coordinates for "trailingZeroesForm"
-        if (lhsMax > lhs.length) {
-            shift += lhsMax - lhs.length;
-            lhsMax = lhs.length;
+        if (lhsSize > lhs.length) {
+            shift += lhsSize - lhs.length;
+            lhsSize = lhs.length;
         }
-        if (rhsMax > rhs.length) {
-            shift += rhsMax - rhs.length;
-            rhsMax = rhs.length;
+        if (rhsSize > rhs.length) {
+            shift += rhsSize - rhs.length;
+            rhsSize = rhs.length;
         }
-        lhsMax--;
-        rhsMax--;
+        multiplyCore(result, result.length, shift, lhs, lhsOffset, lhsSize - 1, rhs, rhsOffset, rhsSize - 1);
+        return result;
+    }
+
+    // "gradle school" multiplication algorithm aka "long multiplication"
+    private static void multiplyCore(
+            int[] result, int resultLength, int shift,
+            int[] lhs, int lhsOffset, int lhsMax,
+            int[] rhs, int rhsOffset, int rhsMax) {
+
+        int carry = 0;
 
         for (int i = rhsMax; i >= rhsOffset; --i, ++shift) {
             int rhsValue = rhs[i];
@@ -1168,8 +1175,6 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         assert carry == 0;
-
-        return result;
     }
 
     public static Int9 multiplyRussianPeasant(Int9 lhs, Int9 rhs) {
