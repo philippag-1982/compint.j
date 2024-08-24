@@ -1,10 +1,6 @@
 BUILD_DIR=../../../build/native
 JDK_DIR=/opt/java64/jdk-22
 OPTS=-O3 -Wall -Werror -std=c17 -D_JNI_IMPLEMENTATION_ -I $(JDK_DIR)/include -I $(JDK_DIR)/include/linux -fPIC
-#OPTS=-O3 -Wall -Wno-unused-variable -std=c17 -D_JNI_IMPLEMENTATION_ -I $(JDK_DIR)/include -I $(JDK_DIR)/include/linux
-
-# clang is a bit slow for __int128_t!
-#CC=clang
 CC=gcc
 
 all: init multiply-core
