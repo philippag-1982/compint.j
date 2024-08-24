@@ -4,7 +4,7 @@ ifeq ($(OS),Windows_NT)
 else
 	JDK_MD_INCLUDE_DIR=linux
 endif
-OPTS=-O3 -Wall -Werror -std=c17 -D_JNI_IMPLEMENTATION_ -I $(JAVA_HOME)/include -I $(JAVA_HOME)/include/$(JDK_MD_INCLUDE_DIR) -fPIC
+OPTS=-O3 -Wall -Werror -std=c17 -D_JNI_IMPLEMENTATION_ -I $(JAVA_HOME)/include -I $(JAVA_HOME)/include/$(JDK_MD_INCLUDE_DIR) -fPIC -nostdlib
 CC=gcc
 
 all: init multiply-core multiply-core-16
