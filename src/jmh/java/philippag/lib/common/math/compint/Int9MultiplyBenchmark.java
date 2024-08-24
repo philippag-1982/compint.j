@@ -87,7 +87,7 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void multiplySimpleInt9N(Blackhole blackhole) {
-    	perform(Args.INT_9N, Int9N::multiplySimple, blackhole);
+        perform(Args.INT_9N, Int9N::multiplySimple, blackhole);
     }
 
     @Benchmark
@@ -103,8 +103,8 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void multiplyKaratsubaInt9N(Blackhole blackhole) {
-    	BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
-    	perform(Args.INT_9N, operator, blackhole);
+        BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
+        perform(Args.INT_9N, operator, blackhole);
     }
 
     @Benchmark
@@ -121,8 +121,8 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void parallelMultiplyKaratsubaInt9N(Blackhole blackhole) {
-    	BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
-    	perform(Args.INT_9N, operator, blackhole);
+        BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
+        perform(Args.INT_9N, operator, blackhole);
     }
 
     @Benchmark
@@ -133,8 +133,8 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void parseAndParallelMultiplyKaratsubaInt9N(Blackhole blackhole) {
-    	BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
-    	parseAndPerform(Args.STRING, Int9N::fromString, operator, blackhole);
+        BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
+        parseAndPerform(Args.STRING, Int9N::fromString, operator, blackhole);
     }
 
     private static <T> void parseAndPerform(String[] ARGS, Function<String, T> factory, BinaryOperator<T> operator, Blackhole blackhole) {

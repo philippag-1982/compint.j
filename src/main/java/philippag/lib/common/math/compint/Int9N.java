@@ -1134,7 +1134,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     private static native void multiplyCore(
-    		int[] result,
+            int[] result,
             int[] lhs, int lhsOffset, int lhsLength,
             int[] rhs, int rhsOffset, int rhsLength);
 
@@ -1143,9 +1143,9 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
             int[] lhs, int lhsOffset, int lhsLength,
             int[] rhs, int rhsOffset, int rhsLength) {
 
-    	int[] result = new int[lhsLength + rhsLength];
-    	multiplyCore(result, lhs, lhsOffset, lhsLength, rhs, rhsOffset, rhsLength);
-    	return result;
+        int[] result = new int[lhsLength + rhsLength];
+        multiplyCore(result, lhs, lhsOffset, lhsLength, rhs, rhsOffset, rhsLength);
+        return result;
     }
 
     public static Int9N multiplyRussianPeasant(Int9N lhs, Int9N rhs) {
