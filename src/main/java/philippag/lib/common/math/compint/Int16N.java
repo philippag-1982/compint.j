@@ -61,46 +61,44 @@ import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
  *
  * TODO...
  */
-public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, CharSequence {
+public final class Int16N implements Comparable<Int16N>, AsciiDigitStreamable, CharSequence {
 
-    private static final int BASE = 1_000_000_000;
-    private static final int HALF_BASE = BASE / 2;
-    private static final int DOUBLE_BASE = BASE * 2;
-    private static final long BASE1 = BASE;
-    private static final long BASE2 = BASE1 * BASE1;
-    private static final int SIZE = 9;
+    private static final long BASE = 1_0000_0000_0000_0000L; // 1E16
+    private static final long HALF_BASE = BASE / 2;
+    private static final long DOUBLE_BASE = BASE * 2;
+    private static final int SIZE = 16;
     private static final int KARATSUBA_THRESHOLD = 40;
 
     // never return to user!
-    private static final Int9N ZERO     = Constants.ZERO();
-    private static final Int9N ONE      = Constants.ONE();
-    private static final Int9N INT_MAX  = Constants.INT_MAX();
-    private static final Int9N INT_MIN  = Constants.INT_MIN();
-    private static final Int9N LONG_MAX = Constants.LONG_MAX();
-    private static final Int9N LONG_MIN = Constants.LONG_MIN();
+    private static final Int16N ZERO     = Constants.ZERO();
+    private static final Int16N ONE      = Constants.ONE();
+    private static final Int16N INT_MAX  = Constants.INT_MAX();
+    private static final Int16N INT_MIN  = Constants.INT_MIN();
+    private static final Int16N LONG_MAX = Constants.LONG_MAX();
+    private static final Int16N LONG_MIN = Constants.LONG_MIN();
 
     private static class Constants {
 
-        private static Int9N ZERO()     { return new Int9N(0); }
-        private static Int9N ONE()      { return new Int9N(1); }
-        private static Int9N INT_MAX()  { return new Int9N(2, 147483647); }
-        private static Int9N INT_MIN()  { return new Int9N(2, 147483648).setNegative(true); }
-        private static Int9N LONG_MAX() { return new Int9N(9, 223372036, 854775807); }
-        private static Int9N LONG_MIN() { return new Int9N(9, 223372036, 854775808).setNegative(true); }
+        private static Int16N ZERO()     { return new Int16N(0); }
+        private static Int16N ONE()      { return new Int16N(1); }
+        private static Int16N INT_MAX()  { return new Int16N(2147483647L); }
+        private static Int16N INT_MIN()  { return new Int16N(2147483648L).setNegative(true); }
+        private static Int16N LONG_MAX() { return new Int16N(922, 3372036854775807L); }
+        private static Int16N LONG_MIN() { return new Int16N(922, 3372036854775808L).setNegative(true); }
     }
 
     private boolean negative;
     private byte firstDigitLength; // cached value
-    private int[] data; // integers from 000_000_000 to 999_999_999
+    private long[] data; // integers from 000_000_000 to 999_999_999
     private int offset;
     private int length;
 
     //@VisibleForTesting
-    Int9N(int... data) {
+    Int16N(long... data) {
         this(data, 0, data.length);
     }
 
-    private Int9N(int[] data, int offset, int length) {
+    private Int16N(long[] data, int offset, int length) {
         if (offset < 0 || offset >= data.length) {
             throw new IllegalArgumentException("offset out of range: " + offset);
         }
@@ -117,7 +115,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return data[offset] == 0;
     }
 
-    public Int9N setNegative(boolean b) {
+    public Int16N setNegative(boolean b) {
         negative = b && !isZero();
         return this;
     }
@@ -127,21 +125,21 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return negative;
     }
 
-    public Int9N negate() {
+    public Int16N negate() {
         return copy().setNegative(!negative);
     }
 
     //does not include sign
     @Override
     public int countDigits() {
-        return firstDigitLength() + DivMulTable.mul9(length - 1);
+        return firstDigitLength() + DivMulTable.mul16(length - 1);
     }
 
     //does not include sign
     @Override
     public boolean stream(AsciiDigitArraySink sink) {
         byte[] dest = new byte[SIZE];
-        int first = get(0);
+        long first = get(0);
         int m = SIZE - firstDigitLength();
 
         IntegerFormat.format(dest, first, 0, SIZE);
@@ -184,7 +182,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     public String toDebugString() {
         var sb = new StringBuilder();
 
-        sb.append("Int9N");
+        sb.append("Int16N");
         sb.append(" {digits=").append(countDigits());
         sb.append(", negative=").append(negative);
         sb.append(", offset=").append(offset);
@@ -218,7 +216,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return offset + length > data.length;
     }
 
-    public static Int9N fromScientific(CharSequence str) {
+    public static Int16N fromScientific(CharSequence str) {
         return fromString(AsciiDigits.fromScientific(str));
     }
 
@@ -226,7 +224,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return AsciiDigits.toScientific(this, precision);
     }
 
-    private void expandWith(int value) {
+    private void expandWith(long value) {
         assert offset > 0;
         data[--offset] = value;
         length++;
@@ -242,14 +240,14 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         length += by;
     }
 
-    private Int9N shiftLeft(int by) {
+    private Int16N shiftLeft(int by) {
         if (!isZero()) {
             length += by;
         }
         return this;
     }
 
-    private int get(int idx) {
+    private long get(int idx) {
         assert 0 <= idx && idx < length;
         int index = offset + idx;
         return index < data.length ? data[index] : 0;
@@ -260,7 +258,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
      * - offset must always point to a non-zero number, except for ZERO
      * - no representation of ZERO is ever negative
      */
-    private Int9N canonicalize() {
+    private Int16N canonicalize() {
         int i = offset;
         int max = extent() - 1;
         while (i < max && data[i] == 0) {
@@ -287,12 +285,12 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
      * ===============
      */
 
-    public static Int9N forDigits(int digits) {
+    public static Int16N forDigits(int digits) {
         int length = Calc.lengthForDigits(digits);
-        return new Int9N(new int[length], length - 1, 1);
+        return new Int16N(new long[length], length - 1, 1);
     }
 
-    public static Int9N fromInt(int value) {
+    public static Int16N fromInt(int value) {
         if (value == Integer.MIN_VALUE) {
             return Constants.INT_MIN();
         }
@@ -304,18 +302,19 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return fromIntAbs(value).setNegative(negative);
     }
 
-    private static Int9N fromIntAbs(int value) {
+    private static Int16N fromIntAbs(int value) {
         assert value >= 0;
-        if (value < BASE) {
-            return new Int9N(value);
-        } else if (value < DOUBLE_BASE) {
-            return new Int9N(1, value - BASE);
-        } else {
-            return new Int9N(2, value - DOUBLE_BASE);
-        }
+        assert value < BASE;
+        return new Int16N(value);
+//        if (value < BASE) {
+//        } else if (value < DOUBLE_BASE) {
+//            return new Int16N(1, value - BASE);
+//        } else {
+//            return new Int16N(2, value - DOUBLE_BASE);
+//        }
     }
 
-    public static Int9N fromLong(long value) {
+    public static Int16N fromLong(long value) {
         if (value == Long.MIN_VALUE) {
             return Constants.LONG_MIN();
         }
@@ -327,21 +326,20 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return fromLongAbs(value).setNegative(negative);
     }
 
-    private static Int9N fromLongAbs(long value) {
-        assert value >= 0;
+    private static Int16N fromLongAbs(long value) {
+        assert value >= 0 : value;
         return switch (Calc.lengthOf(value)) {
-            case 1  -> new Int9N((int)  (value));
-            case 2  -> new Int9N((int)  (value / BASE1),          (int)  (value % BASE1));
-            case 3  -> new Int9N((int) ((value / BASE2) % BASE1), (int) ((value / BASE1) % BASE1), (int) (value % BASE1));
-            default -> throw new Error("UNREACHABLE");
+            case 1  -> new Int16N(value);
+            case 2  -> new Int16N(value / BASE, value % BASE);
+            default -> throw new Error("UNREACHABLE:"+Calc.lengthOf(value));
         };
     }
 
-    public static Int9N fromString(CharSequence str) {
+    public static Int16N fromString(CharSequence str) {
         return fromString(str, 0, str.length());
     }
 
-    public static Int9N fromString(CharSequence str, int fromIndex, int toIndex) {
+    public static Int16N fromString(CharSequence str, int fromIndex, int toIndex) {
         if (fromIndex >= toIndex) {
             throw new NumberFormatException("fromIndex >= toIndex");
         }
@@ -364,23 +362,23 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
             throw new NumberFormatException("No digits in input string");
         }
         int length = Calc.lengthForDigits(digits);
-        int[] result = null;
+        long[] result = null;
 
-        if(1==1) result = new int[length]; //XXX
+        if(1==1) result = new long[length]; //XXX
 
         for (int i = toIndex, j = length - 1; j >= 0; --j) {
             int end = i;
             i = Math.max(fromIndex, i - SIZE);
-            int value = IntegerFormat.parse(str, i, end);
+            long value = IntegerFormat.parse(str, i, end);
             if (value > 0 && result == null) {
-                result = new int[j + 1];  // "trailingZeroesForm" storage optimization: alloc only for non-zero digits at the right
+                result = new long[j + 1];  // "trailingZeroesForm" storage optimization: alloc only for non-zero digits at the right
             }
             if (result != null) {
                 result[j] = value;
             }
         }
 
-        return result == null ? Constants.ZERO() : new Int9N(result, 0, length).setNegative(negative);
+        return result == null ? Constants.ZERO() : new Int16N(result, 0, length).setNegative(negative);
     }
 
     public boolean isInt() {
@@ -396,12 +394,8 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     private int toIntAbs() {
-        assert length <= 2;
-        if (length == 1) {
-            return get(0);
-        } else {
-            return BASE * get(0) + get(1);
-        }
+        assert length == 1;
+        return (int) get(0);
     }
 
     public boolean isLong() {
@@ -417,13 +411,12 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     private long toLongAbs() {
-        assert length <= 3;
+        assert length <= 2;
         if (length == 1) {
             return get(0);
-        } else if (length == 2) {
-            return BASE1 * get(0) + get(1);
         } else {
-            return BASE2 * get(0) + BASE1 * get(1) + get(2);
+//            return BASE * get(0) + get(1);
+            return Math.multiplyExact(BASE, get(0)) + get(1);//XXX
         }
     }
 
@@ -442,12 +435,12 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     @Override
-    public int compareTo(Int9N o) {
+    public int compareTo(Int16N o) {
         int cmp = -Boolean.compare(negative, o.negative);
         return cmp != 0 ? cmp : negative ? -compareToAbs(o) : compareToAbs(o);
     }
 
-    public int compareToAbs(Int9N o) {
+    public int compareToAbs(Int16N o) {
         if (this == o) {
             return 0;
         }
@@ -456,7 +449,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
             return cmp;
         }
         for (int i = 0; i < length; i++) {
-            cmp = Integer.compare(get(i), o.get(i));
+            cmp = Long.compare(get(i), o.get(i));
             if (cmp != 0) {
                 return cmp;
             }
@@ -464,13 +457,13 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return 0;
     }
 
-    public boolean equals(Int9N o) {
+    public boolean equals(Int16N o) {
         return 0 == compareTo(o);
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Int9N o && equals(o);
+        return obj instanceof Int16N o && equals(o);
     }
 
     @Override
@@ -486,10 +479,10 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         firstDigitLength = 0;
     }
 
-    public void setValue(Int9N rhs) {
+    public void setValue(Int16N rhs) {
         int newLength = rhs.length;
         if (data.length < newLength) {
-            data = new int[newLength];
+            data = new long[newLength];
         }
         int newOffset = data.length - newLength;
         int copyLength = rhs.extent() - rhs.offset;
@@ -518,7 +511,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
 
         int newLength = Calc.lengthOf(rhs);
         if (newLength > data.length) {
-            data = new int[newLength];
+            data = new long[newLength];
         }
 
         offset = data.length - newLength;
@@ -534,28 +527,28 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
     }
 
-    private int[] copyFullSizeArray() {
+    private long[] copyFullSizeArray() {
         // undo "trailingZeroesForm" storage optimization
-        int[] newData = new int[length];
+        long[] newData = new long[length];
         System.arraycopy(data, offset, newData, 0, Math.min(length, data.length));
         return newData;
     }
 
-    public Int9N copy() {
+    public Int16N copy() {
         // copy only relevant region
         // does not undo "trailingZeroesForm" storage optimization
-        return new Int9N(Arrays.copyOfRange(data, offset, extent()), 0, length).setNegative(negative);
+        return new Int16N(Arrays.copyOfRange(data, offset, extent()), 0, length).setNegative(negative);
     }
 
-    private Int9N copyFullSize() {
-        return new Int9N(copyFullSizeArray()).setNegative(negative);
+    private Int16N copyFullSize() {
+        return new Int16N(copyFullSizeArray()).setNegative(negative);
     }
 
-    private Int9N copyDoubleSize() {
+    private Int16N copyDoubleSize() {
         int newOffset = length << 1;
-        int[] newData = new int[newOffset + length];
+        long[] newData = new long[newOffset + length];
         System.arraycopy(data, offset, newData, newOffset, Math.min(length, data.length));
-        return new Int9N(newData, newOffset, length).setNegative(negative);
+        return new Int16N(newData, newOffset, length).setNegative(negative);
     }
 
     private void ensureCapacity(int minOffset) {
@@ -570,14 +563,14 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     private void resize(int newOffset) {
-        int[] newData = new int[data.length + newOffset];
+        long[] newData = new long[data.length + newOffset];
         System.arraycopy(data, offset, newData, newOffset, length);
         offset = newOffset;
         data = newData;
     }
 
-    private void carryRest(int accumulator, int i) {
-        int carry = AddWithCarry.carry(accumulator);
+    private void carryRest(long accumulator, int i) {
+        long carry = AddWithCarry.carry(accumulator);
         assert carry > 0;
 
         for (; i >= offset && carry > 0; --i) {
@@ -596,7 +589,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
      * =================
      */
 
-    public Int9N addInPlace(Int9N rhs) {
+    public Int16N addInPlace(Int16N rhs) {
         if (rhs.isZero()) {
             return this;
         }
@@ -626,7 +619,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return this;
     }
 
-    private void addInPlaceAbs(Int9N rhs) {
+    private void addInPlaceAbs(Int16N rhs) {
         if (length >= rhs.length) {
             addInPlaceAbsLongerEqual(rhs);
         } else {
@@ -636,8 +629,8 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     // beware: caller must call canonicalize()!
-    private void addInPlaceAbsShorter(Int9N rhs) {
-        int accumulator = 0;
+    private void addInPlaceAbsShorter(Int16N rhs) {
+        long accumulator = 0;
         int i = offset + length - 1;
         int j = rhs.length - 1;
 
@@ -657,14 +650,14 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     // beware: caller must call canonicalize()!
-    private void addInPlaceAbsLongerEqual(Int9N rhs) {
+    private void addInPlaceAbsLongerEqual(Int16N rhs) {
         addInPlaceAbsLongerEqualCore(rhs.data, rhs.offset, rhs.length);
     }
 
-    private void addInPlaceAbsLongerEqualCore(int[] rhs, int rhsOffset, int rhsLength) {
+    private void addInPlaceAbsLongerEqualCore(long[] rhs, int rhsOffset, int rhsLength) {
         assert length >= rhsLength;
 
-        int accumulator = 0;
+        long accumulator = 0;
         int rhsMax = rhsOffset + rhsLength;
         int i = offset + length - 1;
 
@@ -685,7 +678,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
     }
 
-    public Int9N addInPlace(long rhs) {
+    public Int16N addInPlace(long rhs) {
         if (rhs == Long.MIN_VALUE) {
             // we can't do absolute (i.e. positive) arithmetic with LONG_MIN
             addInPlace(LONG_MIN);
@@ -728,16 +721,16 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         assert rhs > 0;
 
         int i = offset + length - 1;
-        int accumulator = data[i] + (int) (rhs % BASE);
+        long accumulator = data[i] + rhs % BASE;
         data[i] = AddWithCarry.value(accumulator);
 
         while (rhs >= BASE) {
             rhs /= BASE;
             if (--i >= offset) {
-                accumulator = data[i] + (int) (rhs % BASE) + AddWithCarry.carry(accumulator);
+                accumulator = data[i] + rhs % BASE + AddWithCarry.carry(accumulator);
                 data[i] = AddWithCarry.value(accumulator);
             } else {
-                accumulator = (int) (rhs % BASE) + AddWithCarry.carry(accumulator);
+                accumulator = rhs % BASE + AddWithCarry.carry(accumulator);
                 expandWith(AddWithCarry.value(accumulator));
             }
         }
@@ -748,7 +741,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         canonicalize();
     }
 
-    public Int9N subtractInPlace(Int9N rhs) {
+    public Int16N subtractInPlace(Int16N rhs) {
         if (rhs.isZero()) {
             return this;
         }
@@ -778,13 +771,13 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return this;
     }
 
-    private void subtractInPlaceAbsGreaterEqual(Int9N rhs) {
+    private void subtractInPlaceAbsGreaterEqual(Int16N rhs) {
         assert compareToAbs(rhs) >= 0; // we are the bigger number or equal
         subtractInPlaceAbsGreaterEqualCore(rhs.data, rhs.offset, rhs.length);
     }
 
-    private void subtractInPlaceAbsGreaterEqualCore(int[] rhs, int rhsOffset, int rhsLength) {
-        int accumulator = 0;
+    private void subtractInPlaceAbsGreaterEqualCore(long[] rhs, int rhsOffset, int rhsLength) {
+        long accumulator = 0;
         int rhsMax = rhsOffset + rhsLength;
         int i = offset + length - 1;
 
@@ -808,11 +801,11 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         canonicalize();
     }
 
-    private void subtractInPlaceAbsLessThan(Int9N rhs) {
+    private void subtractInPlaceAbsLessThan(Int16N rhs) {
         assert length <= rhs.length;
         assert compareToAbs(rhs) < 0; // we are the smaller number
 
-        int accumulator = 0;
+        long accumulator = 0;
         int i = offset + length - 1;
         int j = rhs.length - 1;
 
@@ -830,7 +823,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         canonicalize();
     }
 
-    public Int9N subtractInPlace(long rhs) {
+    public Int16N subtractInPlace(long rhs) {
         if (rhs == Long.MIN_VALUE) {
             // we can't do absolute (i.e. positive) arithmetic with LONG_MIN
             subtractInPlace(LONG_MIN);
@@ -872,7 +865,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         assert rhs > 0;
         assert compareToAbsImpl(rhs) >= 0; // we are the bigger number or equal
 
-        int accumulator = 0;
+        long accumulator = 0;
         int i = offset + length - 1;
 
         for (; rhs > 0; --i) {
@@ -894,7 +887,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         assert rhs > 0;
         assert compareToAbsImpl(rhs) < 0; // we are the smaller number
 
-        int accumulator = 0;
+        long accumulator = 0;
         int i = offset + length - 1;
 
         for (; i >= offset; --i) {
@@ -913,7 +906,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         canonicalize();
     }
 
-    public Int9N incrementInPlace() {
+    public Int16N incrementInPlace() {
         ensureCapacity(0);
         if (negative) {
             decrementInPlaceAbs();
@@ -923,7 +916,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return this;
     }
 
-    public Int9N decrementInPlace() {
+    public Int16N decrementInPlace() {
         ensureCapacity(0);
         if (negative) {
             incrementInPlaceAbs();
@@ -966,15 +959,15 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
      * =======================================
      */
 
-    public Int9N add(Int9N rhs) {
+    public Int16N add(Int16N rhs) {
         return add(this, rhs);
     }
 
-    public Int9N subtract(Int9N rhs) {
+    public Int16N subtract(Int16N rhs) {
         return subtract(this, rhs);
     }
 
-    public Int9N divide(int divisor) {
+    public Int16N divide(int divisor) {
         var copy = copy();
         copy.divideInPlace(divisor);
         return copy;
@@ -984,12 +977,12 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return copy().divideInPlace(divisor);
     }
 
-    public Int9N multiply(Int9N rhs) {
+    public Int16N multiply(Int16N rhs) {
         var pool = forkJoinPool;
         return pool == null ? multiplyKaratsuba(this, rhs) : parallelMultiplyKaratsuba(this, rhs, pool);
     }
 
-    public Int9N pow(int exponent) {
+    public Int16N pow(int exponent) {
         var pool = forkJoinPool;
         return pool == null ? pow(this, exponent) : parallelPow(this, exponent, pool);
     }
@@ -1005,7 +998,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
      * ============================
      */
 
-    public static Int9N add(Int9N lhs, Int9N rhs) {
+    public static Int16N add(Int16N lhs, Int16N rhs) {
         if (lhs.negative == rhs.negative) { // equal signs => addition
             return addAbs(lhs, rhs).setNegative(lhs.negative);
         } else { // opposite signs => subtraction
@@ -1013,7 +1006,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
     }
 
-    private static Int9N addAbs(Int9N lhs, Int9N rhs) {
+    private static Int16N addAbs(Int16N lhs, Int16N rhs) {
         if (lhs.isZero()) {
             return rhs.copy();
         } else if (rhs.isZero()) {
@@ -1025,11 +1018,11 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
     }
 
-    private static Int9N addAbsLongerEqual(Int9N lhs, Int9N rhs) {
+    private static Int16N addAbsLongerEqual(Int16N lhs, Int16N rhs) {
         assert lhs.length >= rhs.length;
 
-        int[] result = new int[1 + lhs.length];  // always need one more space for 999_999_999 + 1 case!
-        int accumulator = 0;
+        long[] result = new long[1 + lhs.length];  // always need one more space for 999_999_999 + 1 case!
+        long accumulator = 0;
         int i = lhs.length - 1;
 
         for (int j = rhs.length - 1; j >= 0; --i, --j) {
@@ -1042,10 +1035,10 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
         result[0] = AddWithCarry.carry(accumulator);
 
-        return new Int9N(result).canonicalize();
+        return new Int16N(result).canonicalize();
     }
 
-    public static Int9N subtract(Int9N lhs, Int9N rhs) {
+    public static Int16N subtract(Int16N lhs, Int16N rhs) {
         int cmp = lhs.compareToAbs(rhs);
         if (lhs.negative == rhs.negative) { // equal signs => subtraction
             return cmp == 0 ? Constants.ZERO() : subtractForward(cmp, lhs, rhs).setNegative(lhs.negative ? cmp > 0 : cmp < 0);
@@ -1054,25 +1047,25 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
     }
 
-    private static Int9N subtractForward(Int9N lhs, Int9N rhs) {
+    private static Int16N subtractForward(Int16N lhs, Int16N rhs) {
         int cmp = lhs.compareToAbs(rhs);
         return cmp == 0 ? Constants.ZERO() : subtractForward(cmp, lhs, rhs).setNegative(cmp < 0);
     }
 
-    private static Int9N subtractForward(int cmp, Int9N lhs, Int9N rhs) {
+    private static Int16N subtractForward(int cmp, Int16N lhs, Int16N rhs) {
         assert cmp != 0; // callers should rule out ZERO
         return cmp >= 0 ? subtractAbsGreaterEqual(lhs, rhs) : subtractAbsGreaterEqual(rhs, lhs);
     }
 
-    private static Int9N subtractAbsGreaterEqual(Int9N lhs, Int9N rhs) {
+    private static Int16N subtractAbsGreaterEqual(Int16N lhs, Int16N rhs) {
         assert lhs.compareToAbs(rhs) >= 0; // lhs >= rhs
 
         if (rhs.isZero()) {
             return lhs.copy();
         }
 
-        int[] result = new int[lhs.length];
-        int accumulator = 0;
+        long[] result = new long[lhs.length];
+        long accumulator = 0;
         int i = result.length - 1;
 
         for (int j = rhs.length - 1; j >= 0; --i, --j) {
@@ -1085,10 +1078,10 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
 
         assert SubtractWithCarry.carry(accumulator) == 0;
-        return new Int9N(result).canonicalize();
+        return new Int16N(result).canonicalize();
     }
 
-    private Int9N multiplySign(Int9N lhs, Int9N rhs) {
+    private Int16N multiplySign(Int16N lhs, Int16N rhs) {
         return setNegative(multiplySign(lhs.negative, rhs.negative));
     }
 
@@ -1096,18 +1089,18 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return lhs ^ rhs;
     }
 
-    public static Int9N multiplySimple(Int9N lhs, Int9N rhs) {
+    public static Int16N multiplySimple(Int16N lhs, Int16N rhs) {
         return multiplySimpleForward(lhs, rhs).multiplySign(lhs, rhs);
     }
 
-    private static Int9N multiplySimpleForward(Int9N lhs, Int9N rhs) {
+    private static Int16N multiplySimpleForward(Int16N lhs, Int16N rhs) {
         if (lhs.isZero() || rhs.isZero()) {
             // don't reuse references b/c of mutability!
             return Constants.ZERO();
         }
         int lhsLength = lhs.length;
         int rhsLength = rhs.length;
-        if (lhsLength == 1 && rhsLength == 1) {
+        if (false&&lhsLength == 1 && rhsLength == 1) {
             long lhsValue = lhs.get(0); // we must multiply in long, not int.
             long rhsValue = rhs.get(0);
             return fromLongAbs(lhsValue * rhsValue);
@@ -1120,41 +1113,41 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     //@VisibleForTesting
-    static Int9N multiplyImpl(Int9N lhs, Int9N rhs) {
-        int[] result = multiplyCore(lhs.data, lhs.offset, lhs.length, rhs.data, rhs.offset, rhs.length);
-        return new Int9N(result).canonicalize();
+    static Int16N multiplyImpl(Int16N lhs, Int16N rhs) {
+        long[] result = multiplyCore(lhs.data, lhs.offset, lhs.length, rhs.data, rhs.offset, rhs.length);
+        return new Int16N(result).canonicalize();
     }
 
     //@VisibleForTesting
     static boolean nativeLibAvailable;
 
     static {
-        File lib = new File("build/native/multiply-core.so"); // on Windows, this is a DLL
+        File lib = new File("build/native/multiply-core-16.so"); // on Windows, this is a DLL
         if (nativeLibAvailable = lib.exists()) {
             System.load(lib.getAbsolutePath());
         }
     }
 
     private static native void multiplyCore(
-            int[] result,
-            int[] lhs, int lhsOffset, int lhsLength,
-            int[] rhs, int rhsOffset, int rhsLength);
+            long[] result,
+            long[] lhs, int lhsOffset, int lhsLength,
+            long[] rhs, int rhsOffset, int rhsLength);
 
     // "gradle school" multiplication algorithm aka "long multiplication"
-    private static int[] multiplyCore(
-            int[] lhs, int lhsOffset, int lhsLength,
-            int[] rhs, int rhsOffset, int rhsLength) {
+    private static long[] multiplyCore(
+            long[] lhs, int lhsOffset, int lhsLength,
+            long[] rhs, int rhsOffset, int rhsLength) {
 
-        int[] result = new int[lhsLength + rhsLength];
+        long[] result = new long[lhsLength + rhsLength];
         multiplyCore(result, lhs, lhsOffset, lhsLength, rhs, rhsOffset, rhsLength);
         return result;
     }
 
-    public static Int9N multiplyRussianPeasant(Int9N lhs, Int9N rhs) {
+    public static Int16N multiplyRussianPeasant(Int16N lhs, Int16N rhs) {
         return multiplyRussianPeasantForward(lhs, rhs).multiplySign(lhs, rhs);
     }
 
-    private static Int9N multiplyRussianPeasantForward(Int9N lhs, Int9N rhs) {
+    private static Int16N multiplyRussianPeasantForward(Int16N lhs, Int16N rhs) {
         if (lhs.isZero() || rhs.isZero()) {
             // don't reuse references b/c of mutability!
             return Constants.ZERO();
@@ -1173,8 +1166,8 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
      * but it performs ~10 times worse than naive multiplication
      * for similarly-sized terms.
      */
-    private static Int9N multiplyRussianPeasantImpl(Int9N lhs, Int9N rhs) {
-        var sum = new Int9N(new int[lhs.length + rhs.length]);
+    private static Int16N multiplyRussianPeasantImpl(Int16N lhs, Int16N rhs) {
+        var sum = new Int16N(new long[lhs.length + rhs.length]);
 
         // we must copy b/c adding and halving is destructive.
         // we preallocate the rhs with double it's size
@@ -1202,11 +1195,11 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     private boolean halfInPlaceImpl() {
-        int carry = 0;
+        long carry = 0;
         for (int i = offset, max = offset + length; i < max; i++) {
-            int value = data[i];
-            int div = value >> 1; // value / 2
-            int mod = value & 1;  // value % 2
+            long value = data[i];
+            long div = value >> 1; // value / 2
+            long mod = value & 1;  // value % 2
             data[i] = div + carry;
             carry = mod == 0 ? 0 : HALF_BASE;
         }
@@ -1223,8 +1216,8 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     private void doubleInPlaceImpl() {
         int carry = 0;
         for (int i = offset + length - 1; i >= offset; --i) {
-            int value = data[i];
-            int product = value << 1; // value * 2, safe inside int
+            long value = data[i];
+            long product = value << 1; // value * 2, safe inside long
             if (product >= BASE) {
                 product -= BASE;
                 assert product < BASE;
@@ -1243,7 +1236,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
 
     // divides in-place
     // returns remainder
-    // Note: divisor cannot be long, otherwise the "carry * BASE1" multiplication might overflow.
+    // Note: divisor cannot be long, otherwise the "carry * BASE" multiplication might overflow.
     public int divideInPlace(int divisorArg) {
         if (divisorArg == 0) {
             throw new ArithmeticException("Division by zero");
@@ -1289,7 +1282,8 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         int shift = Calc.bitLength(mask);
         long carry = 0;
         for (int i = offset, max = offset + length; i < max; i++) {
-            long value = data[i] + carry * BASE1;
+//            long value = data[i] + carry * BASE;
+            long value = data[i] + Math.multiplyExact(carry, BASE);//XXX
             long quot = value >> shift;
             carry     = value & mask;
             assert quot == (int) quot;
@@ -1301,7 +1295,8 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     private long divideInPlaceAbsBy3() {
         long carry = 0;
         for (int i = offset, max = offset + length; i < max; i++) {
-            long value = data[i] + carry * BASE1;
+//            long value = data[i] + carry * BASE;
+            long value = data[i] + Math.multiplyExact(carry, BASE);//XXX
             long quot = DivMulTable.div3(value);
             carry     = DivMulTable.mod3(quot, value);
             assert quot == (int) quot;
@@ -1313,7 +1308,8 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     private long divideInPlaceAbsDivMod(long divisor) {
         long carry = 0;
         for (int i = offset, max = offset + length; i < max; i++) {
-            long value = data[i] + carry * BASE1;
+//            long value = data[i] + carry * BASE;
+            long value = data[i] + Math.multiplyExact(carry, BASE);//XXX
             long quot = value / divisor;
             carry     = value % divisor;
             assert quot == (int) quot;
@@ -1326,11 +1322,11 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return (get(length - 1) & 1) == 0;
     }
 
-    public static Int9N pow(Int9N base, int exponent) {
+    public static Int16N pow(Int16N base, int exponent) {
         return pow(base, exponent, KARATSUBA_THRESHOLD);
     }
 
-    public static Int9N pow(Int9N base, int exponent, int threshold) {
+    public static Int16N pow(Int16N base, int exponent, int threshold) {
         var result = Constants.ONE();
 
         while (exponent > 0) {
@@ -1346,11 +1342,11 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return result;
     }
 
-    public static Int9N parallelPow(Int9N base, int exponent, ForkJoinPool pool) {
+    public static Int16N parallelPow(Int16N base, int exponent, ForkJoinPool pool) {
         return parallelPow(base, exponent, KARATSUBA_THRESHOLD, Calc.maxDepth(pool), pool);
     }
 
-    public static Int9N parallelPow(Int9N base, int exponent, int threshold, int maxDepth, ForkJoinPool pool) {
+    public static Int16N parallelPow(Int16N base, int exponent, int threshold, int maxDepth, ForkJoinPool pool) {
         var result = Constants.ONE();
 
         while (exponent > 0) {
@@ -1367,36 +1363,36 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     //@VisibleForTesting
-    Int9N leftPart(int n) {
+    Int16N leftPart(int n) {
         if ((n >> 1) >= length) {
             return ZERO;
         } else {
-            return new Int9N(data, offset, ((n + 1) >> 1) + length - n);
+            return new Int16N(data, offset, ((n + 1) >> 1) + length - n);
         }
     }
 
     //@VisibleForTesting
-    Int9N rightPart(int n) {
+    Int16N rightPart(int n) {
         if ((n >> 1) >= length) {
             return this;
         } else {
             int newOffset = offset + ((n + 1) >> 1) + length - n;
-            return newOffset < data.length ? new Int9N(data, newOffset, n >> 1).canonicalize() : ZERO;
+            return newOffset < data.length ? new Int16N(data, newOffset, n >> 1).canonicalize() : ZERO;
         }
     }
 
-    public static Int9N multiplyKaratsuba(Int9N lhs, Int9N rhs) {
+    public static Int16N multiplyKaratsuba(Int16N lhs, Int16N rhs) {
         return multiplyKaratsuba(lhs, rhs, KARATSUBA_THRESHOLD);
     }
 
-    public static Int9N multiplyKaratsuba(Int9N lhs, Int9N rhs, int threshold) {
+    public static Int16N multiplyKaratsuba(Int16N lhs, Int16N rhs, int threshold) {
         if (threshold < 1) {
             throw new IllegalArgumentException("Illegal threshold: " + threshold);
         }
         return multiplyKaratsubaForward(lhs, rhs, threshold).multiplySign(lhs, rhs);
     }
 
-    private static Int9N multiplyKaratsubaForward(Int9N lhs, Int9N rhs, int threshold) {
+    private static Int16N multiplyKaratsubaForward(Int16N lhs, Int16N rhs, int threshold) {
         if (lhs.length <= threshold || rhs.length <= threshold) {
             return multiplySimpleForward(lhs, rhs);
         } else {
@@ -1404,7 +1400,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
     }
 
-    private static Int9N multiplyKaratsubaImpl(Int9N lhs, Int9N rhs, int threshold) {
+    private static Int16N multiplyKaratsubaImpl(Int16N lhs, Int16N rhs, int threshold) {
         assert threshold >= 1;
         assert !(lhs.length == 1 && rhs.length == 1); // too low threshold
 
@@ -1424,7 +1420,14 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         // `middle -= (ac + bd)` => `ad + bc`
         middle.subtractInPlaceAbsGreaterEqual(ac);
         middle.subtractInPlaceAbsGreaterEqual(bd);
-        var result = new Int9N(new int[lhs.length + rhs.length]);
+
+        //XXX
+//        var tmp = middle;
+//        tmp = subtractAbsGreaterEqual(tmp, ac);
+//        tmp = subtractAbsGreaterEqual(tmp, bd);
+//        middle = tmp;
+
+        var result = new Int16N(new long[lhs.length + rhs.length]);
         /*
          * add up the left (biggest) part `ac` expanded to the full power,
          * with the middle part `middle`, expanded to the half power,
@@ -1437,11 +1440,11 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return result.canonicalize();
     }
 
-    public static Int9N parallelMultiplyKaratsuba(Int9N lhs, Int9N rhs, ForkJoinPool pool) {
+    public static Int16N parallelMultiplyKaratsuba(Int16N lhs, Int16N rhs, ForkJoinPool pool) {
         return parallelMultiplyKaratsuba(lhs, rhs, KARATSUBA_THRESHOLD, Calc.maxDepth(pool), pool);
     }
 
-    public static Int9N parallelMultiplyKaratsuba(Int9N lhs, Int9N rhs, int threshold, int maxDepth, ForkJoinPool pool) {
+    public static Int16N parallelMultiplyKaratsuba(Int16N lhs, Int16N rhs, int threshold, int maxDepth, ForkJoinPool pool) {
         if (threshold < 1) {
             throw new IllegalArgumentException("Illegal threshold: " + threshold);
         }
@@ -1451,7 +1454,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         return parallelMultiplyKaratsubaForward(0, lhs, rhs, threshold, maxDepth, pool).multiplySign(lhs, rhs);
     }
 
-    private static Int9N parallelMultiplyKaratsubaForward(int depth, Int9N lhs, Int9N rhs, int threshold, int maxDepth, ForkJoinPool pool) {
+    private static Int16N parallelMultiplyKaratsubaForward(int depth, Int16N lhs, Int16N rhs, int threshold, int maxDepth, ForkJoinPool pool) {
         if (lhs.length <= threshold || rhs.length <= threshold) {
             return multiplySimpleForward(lhs, rhs);
         } else if (depth >= maxDepth) {
@@ -1461,7 +1464,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
     }
 
-    private static Int9N parallelMultiplyKaratsubaImpl(int depth, Int9N lhs, Int9N rhs, int threshold, int maxDepth, ForkJoinPool pool) {
+    private static Int16N parallelMultiplyKaratsubaImpl(int depth, Int16N lhs, Int16N rhs, int threshold, int maxDepth, ForkJoinPool pool) {
         assert threshold >= 1;
         assert !(lhs.length == 1 && rhs.length == 1); // too low threshold
         assert maxDepth >= 1;
@@ -1490,7 +1493,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         // `middle -= (ac + bd)` => `ad + bc`
         middle.subtractInPlaceAbsGreaterEqual(ac);
         middle.subtractInPlaceAbsGreaterEqual(bd);
-        var result = new Int9N(new int[lhs.length + rhs.length]);
+        var result = new Int16N(new long[lhs.length + rhs.length]);
         /*
          * add up the left (biggest) part `ac` expanded to the full power,
          * with the middle part `middle`, expanded to the half power,
@@ -1504,11 +1507,11 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     @SuppressWarnings("serial")
-    private static ForkJoinTask<Int9N> submit(ForkJoinPool pool, Supplier<Int9N> fn) {
-        return pool.submit(new RecursiveTask<Int9N>() {
+    private static ForkJoinTask<Int16N> submit(ForkJoinPool pool, Supplier<Int16N> fn) {
+        return pool.submit(new RecursiveTask<Int16N>() {
 
             @Override
-            protected Int9N compute() {
+            protected Int16N compute() {
                 return fn.get();
             }
         });
@@ -1536,13 +1539,13 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         // correct for variable length of first element in data[]
         index += SIZE - firstDigitLength();
 
-        int div9 = DivMulTable.div9(index);
+        int div9 = DivMulTable.div16(index);
         int idx = offset + div9;
-        return idx < data.length ? IntegerFormat.at(data[idx], DivMulTable.mod9(div9, index)) : '0';
+        return idx < data.length ? IntegerFormat.at(data[idx], DivMulTable.mod16(div9, index)) : '0';
     }
 
     @Override
-    public Int9N subSequence(int start, int end) {
+    public Int16N subSequence(int start, int end) {
         // we must not return `this` b/c of mutability
         return fromString(this, start, end);
     }
@@ -1567,13 +1570,13 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
 
         static int lengthOf(long n) {
             assert n >= 0;
-            return n < BASE1 ? 1 : n < BASE2 ? 2 : 3;
+            return n < BASE ? 1 : 2;
         }
 
         static int lengthForDigits(int digits) {
-            int div9 = DivMulTable.div9(digits);
-            int mod9 = DivMulTable.mod9(div9, digits);
-            return div9 + (mod9 == 0 ? 0 : 1);
+            int div16 = DivMulTable.div16(digits);
+            int mod16 = DivMulTable.mod16(div16, digits);
+            return div16 + (mod16 == 0 ? 0 : 1);
         }
 
         static int addInPlaceCapacity(int lhs, int rhs) {
@@ -1587,41 +1590,41 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
 
     private static class AddWithCarry {
 
-        static int value(int accumulator) {
+        static long value(long accumulator) {
             return accumulator < BASE ? accumulator : accumulator - BASE;
         }
 
-        static int carry(int accumulator) {
+        static long carry(long accumulator) {
             return accumulator < BASE ? 0 : 1;
         }
     }
 
     private static class SubtractWithCarry {
 
-        static int value(int accumulator) {
+        static long value(long accumulator) {
             return accumulator >= 0 ? accumulator : accumulator + BASE;
         }
 
-        static int carry(int accumulator) {
+        static long carry(long accumulator) {
             return accumulator >= 0 ? 0 : -1;
         }
     }
 
     private static class SubtractWithCarryComplement {
 
-        static int value(int accumulator) {
+        static long value(long accumulator) {
             return BASE - (accumulator > 0 ? accumulator : accumulator + BASE);
         }
 
-        static int carry(int accumulator) {
+        static long carry(long accumulator) {
             return accumulator <= 0 ? 0 : 1;
         }
     }
 
     private static class IntegerFormat {
 
-        static int parse(CharSequence str, int fromIndex, int toIndex) {
-            int result = 0;
+        static long parse(CharSequence str, int fromIndex, int toIndex) {
+            long result = 0;
             assert fromIndex < toIndex;
             assert toIndex - fromIndex <= SIZE; // need no overflow protection if this holds
 
@@ -1637,27 +1640,28 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
 
         // equivalent to String.valueOf(digit).charAt(idx)
-        static char at(int digit, int idx) {
+        static char at(long digit, int idx) {
             assert 0 <= idx && idx < SIZE : idx;
             return (char) (DivMulTable.mod10(DivMulTable.divPower10(digit, idx)) + '0');
         }
 
-        static void format(byte[] dest, int n, int left, int right) {
+        static void format(byte[] dest, long n, int left, int right) {
             for (int i = right - 1; i >= left; --i) {
                 if (n == 0) {
                     dest[i] = '0';
                 } else {
-                    int div10 = DivMulTable.div10(n);
+                    long div10 = DivMulTable.div10(n);
                     dest[i] = (byte) (DivMulTable.mod10(div10, n) + '0');
                     n = div10;
                 }
             }
         }
 
-        static int length(int n) {
+        static int length(long n) {
             assert n < BASE;
-            return n < 100_000 ?         n <        100 ? n <        10 ? 1 : 2 : n <       1_000 ? 3
-                 : n <  10_000 ? 4 : 5 : n < 10_000_000 ? n < 1_000_000 ? 6 : 7 : n < 100_000_000 ? 8 : 9;
+            return (""+n).length(); ///XXX this is dumb
+//            return n < 100_000 ?         n <        100 ? n <        10 ? 1 : 2 : n <       1_000 ? 3
+//                 : n <  10_000 ? 4 : 5 : n < 10_000_000 ? n < 1_000_000 ? 6 : 7 : n < 100_000_000 ? 8 : 9;
         }
     }
 
@@ -1670,52 +1674,77 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
      */
     private static class DivMulTable {
 
-        private static final int[] MOD_INV = { // MOD_INV[i] == (1 << SHR[i]) / POWERS_OF_TEN[i] + 1; // except for last one
-        /*1E8*/ 0x55e63b89,
-                0x6b5fca6b,
-                0x431bde83,
-                0x14f8b589,
-                0x68db8bad,
-                0x10624dd3,
-                0x51eb851f,
-                0x66666667,
-        /*1E0*/ 1,
+//        private static final long[] MOD_INV = { // MOD_INV[i] == (1 << SHR[i]) / POWERS_OF_TEN[i] + 1; // except for last one
+//        /*1E8*/ 0x55e63b89,
+//                0x6b5fca6b,
+//                0x431bde83,
+//                0x14f8b589,
+//                0x68db8bad,
+//                0x10624dd3,
+//                0x51eb851f,
+//                0x66666667,
+//        /*1E0*/ 1,
+//        };
+//
+//        private static final long[] SHR = {
+//        /*1E8*/ 57,
+//                54,
+//                50,
+//                45,
+//                44,
+//                38,
+//                37,
+//                34,
+//        /*1E0*/ 0,
+//        };
+
+        private static final long[] P10 = {
+        /*1E15*/ 1000000000000000L,
+                 100000000000000L,
+                 10000000000000L,
+                 1000000000000L,
+                 100000000000L,
+                 10000000000L,
+                 1000000000L,
+                 100000000L,
+                 10000000L,
+                 1000000L,
+                 100000L,
+                 10000L,
+                 1000L,
+                 100L,
+                 10L,
+        /*1E0*/  1L,
+
         };
 
-        private static final int[] SHR = {
-        /*1E8*/ 57,
-                54,
-                50,
-                45,
-                44,
-                38,
-                37,
-                34,
-        /*1E0*/ 0,
-        };
 
-        // equivalent to input / POWERS_OF_TEN[idx] with POWERS_OF_TEN = { 1E8 .. 1E0 }
+        // equivalent to input / POWERS_OF_TEN[idx] with POWERS_OF_TEN = { 1E15 .. 1E0 }
         // Note: replacing the arrays with a switch seems to perform worse.
         static int divPower10(long input, int idx) {
-            assert input >> 31 == 0; // so we don't need the subtraction part
-            return (int) ((input * MOD_INV[idx]) >> SHR[idx]);
+//            assert input >> 31 == 0; // so we don't need the subtraction part
+//            return (int) ((input * MOD_INV[idx]) >> SHR[idx]);
+            return (int) (input / P10[idx]);
         }
 
-        static int div10(int input) {
-            assert input >> 31 == 0; // so we don't need the subtraction part
-            return (int) ((input * 0x66666667L) >> 34);
+        static long div10(long input) {
+            return input / 10;
+//            assert input >> 31 == 0; // so we don't need the subtraction part
+//            return (int) ((input * 0x66666667L) >> 34);
         }
 
-        static int mod10(int input) {
-            return mod10(div10(input), input);
+        static long mod10(long input) {
+            return input % 10;
+//            return mod10(div10(input), input);
         }
 
-        static int mod10(int div10, int input) {
-            return input - mul10(div10);
+        static long mod10(long div10, long input) {
+            return input % 10;
         }
 
-        static int mul10(int input) {
-            return (input + (input << 2)) << 1;
+        static long mul10(long input) {
+            return input * 10;//XXX
+//            return (input + (input << 2)) << 1;
         }
 
         static long div3(long input) {
@@ -1730,17 +1759,18 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
             return input + (input << 1);
         }
 
-        static int div9(int input) {
-            assert input >> 31 == 0; // so we don't need the subtraction part
-            return (int) ((input * 0x38e38e39L) >> 33);
+        static int div16(int input) {
+//            assert input >> 31 == 0; // so we don't need the subtraction part
+//            return (int) ((input * 0x38e38e39L) >> 33);
+            return input / 16; //XXX;
         }
 
-        static int mod9(int div9, int input) {
-            return input - mul9(div9);
+        static int mod16(int div9, int input) {
+            return input % 16; //XXX;
         }
 
-        static int mul9(int input) {
-            return (input << 3) + input;
+        static int mul16(int input) {
+            return input * 16; //XXX;
         }
     }
 }
