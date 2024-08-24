@@ -42,6 +42,7 @@ public class Int9MultiplyBenchmark {
 
         private static final BigInteger[] BIG_INTEGER = parse(STRING, BigInteger::new, BigInteger.class);
         private static final Int9[] INT_9 = parse(STRING, Int9::fromString, Int9.class);
+        private static final Int9N[] INT_9N = parse(STRING, Int9N::fromString, Int9N.class);
     }
 
 //    @Param({"10", "40", "80"})
@@ -85,6 +86,11 @@ public class Int9MultiplyBenchmark {
     }
 
     @Benchmark
+    public void multiplySimpleInt9N(Blackhole blackhole) {
+    	perform(Args.INT_9N, Int9N::multiplySimple, blackhole);
+    }
+
+    @Benchmark
     public void parseAndMultiplySimpleInt9(Blackhole blackhole) {
         parseAndPerform(Args.STRING, Int9::fromString, Int9::multiplySimple, blackhole);
     }
@@ -93,6 +99,12 @@ public class Int9MultiplyBenchmark {
     public void multiplyKaratsubaInt9(Blackhole blackhole) {
         BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
         perform(Args.INT_9, operator, blackhole);
+    }
+
+    @Benchmark
+    public void multiplyKaratsubaInt9N(Blackhole blackhole) {
+    	BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
+    	perform(Args.INT_9N, operator, blackhole);
     }
 
     @Benchmark
@@ -108,9 +120,21 @@ public class Int9MultiplyBenchmark {
     }
 
     @Benchmark
+    public void parallelMultiplyKaratsubaInt9N(Blackhole blackhole) {
+    	BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
+    	perform(Args.INT_9N, operator, blackhole);
+    }
+
+    @Benchmark
     public void parseAndParallelMultiplyKaratsubaInt9(Blackhole blackhole) {
         BinaryOperator<Int9> operator = (lhs, rhs) -> Int9.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
         parseAndPerform(Args.STRING, Int9::fromString, operator, blackhole);
+    }
+
+    @Benchmark
+    public void parseAndParallelMultiplyKaratsubaInt9N(Blackhole blackhole) {
+    	BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
+    	parseAndPerform(Args.STRING, Int9N::fromString, operator, blackhole);
     }
 
     private static <T> void parseAndPerform(String[] ARGS, Function<String, T> factory, BinaryOperator<T> operator, Blackhole blackhole) {
