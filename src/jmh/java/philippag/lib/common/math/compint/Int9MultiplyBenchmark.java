@@ -87,12 +87,23 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void multiplySimpleInt9N(Blackhole blackhole) {
+        if (!Int9N.nativeLibAvailable) {
+            return;
+        }
         perform(Args.INT_9N, Int9N::multiplySimple, blackhole);
     }
 
     @Benchmark
     public void parseAndMultiplySimpleInt9(Blackhole blackhole) {
         parseAndPerform(Args.STRING, Int9::fromString, Int9::multiplySimple, blackhole);
+    }
+
+    @Benchmark
+    public void parseAndMultiplySimpleInt9N(Blackhole blackhole) {
+        if (!Int9N.nativeLibAvailable) {
+            return;
+        }
+        parseAndPerform(Args.STRING, Int9N::fromString, Int9N::multiplySimple, blackhole);
     }
 
     @Benchmark
@@ -103,6 +114,9 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void multiplyKaratsubaInt9N(Blackhole blackhole) {
+        if (!Int9N.nativeLibAvailable) {
+            return;
+        }
         BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
         perform(Args.INT_9N, operator, blackhole);
     }
@@ -121,6 +135,9 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void parallelMultiplyKaratsubaInt9N(Blackhole blackhole) {
+        if (!Int9N.nativeLibAvailable) {
+            return;
+        }
         BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
         perform(Args.INT_9N, operator, blackhole);
     }
@@ -133,6 +150,9 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void parseAndParallelMultiplyKaratsubaInt9N(Blackhole blackhole) {
+        if (!Int9N.nativeLibAvailable) {
+            return;
+        }
         BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
         parseAndPerform(Args.STRING, Int9N::fromString, operator, blackhole);
     }
