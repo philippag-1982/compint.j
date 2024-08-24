@@ -1125,6 +1125,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     static {
+        // on Windows, this is a DLL
     	System.load(new File("build/native/multiply-core.so").getAbsolutePath());
     }
 
