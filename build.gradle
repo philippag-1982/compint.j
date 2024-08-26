@@ -23,6 +23,7 @@ dependencies {
     testImplementation 'org.junit.vintage:junit-vintage-engine:5.10.3'
 }
 
+sourceSets.main.java.srcDirs += 'src/main/native'
 sourceSets.test.java.srcDirs += 'src/perf/java'
 task 'perf' (type: Test)
 
