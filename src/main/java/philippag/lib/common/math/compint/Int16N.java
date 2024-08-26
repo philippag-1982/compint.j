@@ -1539,9 +1539,9 @@ public final class Int16N implements Comparable<Int16N>, AsciiDigitStreamable, C
         // correct for variable length of first element in data[]
         index += SIZE - firstDigitLength();
 
-        int div9 = DivMulTable.div16(index);
-        int idx = offset + div9;
-        return idx < data.length ? IntegerFormat.at(data[idx], DivMulTable.mod16(div9, index)) : '0';
+        int div16 = DivMulTable.div16(index);
+        int idx = offset + div16;
+        return idx < data.length ? IntegerFormat.at(data[idx], DivMulTable.mod16(div16, index)) : '0';
     }
 
     @Override
