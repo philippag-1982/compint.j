@@ -23,6 +23,11 @@ This research library provides alternative implementations to `java.math.BigInte
 Multiplication performs comparable to `java.math.BigInteger`, when using 
 `parallelMultiplyKaratsuba()` or setting a `setForkJoinPool()` and using the `multiply` convenience instance method.
 
+### Int9N
+
+`Int9N` as an experimental version of `Int9` that attempts to implement hot methods natively (via JNI). At the moment,
+only `multiplyCore` has a native implementation. Performance benefit is very slight.
+
 ### IntAscii
  `IntAscii` implements "big integers" using an arbitrary base, the numbers are represented as ASCII/Latin1/whatever byte arrays.
  This makes to/from `String` construction trivial, at the cost of calculation performance.
