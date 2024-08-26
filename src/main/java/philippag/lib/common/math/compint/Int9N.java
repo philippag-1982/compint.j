@@ -1152,8 +1152,8 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
 
     private static native void multiplyCore(
             int[] result, int resultLength, int shift,
-            int[] lhs, int lhsOffset, int lhsLength,
-            int[] rhs, int rhsOffset, int rhsLength);
+            int[] lhs, int lhsOffset, int lhsMax,
+            int[] rhs, int rhsOffset, int rhsMax);
 
     public static Int9N multiplyRussianPeasant(Int9N lhs, Int9N rhs) {
         return multiplyRussianPeasantForward(lhs, rhs).multiplySign(lhs, rhs);

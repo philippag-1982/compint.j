@@ -3,6 +3,7 @@
 
 #define BASE 1000000000 // 1E9
 
+// "gradle school" multiplication algorithm aka "long multiplication"
 JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore(
         JNIEnv * env, jclass cls,
         jintArray resultArray, jint resultLength, jint shift,
