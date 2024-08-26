@@ -2,7 +2,7 @@
 
 This research library provides alternative implementations to `java.math.BigInteger` that outperform it in some scenarios.
 
-## Building with gradle
+## Building
 
 - `gradle` - compile main and test classes
 - `gradle test` - run all the unit tests
@@ -10,10 +10,7 @@ This research library provides alternative implementations to `java.math.BigInte
 - `gradle perf --rerun-tasks` - run all custom benckmarks
 - `gradle jar` - create a JAR inside the `build/` folder
 - `gradle tasks` - see which tasks are available
-
-## Usage without gradle
-
-- Just reference or copy the classes from the `philippag.lib.common.math.compint` java package.
+- `cd src/main/native && make` - build the optional native part (requires GNU make and GCC or Clang)
 
 ## Classes overview
 
