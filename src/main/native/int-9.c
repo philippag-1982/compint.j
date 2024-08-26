@@ -1,5 +1,5 @@
 #include <jni.h>
-//#include <assert.h>
+#include <assert.h>
 
 #define BASE 1000000000 // 1E9
 
@@ -12,6 +12,7 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
     jint * lhs = (*env)->GetPrimitiveArrayCritical(env, lhsArray, /*isCopy*/ NULL);
     jint * rhs = (*env)->GetPrimitiveArrayCritical(env, rhsArray, /*isCopy*/ NULL);
     jint * result = (*env)->GetPrimitiveArrayCritical(env, resultArray, /*isCopy*/ NULL);
+    assert(lhs && rhs && result);
 
     for (jint i = rhsMax; i >= rhsOffset; --i, ++shift) {
         jint carry = 0;
