@@ -9,14 +9,9 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
         jintArray lhsArray, jint lhsOffset, jint lhsMax,
         jintArray rhsArray, jint rhsOffset, jint rhsMax) {
 
-    jboolean isCopy;
-
-    jint * lhs = (*env)->GetPrimitiveArrayCritical(env, lhsArray, &isCopy);
-    //assert(!isCopy);
-    jint * rhs = (*env)->GetPrimitiveArrayCritical(env, rhsArray, &isCopy);
-    //assert(!isCopy);
-    jint * result = (*env)->GetPrimitiveArrayCritical(env, resultArray, &isCopy);
-    //assert(!isCopy);
+    jint * lhs = (*env)->GetPrimitiveArrayCritical(env, lhsArray, /*isCopy*/ NULL);
+    jint * rhs = (*env)->GetPrimitiveArrayCritical(env, rhsArray, /*isCopy*/ NULL);
+    jint * result = (*env)->GetPrimitiveArrayCritical(env, resultArray, /*isCopy*/ NULL);
 
     for (jint i = rhsMax; i >= rhsOffset; --i, ++shift) {
         jint carry = 0;
