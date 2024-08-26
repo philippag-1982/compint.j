@@ -32,8 +32,8 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
             result[k] = sum;
         }
 
-		//assert(result[k] == 0);
-		result[k] = carry;
+        //assert(result[k] == 0);
+        result[k] = carry;
     }
 
     // these are only needed to end the critical section and let GC continue to work... I guess
