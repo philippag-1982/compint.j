@@ -17,6 +17,6 @@ clean:
 
 int-9: int-9.c
 	$(CC) $(OPTS) -nostdlib -o $(BUILD_DIR)/int-9.o -c int-9.c
-	$(CC) $(OPTS) -nostdlib -shared -o $(BUILD_DIR)/int-9.so $(BUILD_DIR)/int-9.o
+	$(CC) $(OPTS) -shared -o $(BUILD_DIR)/int-9.so $(BUILD_DIR)/int-9.o
 	rm $(BUILD_DIR)/int-9.o
 	file $(BUILD_DIR)/int-9.so
