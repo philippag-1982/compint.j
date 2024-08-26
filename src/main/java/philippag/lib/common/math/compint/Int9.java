@@ -48,13 +48,6 @@ import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
  * This is done for performance, to be able to use instances as accumulators.
  * However, this means we can't have reused constants for ZERO, ONE et al.
  *
- * Note: if this class were ported to a language that has int128,
- * we could change one digit to be 1E18 instead 1E9. (`Int18`)
- * I expect quite a bit of performance increase from this,
- * plus we could in theory represent larger numbers, if that language
- * were to support arrays (or char sequences / byte array slices)
- * above 1 << 31.
- *
  * This class lacks the usual random access to bits, and logical operations,
  * but instead offers random access to decimal digits.
  */
