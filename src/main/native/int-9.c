@@ -1,10 +1,10 @@
 #include <jni.h>
 
 #ifdef _USE_ASSERT
-	#include <assert.h>
-	#define ASSERT(statement) assert(statement)
+    #include <assert.h>
+    #define ASSERT(statement) assert(statement)
 #else
-	#define ASSERT(statement)
+    #define ASSERT(statement)
 #endif
 
 #define BASE 1000000000 // 1E9
