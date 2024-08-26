@@ -25,8 +25,8 @@ Multiplication performs comparable to `java.math.BigInteger`, when using
 
 ### Int9N
 
-`Int9N` as an experimental version of `Int9` that attempts to implement hot methods natively (via JNI). At the moment,
-only `multiplyCore` has a native implementation. Performance benefit is very slight.
+`Int9N` is an experimental version of `Int9` that attempts to implement hot methods natively (via JNI). At the moment,
+only `multiplyCore` has a native implementation. Performance benefit is very slight, and only observed on Linux with GCC.
 
 ### IntAscii
  `IntAscii` implements "big integers" using an arbitrary base, the numbers are represented as ASCII/Latin1/whatever byte arrays.
