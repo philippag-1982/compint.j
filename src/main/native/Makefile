@@ -1,10 +1,12 @@
 BUILD_DIR=../../../build/native
 ifeq ($(OS),Windows_NT)
-	JDK_MD_INCLUDE_DIR=win32
+	JNI_MD_INCLUDE_DIR=win32
 else
-	JDK_MD_INCLUDE_DIR=linux
+	JNI_MD_INCLUDE_DIR=linux
 endif
-OPTS=-O3 -Wall -Werror -pedantic -std=c17 -D_JNI_IMPLEMENTATION_ -I $(JAVA_HOME)/include -I $(JAVA_HOME)/include/$(JDK_MD_INCLUDE_DIR) -fPIC
+OPTS_ASSERT=
+#OPTS_ASSERT=-D_USE_ASSERT
+OPTS=$(OPTS_ASSERT) -O3 -Wall -Werror -pedantic -std=c17 -D_JNI_IMPLEMENTATION_ -I $(JAVA_HOME)/include -I $(JAVA_HOME)/include/$(JNI_MD_INCLUDE_DIR) -fPIC
 CC=gcc
 
 all: init int-9

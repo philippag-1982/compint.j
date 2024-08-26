@@ -1,5 +1,11 @@
 #include <jni.h>
-#include <assert.h>
+
+#ifdef _USE_ASSERT
+	#include <assert.h>
+	#define ASSERT(statement) assert(statement)
+#else
+	#define ASSERT(statement)
+#endif
 
 #define BASE 1000000000 // 1E9
 
@@ -13,7 +19,7 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
     jint * lhs = (*env)->GetPrimitiveArrayCritical(env, lhsArray, /*isCopy*/ NULL);
     jint * rhs = (*env)->GetPrimitiveArrayCritical(env, rhsArray, /*isCopy*/ NULL);
     jint * result = (*env)->GetPrimitiveArrayCritical(env, resultArray, /*isCopy*/ NULL);
-    assert(lhs && rhs && result);
+    ASSERT(lhs && rhs && result);
 
     for (jint i = rhsMax; i >= rhsOffset; --i, ++shift) {
         jint carry = 0;
@@ -27,13 +33,13 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
             jint sum = (jint) (product % BASE) + result[k];
             if (sum >= BASE) {
                 sum -= BASE;
-                //assert(sum < BASE);
+                ASSERT(sum < BASE);
                 carry++;
             }
             result[k] = sum;
         }
 
-        //assert(result[k] == 0);
+        ASSERT(result[k] == 0);
         result[k] = carry;
     }
 
