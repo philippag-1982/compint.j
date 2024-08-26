@@ -59,7 +59,7 @@ import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
  * This class lacks the usual random access to bits, and logical operations,
  * but instead offers random access to decimal digits.
  *
- * TODO...desc native aspect
+ * Unlike {@link Int9}, this class implements some core/hot routines natively.
  */
 public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, CharSequence {
 
@@ -87,6 +87,15 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         private static Int9N INT_MIN()  { return new Int9N(2, 147483648).setNegative(true); }
         private static Int9N LONG_MAX() { return new Int9N(9, 223372036, 854775807); }
         private static Int9N LONG_MIN() { return new Int9N(9, 223372036, 854775808).setNegative(true); }
+    }
+
+    public static final boolean nativeLibAvailable;
+
+    static {
+        File lib = new File("build/native/int-9.so"); // on Windows, this is a DLL
+        if (nativeLibAvailable = lib.exists()) {
+            System.load(lib.getAbsolutePath());
+        }
     }
 
     private boolean negative;
@@ -1143,16 +1152,6 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
         multiplyCore(result, result.length, shift, lhs, lhsOffset, lhsSize - 1, rhs, rhsOffset, rhsSize - 1);
         return result;
-    }
-
-    //@VisibleForTesting
-    static boolean nativeLibAvailable;
-
-    static {
-        File lib = new File("build/native/multiply-core-9.so"); // on Windows, this is a DLL
-        if (nativeLibAvailable = lib.exists()) {
-            System.load(lib.getAbsolutePath());
-        }
     }
 
     private static native void multiplyCore(
