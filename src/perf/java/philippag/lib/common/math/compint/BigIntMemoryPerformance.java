@@ -81,6 +81,10 @@ public class BigIntMemoryPerformance extends CommonTestBase {
 
         int wrong = 0;
         t = System.nanoTime();
+        /*
+         * These ugly `instanceof <class-type>` checks are on purpose
+         * to prevent `invokeinterface` opcode for the `CharSequence` interface.
+         */
         if (x instanceof Int9 cs) {
             for (int i = 0, len = cs.length(); i < len; i++) {
                 char c = cs.charAt(i);

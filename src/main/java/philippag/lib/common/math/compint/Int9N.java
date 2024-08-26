@@ -1530,6 +1530,8 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
 
     // random access to a digit w/o needing to materialize a string
     // this is optimized to not have any divisions.
+    // Note: a solution with cached segments of 9-digit-substring was tried
+    // and actually performed worse than this...
     @Override
     public char charAt(int index) {
         if (negative) {
