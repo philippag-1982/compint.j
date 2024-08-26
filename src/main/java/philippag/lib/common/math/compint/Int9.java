@@ -1141,9 +1141,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             int[] lhs, int lhsOffset, int lhsMax,
             int[] rhs, int rhsOffset, int rhsMax) {
 
-        int carry = 0;
-
         for (int i = rhsMax; i >= rhsOffset; --i, ++shift) {
+            int carry = 0;
             int rhsValue = rhs[i];
             int k = result.length - shift;
 
@@ -1161,14 +1160,9 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
                 result[k] = sum;
             }
 
-            if (carry > 0) {
-                assert result[k] == 0;
-                result[k] = carry;
-                carry = 0;
-            }
+            assert result[k] == 0;
+            result[k] = carry;
         }
-
-        assert carry == 0;
     }
 
     public static Int9 multiplyRussianPeasant(Int9 lhs, Int9 rhs) {

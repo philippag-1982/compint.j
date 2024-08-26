@@ -9,7 +9,6 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
         jintArray lhsArray, jint lhsOffset, jint lhsMax,
         jintArray rhsArray, jint rhsOffset, jint rhsMax) {
 
-    jint carry = 0;
     jboolean isCopy;
 
     jint * lhs = (*env)->GetPrimitiveArrayCritical(env, lhsArray, &isCopy);
@@ -20,6 +19,7 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
     //assert(!isCopy);
 
     for (jint i = rhsMax; i >= rhsOffset; --i, ++shift) {
+        jint carry = 0;
         jint rhsValue = rhs[i];
         jint k = resultLength - shift;
 
@@ -37,14 +37,9 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
             result[k] = sum;
         }
 
-        if (carry > 0) {
-            //assert(result[k] == 0);
-            result[k] = carry;
-            carry = 0;
-        }
+		//assert(result[k] == 0);
+		result[k] = carry;
     }
-
-    //assert(carry == 0);
 
     // these are only needed to end the critical section and let GC continue to work... I guess
     // call them in reverse
