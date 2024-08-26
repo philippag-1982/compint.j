@@ -21,9 +21,8 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
         for (jint j = lhsMax; j >= lhsOffset; --j, --k) {
             jlong lhsValue = lhs[j]; // force multiplication in jlong
             jlong product = carry + lhsValue * rhsValue;
-
-            carry =                (jint) (product / BASE);
-            jint sum = result[k] + (jint) (product % BASE);
+            carry =    (jint) (product / BASE);
+            jint sum = (jint) (product % BASE) + result[k];
             if (sum >= BASE) {
                 sum -= BASE;
                 //assert(sum < BASE);

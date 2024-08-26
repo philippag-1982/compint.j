@@ -1149,9 +1149,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             for (int j = lhsMax; j >= lhsOffset; --j, --k) {
                 long lhsValue = lhs[j]; // force multiplication in long
                 long product = carry + lhsValue * rhsValue;
-
-                carry =               (int) (product / BASE);
-                int sum = result[k] + (int) (product % BASE);
+                carry =   (int) (product / BASE);
+                int sum = (int) (product % BASE) + result[k];
                 if (sum >= BASE) {
                     sum -= BASE;
                     assert sum < BASE;
