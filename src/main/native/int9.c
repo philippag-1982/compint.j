@@ -17,7 +17,7 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
         jintArray rhsArray, jint rhsOffset, jint rhsMax) {
 
 #ifdef _USE_ARRAY_HACK
-	// this works, but is a hack, and curiously performs a bit worse
+    // this works, but is a hack, and curiously performs a bit worse
     struct as_jint_ptr {
         jint * ptr;
     };

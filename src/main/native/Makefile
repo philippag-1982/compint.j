@@ -25,3 +25,6 @@ int9: int9.c
 	rm $(BUILD_DIR)/int9.o
 	file $(BUILD_DIR)/int9.so
 	cp $(BUILD_DIR)/int9.so $(DEPLOY_DIR)
+
+test:
+	java -ea -cp $(DEPLOY_DIR)/compint.j.jar Demo.java
