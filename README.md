@@ -11,6 +11,13 @@ This research library provides alternative implementations to `java.math.BigInte
 - `gradle jar` - create a JAR inside the `build/` folder
 - `gradle tasks` - see which tasks are available
 - `cd src/main/native && make` - build the optional native part (requires GNU make and GCC or Clang)
+- `cd src/main/native && make test` - test the JAR-file-based native library lookup (requires `make` and `gradle jar`)
+
+## Using
+
+- Source: Drop-in the classes from the `philippag.lib.common.math.compint` Java package
+- JAR: use the jar file built with `gradle jar` (`java -cp compint.j.jar`)
+  - Note: if the native variant is used, the native library file built by `make` must reside next to the JAR file in the file system
 
 ## Classes overview
 
