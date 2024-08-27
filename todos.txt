@@ -36,8 +36,11 @@
     https://github.com/michaelg29/cmathematics
     "C/C++ Math Library", episode 7 "Big Integer Generic Bases"
     https://www.youtube.com/watch?v=_S_iRJ-vHgo&list=PLysLvOneEETMjrK5N-PLIYhZKwmxjGs2-&index=7
-[ ] try if "Int8" approach performs better
+[X] try if "Int8" approach performs better
     instead of div,mod with 9, we have 8 digits and can use shifts.
     mainly could benefit random access charAt()
-[ ] !!! port to a language that has `int128`
-[ ] maybe get rid of get() and set() for perf
+    => random access perf slightly higher, 
+    at the cost of slower multiplication (due to larger arrays, less data density)
+[X] port to a language that has `int128`
+    => performed really bad in all languages I tried (C, C++, Rust, Zig, Odin)
+[X] maybe get rid of set() for perf
