@@ -88,7 +88,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     public static final boolean nativeLibAvailable;
 
     static {
-        File lib = new File("build/native/int-9.so"); // on Windows, this is a DLL
+        File lib = new File("build/native/int9.so"); // on Windows, this is a DLL
         if (nativeLibAvailable = lib.exists()) {
             System.load(lib.getAbsolutePath());
         }
