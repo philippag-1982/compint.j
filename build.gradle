@@ -1,4 +1,4 @@
-defaultTasks 'compileJava', 'compileTestJava', 'compileJmhJava'
+defaultTasks 'compileJava', 'compileTestJava', 'compileJmhJava', 'jar'
 
 apply plugin: 'me.champeau.jmh'
 apply plugin: 'java-library'
