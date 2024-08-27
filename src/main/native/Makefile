@@ -7,7 +7,7 @@ else
 	JNI_MD_INCLUDE_DIR=linux
 endif
 FLAGS=
-#FLAGS=-D_USE_ASSERT _USE_ARRAY_HACK
+#FLAGS=-D_USE_ASSERT -D_USE_ARRAY_HACK
 OPTS=$(FLAGS) -O3 -Wall -Werror -pedantic -std=c17 -D_JNI_IMPLEMENTATION_ -I $(JAVA_HOME)/include -I $(JAVA_HOME)/include/$(JNI_MD_INCLUDE_DIR) -fPIC
 CC=gcc
 
