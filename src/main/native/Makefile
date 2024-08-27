@@ -4,9 +4,9 @@ ifeq ($(OS),Windows_NT)
 else
 	JNI_MD_INCLUDE_DIR=linux
 endif
-OPTS_ASSERT=
-#OPTS_ASSERT=-D_USE_ASSERT
-OPTS=$(OPTS_ASSERT) -O3 -Wall -Werror -pedantic -std=c17 -D_JNI_IMPLEMENTATION_ -I $(JAVA_HOME)/include -I $(JAVA_HOME)/include/$(JNI_MD_INCLUDE_DIR) -fPIC
+FLAGS=
+#FLAGS=-D_USE_ASSERT _USE_ARRAY_HACK
+OPTS=$(FLAGS) -O3 -Wall -Werror -pedantic -std=c17 -D_JNI_IMPLEMENTATION_ -I $(JAVA_HOME)/include -I $(JAVA_HOME)/include/$(JNI_MD_INCLUDE_DIR) -fPIC
 CC=gcc
 
 all: init int9

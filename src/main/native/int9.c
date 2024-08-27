@@ -9,12 +9,6 @@
 
 #define BASE 1000000000 // 1E9
 
-struct as_jint_ptr {
-    jint * ptr;
-};
-
-#define get_jint_ptr(jintArray) (((struct as_jint_ptr *) (jintArray))->ptr + sizeof(jint))
-
 // "gradle school" multiplication algorithm aka "long multiplication"
 JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore(
         JNIEnv * env, jclass cls,
@@ -22,15 +16,21 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
         jintArray lhsArray, jint lhsOffset, jint lhsMax,
         jintArray rhsArray, jint rhsOffset, jint rhsMax) {
 
-    // the hacky way of doing this:
+#ifdef _USE_ARRAY_HACK
+	// this works, but is a hack, and curiously performs a bit worse
+    struct as_jint_ptr {
+        jint * ptr;
+    };
+    #define get_jint_ptr(jintArray) (((struct as_jint_ptr *) (jintArray))->ptr + sizeof(jint))
+
     jint * lhs = get_jint_ptr(lhsArray);
     jint * rhs = get_jint_ptr(rhsArray);
     jint * result = get_jint_ptr(resultArray);
-
-    // the clean way:
-//    jint * lhs = (*env)->GetPrimitiveArrayCritical(env, lhsArray, /*isCopy*/ NULL);
-//    jint * rhs = (*env)->GetPrimitiveArrayCritical(env, rhsArray, /*isCopy*/ NULL);
-//    jint * result = (*env)->GetPrimitiveArrayCritical(env, resultArray, /*isCopy*/ NULL);
+#else
+    jint * lhs = (*env)->GetPrimitiveArrayCritical(env, lhsArray, /*isCopy*/ NULL);
+    jint * rhs = (*env)->GetPrimitiveArrayCritical(env, rhsArray, /*isCopy*/ NULL);
+    jint * result = (*env)->GetPrimitiveArrayCritical(env, resultArray, /*isCopy*/ NULL);
+#endif
 
     ASSERT(lhs && rhs && result);
 
@@ -58,7 +58,9 @@ JNIEXPORT void JNICALL Java_philippag_lib_common_math_compint_Int9N_multiplyCore
 
     // these are only needed to end the critical section and let GC continue to work... I guess
     // call them in reverse
-//    (*env)->ReleasePrimitiveArrayCritical(env, resultArray, result, JNI_ABORT); // it wasn't a copy!
-//    (*env)->ReleasePrimitiveArrayCritical(env, rhsArray, rhs, JNI_ABORT); // didn't write!
-//    (*env)->ReleasePrimitiveArrayCritical(env, lhsArray, lhs, JNI_ABORT); // didn't write!
+#ifndef _USE_ARRAY_HACK
+    (*env)->ReleasePrimitiveArrayCritical(env, resultArray, result, JNI_ABORT); // (hope) it wasn't a copy!
+    (*env)->ReleasePrimitiveArrayCritical(env, rhsArray, rhs, JNI_ABORT); // didn't write!
+    (*env)->ReleasePrimitiveArrayCritical(env, lhsArray, lhs, JNI_ABORT); // didn't write!
+#endif
 }
