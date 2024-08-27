@@ -1,5 +1,6 @@
+ROOT_DIR=../../..
+DEPLOY_DIR=$(ROOT_DIR)/build/libs
 BUILD_DIR=../resources
-DEPLOY_DIR=../../../build/libs
 ifeq ($(OS),Windows_NT)
 	JNI_MD_INCLUDE_DIR=win32
 else
@@ -10,7 +11,7 @@ FLAGS=
 OPTS=$(FLAGS) -O3 -Wall -Werror -pedantic -std=c17 -D_JNI_IMPLEMENTATION_ -I $(JAVA_HOME)/include -I $(JAVA_HOME)/include/$(JNI_MD_INCLUDE_DIR) -fPIC
 CC=gcc
 
-all: int9
+all: init int9
 
 init:
 	mkdir -p $(DEPLOY_DIR)
