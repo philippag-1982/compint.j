@@ -31,6 +31,8 @@ tasks.withType(Test) {
     if ('test'.equals(it.name)) {
         jvmArgs '-ea'
         exclude '**/*Performance.class'
+        testLogging.exceptionFormat 'full'
+        testLogging.showStackTraces = true
     } else if ('perf'.equals(it.name)) {
         jvmArgs '-da', '-Xmx8G'
         exclude '**/*Test.class'

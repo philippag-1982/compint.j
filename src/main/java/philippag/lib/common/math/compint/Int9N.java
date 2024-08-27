@@ -59,6 +59,8 @@ import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
  */
 public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, CharSequence {
 
+    public static final boolean nativeLibAvailable = NativeLibLoader.loadAsResource(Int9N.class, "int9.so");
+
     private static final int BASE = 1_000_000_000;
     private static final int HALF_BASE = BASE / 2;
     private static final int DOUBLE_BASE = BASE * 2;
@@ -83,15 +85,6 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         private static Int9N INT_MIN()  { return new Int9N(2, 147483648).setNegative(true); }
         private static Int9N LONG_MAX() { return new Int9N(9, 223372036, 854775807); }
         private static Int9N LONG_MIN() { return new Int9N(9, 223372036, 854775808).setNegative(true); }
-    }
-
-    public static final boolean nativeLibAvailable;
-
-    static {
-        File lib = new File("build/native/int9.so"); // on Windows, this is a DLL
-        if (nativeLibAvailable = lib.exists()) {
-            System.load(lib.getAbsolutePath());
-        }
     }
 
     private boolean negative;
@@ -1748,6 +1741,52 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
 
         static int mul9(int input) {
             return (input << 3) + input;
+        }
+    }
+
+    private static class NativeLibLoader {
+
+        private static final String PREFIX_FILE = "file:";
+        private static final String PREFIX_JAR = "jar:file:";
+
+        private static boolean loadAsResource(Class<?> cls, String libName) {
+            String resourceName = "/" + libName;
+            var url = cls.getResource(resourceName);
+            if (url == null) {
+                System.err.printf("ERROR [%s]: Native library '%s' not found\n", cls.getName(), resourceName);
+                return false;
+            }
+
+            var location = url.toString();
+            String fileName;
+            if (location.startsWith(PREFIX_FILE)) {
+                // "file:/opt/gitwork/shared/compint.j/bin/main/int9.so"
+                // =>
+                // "/opt/gitwork/shared/compint.j/bin/main/int9.so"
+                fileName = location.substring(PREFIX_FILE.length());
+            } else if (location.startsWith(PREFIX_JAR)) {
+                // "jar:file:/opt/gitwork/shared/compint.j/build/libs/compint.j.jar!/int9.so"
+                // =>
+                // "/opt/gitwork/shared/compint.j/build/libs/int9.so"
+                String path = location.substring(PREFIX_JAR.length());
+                int i = path.lastIndexOf('!');
+                assert i != -1;
+                i = path.lastIndexOf('/', i - 1);
+                assert i != -1;
+                fileName = path.substring(0, i) + resourceName;
+            } else {
+                assert false : location;
+                return false;
+            }
+
+            var file = new File(fileName);
+            if (file.exists()) {
+                System.load(file.getPath());
+                return true;
+            } else {
+                System.err.printf("ERROR [%s]: Expecting native library at this location: %s\n", cls.getName(), file);
+                return false;
+            }
         }
     }
 }
