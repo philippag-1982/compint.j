@@ -1,3 +1,12 @@
+# User input ARGS:
+# ARGS="<lhs-size>? <rhs-size>?" make test
+# ARGS="<lhs-size>? <rhs-size>? -b" make test # to use java.math.BigInteger
+# ARGS="<lhs-size>? <rhs-size>? -j" make test # to Java Int9 (not native Int9N)
+
+ifndef VERBOSE
+.SILENT:
+endif
+
 ROOT_DIR=../../..
 DEPLOY_DIR=$(ROOT_DIR)/build/libs
 BUILD_DIR=../resources
@@ -28,4 +37,4 @@ int9: int9.c
 	cp $(BUILD_DIR)/int9.so $(DEPLOY_DIR)
 
 test:
-	java -ea -cp $(DEPLOY_DIR)/compint.j.jar Demo.java
+	java -ea -cp $(DEPLOY_DIR)/compint.j.jar Demo.java $(ARGS)
