@@ -1749,31 +1749,42 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         private static final String PREFIX_FILE = "file:";
         private static final String PREFIX_JAR = "jar:file:";
 
+        /**
+         * Loads the given native library deployed as a class path resource.
+         * There's 2 ways to load the given shared object:
+         * 1) When classes are loaded from the file system, the .so file can be loaded directly.
+         * 2) When classes are loaded from a JAR file, the .so file is expected to be located
+         *    next to the JAR file in the file system.
+         */
         private static boolean loadAsResource(Class<?> cls, String libName) {
             var url = cls.getResource("/" + libName);
             if (url == null) {
-                System.err.printf("ERROR [%s]: Native library '%s' not found\n", cls.getName(), libName);
+                System.err.printf("ERROR [%s]: Native library '%s' not found in class path\n", cls.getName(), libName);
                 return false;
             }
 
-            var location = url.toString();
-            String fileName;
-            if (location.startsWith(PREFIX_FILE)) {
-                // "file:/opt/gitwork/shared/compint.j/bin/main/int9.so"
-                // =>
-                // "/opt/gitwork/shared/compint.j/bin/main/int9.so"
-                fileName = location.substring(PREFIX_FILE.length());
-            } else if (location.startsWith(PREFIX_JAR)) {
-                // "jar:file:/opt/gitwork/shared/compint.j/build/libs/compint.j.jar!/int9.so"
-                // =>
-                // "/opt/gitwork/shared/compint.j/build/libs/int9.so"
-                int i = location.lastIndexOf('!');
-                assert i != -1;
-                i = location.lastIndexOf('/', i - 1);
-                assert i != -1;
-                fileName = location.substring(PREFIX_JAR.length(), i + 1) + libName;
-            } else {
-                assert false : location;
+            String location = url.toString();
+            String fileName = null;
+            error: {
+                if (location.startsWith(PREFIX_FILE)) {
+                    // "file:/opt/gitwork/shared/compint.j/bin/main/int9.so"
+                    // =>
+                    // "/opt/gitwork/shared/compint.j/bin/main/int9.so"
+                    fileName = location.substring(PREFIX_FILE.length());
+                } else if (location.startsWith(PREFIX_JAR)) {
+                    // "jar:file:/opt/gitwork/shared/compint.j/build/libs/compint.j.jar!/int9.so"
+                    // =>
+                    // "/opt/gitwork/shared/compint.j/build/libs/int9.so"
+                    int i = location.lastIndexOf('!');
+                    if (i == -1) break error;
+                    i = location.lastIndexOf('/', i - 1);
+                    if (i == -1) break error;
+                    fileName = location.substring(PREFIX_JAR.length(), i + 1) + libName;
+                }
+            }
+
+            if (fileName == null) {
+                System.err.printf("ERROR [%s]: Could not resolve file system path for native library '%s'; class path resource is '%s'\n", cls.getName(), libName, location);
                 return false;
             }
 
@@ -1782,7 +1793,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
                 System.load(file.getPath());
                 return true;
             } else {
-                System.err.printf("ERROR [%s]: Expecting native library at this location: %s\n", cls.getName(), file);
+                System.err.printf("ERROR [%s]: Expecting native library '%s' at this location: '%s'\n", cls.getName(), libName, file);
                 return false;
             }
         }
