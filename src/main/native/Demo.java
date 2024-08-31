@@ -24,27 +24,34 @@ public class Demo {
             n[idx++] = Integer.parseInt(arg);
         }
 
-        long t = System.currentTimeMillis();
         String lhs = "7".repeat(n[0]);
         String rhs = "8".repeat(n[1]);
+        String as, bs, cs;
+        long t = System.currentTimeMillis();
         if (useBigInteger) {
             var a = new BigInteger(lhs);
             var b = new BigInteger(rhs);
             var c = a.multiply(b);
-            System.out.printf( "%s * %s = %s\n", a, b, c);
+            as = a.toString();
+            bs = b.toString();
+            cs = c.toString();
         } else if (useJavaInt9) {
             var a = Int9.fromString(lhs);
             var b = Int9.fromString(rhs);
             var c = a.multiply(b);
-            System.out.printf("%s * %s = %s\n", a, b, c);
+            as = a.toString();
+            bs = b.toString();
+            cs = c.toString();
         } else {
             var a = Int9N.fromString(lhs);
             var b = Int9N.fromString(rhs);
             var c = a.multiply(b);
-            System.out.printf("%s * %s = %s\n", a, b, c);
+            as = a.toString();
+            bs = b.toString();
+            cs = c.toString();
         }
         t = System.currentTimeMillis() - t;
-
+        System.out.printf( "%s * %s = %s\n", as, bs, cs);
         System.err.printf(Locale.ROOT, "Digit count: %,d x %,d; use BigInteger: %s use Java Int9: %s time elapsed: %,d millis\n",
                 n[0],
                 n[1],
