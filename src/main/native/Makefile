@@ -8,8 +8,8 @@ ifndef VERBOSE
 endif
 
 ROOT_DIR=../../..
-DEPLOY_DIR=$(ROOT_DIR)/build/libs
-BUILD_DIR=../resources
+JAR_DIR=$(ROOT_DIR)/build/libs
+BUILD_DIR=$(ROOT_DIR)/src/main/resources
 ifeq ($(OS),Windows_NT)
 	JNI_MD_INCLUDE_DIR=win32
 else
@@ -20,21 +20,16 @@ FLAGS=
 OPTS=$(FLAGS) -O3 -Wall -Werror -pedantic -std=c17 -D_JNI_IMPLEMENTATION_ -I $(JAVA_HOME)/include -I $(JAVA_HOME)/include/$(JNI_MD_INCLUDE_DIR) -fPIC
 CC=gcc
 
-all: init int9
-
-init:
-	mkdir -p $(DEPLOY_DIR)
+all: int9
 
 clean:
 	rm -f $(BUILD_DIR)/*.so
-	rm -f $(DEPLOY_DIR)/*.so
 
 int9: int9.c
 	$(CC) $(OPTS) -nostdlib -o $(BUILD_DIR)/int9.o -c int9.c
 	$(CC) $(OPTS) -shared -o $(BUILD_DIR)/int9.so $(BUILD_DIR)/int9.o
 	rm $(BUILD_DIR)/int9.o
 	file $(BUILD_DIR)/int9.so
-	cp $(BUILD_DIR)/int9.so $(DEPLOY_DIR)
 
 test:
-	java -ea -cp $(DEPLOY_DIR)/compint.j.jar Demo.java $(ARGS)
+	java -ea -cp $(JAR_DIR)/compint.j.jar Demo.java $(ARGS)

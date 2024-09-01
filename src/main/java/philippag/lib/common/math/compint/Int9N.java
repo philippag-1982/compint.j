@@ -25,6 +25,8 @@ SOFTWARE.
 package philippag.lib.common.math.compint;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
@@ -59,7 +61,7 @@ import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
  */
 public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, CharSequence {
 
-    public static final boolean nativeLibAvailable = NativeLibLoader.loadAsResource(Int9N.class, "int9.so");
+    public static final boolean nativeLibAvailable = NativeLibLoader.loadAsResource(Int9N.class, "int9.so", /*autoExtract*/ true);
 
     private static final int BASE = 1_000_000_000;
     private static final int HALF_BASE = BASE / 2;
@@ -1756,7 +1758,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
          * 2) When classes are loaded from a JAR file, the .so file is expected to be located
          *    next to the JAR file in the file system.
          */
-        private static boolean loadAsResource(Class<?> cls, String libName) {
+        private static boolean loadAsResource(Class<?> cls, String libName, boolean autoExtract) {
             var url = cls.getResource("/" + libName);
             if (url == null) {
                 System.err.printf("ERROR [%s]: Native library '%s' not found in class path\n", cls.getName(), libName);
@@ -1765,7 +1767,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
 
             String location = url.toString();
             String fileName = null;
-            error: {
+            resolve: {
                 if (location.startsWith(PREFIX_FILE)) {
                     // "file:/opt/gitwork/shared/compint.j/bin/main/int9.so"
                     // =>
@@ -1776,10 +1778,20 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
                     // =>
                     // "/opt/gitwork/shared/compint.j/build/libs/int9.so"
                     int i = location.lastIndexOf('!');
-                    if (i == -1) break error;
+                    if (i == -1) break resolve;
                     i = location.lastIndexOf('/', i - 1);
-                    if (i == -1) break error;
+                    if (i == -1) break resolve;
                     fileName = location.substring(PREFIX_JAR.length(), i + 1) + libName;
+                    if (!autoExtract) break resolve;
+                    var file = new File(fileName);
+                    if (!file.exists()) {
+                        try (var in = url.openStream()) {
+                            Files.copy(in, file.toPath());
+                            System.err.printf("INFO [%s]: Extracted native library '%s' to '%s'\n", cls.getName(), libName, fileName);
+                        } catch (IOException e) {
+                            // Ignore, error logged below
+                        }
+                    }
                 }
             }
 
