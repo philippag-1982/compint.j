@@ -594,6 +594,51 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
      * =================
      */
 
+    public Int9N multiplyInPlace(int rhs) {
+        if (rhs == Integer.MIN_VALUE) {
+            setValue(multiplySimple(this, INT_MIN));
+            return this;
+        }
+        boolean rhsNegative = rhs < 0;
+        int rhsAbs = rhsNegative ? -rhs : rhs;
+        assert rhsAbs >= 0;
+
+        if (rhsAbs < BASE) {
+            // fast path
+            ensureCapacity(1);
+            multiplyInPlaceAbs(rhsAbs);
+            setNegative(multiplySign(negative, rhsNegative));
+        } else {
+            // quadratic multiplication needs an interim array, at least
+            setValue(multiplySimple(this, fromInt(rhs)));
+        }
+        return this;
+    }
+
+    private void multiplyInPlaceAbs(int rhs) {
+        assert rhs < BASE;
+
+        int carry = 0;
+
+        for (int i = offset + length - 1; i >= offset; --i) {
+            long lhsValue = data[i]; // force multiplication in long
+            long product = carry + lhsValue * rhs;
+            carry =   (int) (product / BASE);
+            int sum = (int) (product % BASE);
+            if (sum >= BASE) {
+                sum -= BASE;
+                assert sum < BASE;
+                carry++;
+            }
+            data[i] = sum;
+        }
+
+        if (carry > 0) {
+            expandWith(carry);
+        }
+        canonicalize();
+    }
+
     public Int9N addInPlace(Int9N rhs) {
         if (rhs.isZero()) {
             return this;

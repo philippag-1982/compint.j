@@ -1585,6 +1585,9 @@ public class Int9Test extends CommonTestBase {
         checkMulStrNew("-1", "2");
         checkMulStrNew("-1", "-2");
 
+        checkMulStrNew("5".repeat(30), "6".repeat(20));
+        checkMulStrNew("-1", "-2");
+
         checkMulStrNew("1", "-20000000000000000000000000");
         checkMulStrNew("-1", "-200000000000000000000000000000000");
         checkMulStrNew("-1", "2000000000");
