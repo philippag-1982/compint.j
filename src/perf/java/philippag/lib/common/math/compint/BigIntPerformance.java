@@ -90,6 +90,14 @@ public class BigIntPerformance extends CommonTestBase {
     }
 
     @Test
+    public void multiplyPrimitive() {
+        int REPEATS = 100_000;
+        var ARGS = BINARY_ARGS_BIG_LEFT;
+        binary("Int9", "multiplySimple", Int9::fromString, Int9::multiplySimple, REPEATS, ARGS);
+        binaryInt("Int9", "multiplyInPlace", Int9::fromString, Int9::multiplyInPlace, REPEATS, ARGS);
+    }
+
+    @Test
     public void add() {
         int REPEATS = 100;
         var ARGS = BINARY_ARGS_BIG;
@@ -274,6 +282,32 @@ public class BigIntPerformance extends CommonTestBase {
                 t1 = System.nanoTime() - t1;
 
                 assert result != null;
+                top += t1;
+            }
+        }
+
+        t0 = System.nanoTime() - t0;
+        System.out.printf(Locale.ROOT, "%12s %25s %,15d total %,15d op %,15d diff\n", impl, op, t0 / 1000, top / 1000, (t0 - top) / 1000);
+    }
+
+    private interface IntOperator<T> {
+
+        void apply(T value, int arg);
+    }
+
+    private static <T> void binaryInt(String impl, String op, Function<String, T> factory, IntOperator<T> operator, int REPEATS, String[] ARGS) {
+        long t0 = System.nanoTime();
+        long top = 0;
+
+        for (int i = 0; i < REPEATS; i++) {
+            for (int j = 0; j < ARGS.length;) {
+                T lhs = factory.apply(ARGS[j++]);
+                int rhs = Integer.parseInt(ARGS[j++]);
+
+                long t1 = System.nanoTime();
+                operator.apply(lhs, rhs);
+                t1 = System.nanoTime() - t1;
+
                 top += t1;
             }
         }

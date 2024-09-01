@@ -1624,6 +1624,12 @@ public class Int9Test extends CommonTestBase {
         Assert.assertEquals(expected, Int9.multiplyKaratsuba(lhs, rhs, 1).toString());
         Assert.assertEquals(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, pool()).toString());
         Assert.assertEquals(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, 1, 2, pool()).toString());
+
+        if (rhs.isInt()) {
+            var copy = lhs.copy();
+            copy.multiplyInPlace(rhs.toInt());
+            Assert.assertEquals(expected, copy.toString());
+        }
     }
 
     @Test
@@ -1848,6 +1854,12 @@ public class Int9Test extends CommonTestBase {
         Assert.assertEquals(expected, Long.parseLong(Int9.multiplyKaratsuba(lhs, rhs, 1).toString()));
         Assert.assertEquals(expected, Long.parseLong(Int9.parallelMultiplyKaratsuba(lhs, rhs, pool()).toString()));
         Assert.assertEquals(expected, Long.parseLong(Int9.parallelMultiplyKaratsuba(lhs, rhs, 1, 2, pool()).toString()));
+
+        if (rhs.isInt()) {
+            var copy = lhs.copy();
+            copy.multiplyInPlace(rhs.toInt());
+            Assert.assertEquals(expected, copy.toLong());
+        }
     }
 
     private static void checkAddStrBig(String expected, String lhsStr, String rhsStr) {
@@ -1912,6 +1924,12 @@ public class Int9Test extends CommonTestBase {
         checkStringRepresentation(expected, Int9.multiplyKaratsuba(lhs, rhs, 1));
         checkStringRepresentation(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, pool()));
         checkStringRepresentation(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, 1, 2, pool()));
+
+        if (rhs.isInt()) {
+            var copy = lhs.copy();
+            copy.multiplyInPlace(rhs.toInt());
+            Assert.assertEquals(expected, copy.toString());
+        }
     }
 
     private static void checkStringRepresentation(String input, Int9 value) {
