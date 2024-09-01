@@ -1144,7 +1144,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         for (int i = rhsMax; i >= rhsOffset; --i, ++shift) {
             int carry = 0;
             int rhsValue = rhs[i];
-            int k = result.length - shift;
+            int k = resultLength - shift;
 
             for (int j = lhsMax; j >= lhsOffset; --j, --k) {
                 long lhsValue = lhs[j]; // force multiplication in long
