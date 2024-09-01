@@ -1633,6 +1633,11 @@ public class Int9Test extends CommonTestBase {
             copy.multiplyInPlace(rhs.toInt());
             Assert.assertEquals(expected, copy.toString());
         }
+        if (rhs.isLong()) {
+            var copy = lhs.copy();
+            copy.multiplyInPlace(rhs.toLong());
+            Assert.assertEquals(expected, copy.toString());
+        }
     }
 
     @Test
@@ -1863,6 +1868,11 @@ public class Int9Test extends CommonTestBase {
             copy.multiplyInPlace(rhs.toInt());
             Assert.assertEquals(expected, copy.toLong());
         }
+        if (rhs.isLong()) {
+            var copy = lhs.copy();
+            copy.multiplyInPlace(rhs.toLong());
+            Assert.assertEquals(expected, copy.toLong());
+        }
     }
 
     private static void checkAddStrBig(String expected, String lhsStr, String rhsStr) {
@@ -1931,6 +1941,11 @@ public class Int9Test extends CommonTestBase {
         if (rhs.isInt()) {
             var copy = lhs.copy();
             copy.multiplyInPlace(rhs.toInt());
+            Assert.assertEquals(expected, copy.toString());
+        }
+        if (rhs.isLong()) {
+            var copy = lhs.copy();
+            copy.multiplyInPlace(rhs.toLong());
             Assert.assertEquals(expected, copy.toString());
         }
     }

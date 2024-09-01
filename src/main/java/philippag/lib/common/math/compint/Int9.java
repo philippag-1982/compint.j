@@ -314,15 +314,15 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             negative = true;
             value = -value; // doesn't work for Long.MIN_VALUE
         }
-        return fromLongAbs(value).setNegative(negative);
+        return new Int9(fromLongAbs(value)).setNegative(negative);
     }
 
-    private static Int9 fromLongAbs(long value) {
+    private static int[] fromLongAbs(long value) {
         assert value >= 0;
         return switch (Calc.lengthOf(value)) {
-            case 1  -> new Int9((int)  (value));
-            case 2  -> new Int9((int)  (value / BASE1),          (int)  (value % BASE1));
-            case 3  -> new Int9((int) ((value / BASE2) % BASE1), (int) ((value / BASE1) % BASE1), (int) (value % BASE1));
+            case 1  -> new int[] { (int)   value };
+            case 2  -> new int[] { (int)  (value / BASE1),          (int)  (value % BASE1) };
+            case 3  -> new int[] { (int) ((value / BASE2) % BASE1), (int) ((value / BASE1) % BASE1), (int) (value % BASE1) };
             default -> throw new Error("UNREACHABLE");
         };
     }
@@ -606,8 +606,34 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             ensureCapacity(1);
             multiplyInPlaceAbs(rhs);
         } else {
-            // quadratic multiplication needs an interim array, at least
+            // quadratic multiplication needs an interim array
             int[] rhsArray = fromIntAbs(rhs);
+            int[] result = multiplyImpl(data, offset, length, rhsArray, 0, rhsArray.length);
+            takeValue(result);
+        }
+        canonicalize();
+        setNegative(multiplySign(negative, rhsNegative));
+        return this;
+    }
+
+    public Int9 multiplyInPlace(long rhs) {
+        if (rhs == Long.MIN_VALUE) {
+            setValue(multiplySimple(this, LONG_MIN));
+            return this;
+        }
+        boolean rhsNegative = rhs < 0;
+        if (rhsNegative) {
+            rhs = -rhs;
+        }
+        assert rhs >= 0;
+
+        if (rhs < BASE) {
+            // fast path - everything in-place
+            ensureCapacity(1);
+            multiplyInPlaceAbs((int) rhs);
+        } else {
+            // quadratic multiplication needs an interim array
+            int[] rhsArray = fromLongAbs(rhs);
             int[] result = multiplyImpl(data, offset, length, rhsArray, 0, rhsArray.length);
             takeValue(result);
         }
@@ -1153,7 +1179,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         if (lhsLength == 1 && rhsLength == 1) {
             long lhsValue = lhs.get(0); // we must multiply in long, not int.
             long rhsValue = rhs.get(0);
-            return fromLongAbs(lhsValue * rhsValue);
+            return new Int9(fromLongAbs(lhsValue * rhsValue));
         } else if (lhsLength > rhsLength) {
             // the algorithm performs better with lhs > rhs
             return multiplyImpl(lhs, rhs);
