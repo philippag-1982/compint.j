@@ -7,7 +7,7 @@ This research library provides alternative implementations to `java.math.BigInte
 - `gradle` - compile main and test classes
 - `gradle test` - run all the unit tests
 - `gradle jmh` - run all JMH benckmarks
-- `gradle perf --rerun-tasks` - run all custom benckmarks
+- `gradle perf` - run all custom benckmarks
 - `gradle jar` - create a JAR inside the `build/` folder
 - `gradle tasks` - see which tasks are available
 - `cd src/main/native && make` - build the optional native part (requires GNU make and GCC or Clang)
@@ -79,6 +79,26 @@ constructing the big-number instances.
 | parseAndParallelMultiplyKaratsubaInt9 |  102.599 | ±   5.704 | ms/op |
 | parseAndMultiplyJdkBigInteger         | 2475.494 | ± 309.174 | ms/op |
 | parseAndParallelMultiplyJdkBigInteger | 2416.467 | ± 127.734 | ms/op |
+
+### Comparing perf with Makefile
+
+```console
+$ cd src/main/native
+$ time ARGS="1000000 1000000" make test >1.txt
+
+Digit count: 1,000,000 x 1,000,000; use BigInteger: N use Java Int9: N time elapsed: 1,484 millis
+
+real    0m2.219s
+user    0m0.015s
+sys     0m0.030s
+
+$ time ARGS="1000000 1000000 -b" make test >2.txt
+Digit count: 1,000,000 x 1,000,000; use BigInteger: Y use Java Int9: N time elapsed: 27,731 millis
+
+real    0m28.475s
+user    0m0.000s
+sys     0m0.015s
+```
 
 ## Use cases
 
