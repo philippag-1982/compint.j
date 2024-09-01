@@ -291,17 +291,17 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             negative = true;
             value = -value; // doesn't work for Integer.MIN_VALUE
         }
-        return fromIntAbs(value).setNegative(negative);
+        return new Int9(fromIntAbs(value)).setNegative(negative);
     }
 
-    private static Int9 fromIntAbs(int value) {
+    private static int[] fromIntAbs(int value) {
         assert value >= 0;
         if (value < BASE) {
-            return new Int9(value);
+            return new int[] { value };
         } else if (value < DOUBLE_BASE) {
-            return new Int9(1, value - BASE);
+            return new int[] { 1, value - BASE };
         } else {
-            return new Int9(2, value - DOUBLE_BASE);
+            return new int[] { 2, value - DOUBLE_BASE };
         }
     }
 
@@ -474,6 +474,12 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         firstDigitLength = 0;
     }
 
+    private void takeValue(int[] rhs) {
+        data = rhs;
+        offset = 0;
+        length = rhs.length;
+    }
+
     public void setValue(Int9 rhs) {
         int newLength = rhs.length;
         if (data.length < newLength) {
@@ -590,18 +596,23 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
             return this;
         }
         boolean rhsNegative = rhs < 0;
-        int rhsAbs = rhsNegative ? -rhs : rhs;
-        assert rhsAbs >= 0;
+        if (rhsNegative) {
+            rhs = -rhs;
+        }
+        assert rhs >= 0;
 
-        if (rhsAbs < BASE) {
-            // fast path
+        if (rhs < BASE) {
+            // fast path - everything in-place
             ensureCapacity(1);
-            multiplyInPlaceAbs(rhsAbs);
-            setNegative(multiplySign(negative, rhsNegative));
+            multiplyInPlaceAbs(rhs);
         } else {
             // quadratic multiplication needs an interim array, at least
-            setValue(multiplySimple(this, fromInt(rhs)));
+            int[] rhsArray = fromIntAbs(rhs);
+            int[] result = multiplyImpl(data, offset, length, rhsArray, 0, rhsArray.length);
+            takeValue(result);
         }
+        canonicalize();
+        setNegative(multiplySign(negative, rhsNegative));
         return this;
     }
 
@@ -626,7 +637,6 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         if (carry > 0) {
             expandWith(carry);
         }
-        canonicalize();
     }
 
     public Int9 addInPlace(Int9 rhs) {
