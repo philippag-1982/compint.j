@@ -603,7 +603,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
         if (rhs < BASE) {
             // fast path - everything in-place
-            ensureCapacity(1);
+            ensureCapacity(0);
             multiplyInPlaceAbs(rhs);
         } else {
             // quadratic multiplication needs an interim array
@@ -629,7 +629,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
         if (rhs < BASE) {
             // fast path - everything in-place
-            ensureCapacity(1);
+            ensureCapacity(0);
             multiplyInPlaceAbs((int) rhs);
         } else {
             // quadratic multiplication needs an interim array
@@ -661,6 +661,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         if (carry > 0) {
+            ensureCapacity(1);
             expandWith(carry);
         }
     }
