@@ -342,10 +342,10 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
             return Int9.fromString(this);
         }
         Int9 result = Int9.fromInt(0);
-        Int9 BASE = Int9.fromInt(base.BASE);
+        int BASE = base.BASE;
 
         for (int i = 0; i < length; i++) {
-            result = result.multiply(BASE).addInPlace(get(i));
+            result.multiplyInPlace(BASE).addInPlace(get(i));
         }
 
         return result;
