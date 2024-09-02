@@ -1,4 +1,6 @@
-[ ] primitive overloads for multiply, maybe
+[ ] port recent improvements to Int9N
+    maybe find a way to automate
+[X] primitive overloads for multiply, maybe
 [X] replace `expand` and `setOrExpand` calls in loops with
     code that sets `offset` and `length` after the loop 
 [ ] different (higher) threshold for parallelMultiplyKaratsuba
