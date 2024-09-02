@@ -190,7 +190,7 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
             return new IntAscii(base, value.toByteArray(/*includeSign*/ false));
         }
 
-        byte[] data = new byte[Calc.checkArraySize(IntegerFormat.length(base, value))];
+        byte[] data = new byte[Calc.checkArraySize(IntegerFormat.length(base.BASE, value))];
         int offset = IntegerFormat.format(base, data, value.copy()); // divideInPlace() is destructive
         return new IntAscii(base, data, offset, data.length - offset);
     }
@@ -341,8 +341,10 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
             // fast path with decimal digits
             return Int9.fromString(this);
         }
-        Int9 result = Int9.fromInt(0);
+
         int BASE = base.BASE;
+        Int9 result = Int9.forDigits(IntegerFormat.lengthInv(BASE, length));
+        // we pre-size our `Int9` result buffer to have no resizes during the loop below.
 
         for (int i = 0; i < length; i++) {
             result.multiplyInPlace(BASE).addInPlace(get(i));
@@ -992,9 +994,14 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
 
         private static final double LOG_10 = Math.log(10);
 
-        static long length(BaseConversion base, Int9 value) {
-            double ratio = LOG_10 / Math.log(base.BASE);
+        static long length(int BASE, Int9 value) {
+            double ratio = LOG_10 / Math.log(BASE);
             return Math.round(Math.ceil(value.countDigits() * ratio));
+        }
+
+        static int lengthInv(int BASE, int length) {
+            double ratio = Math.log(BASE) / LOG_10;
+            return (int) Math.round(Math.ceil(length * ratio));
         }
 
         static int format(BaseConversion base, byte[] dest, Int9 n) {

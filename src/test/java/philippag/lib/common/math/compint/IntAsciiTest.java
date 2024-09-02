@@ -90,6 +90,8 @@ public class IntAsciiTest extends CommonTestBase {
 
     @Test
     public void fromInt9() {
+        var x = IntAscii.fromString(StandardBaseConversions.HEX, "f".repeat(10_000));
+        Assert.assertEquals(12042, x.toInt9().length());
         checkInt9(0);
         checkInt9(0xcafebabeL);
         checkInt9(0xcafebabe1fffa12L);
