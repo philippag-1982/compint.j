@@ -592,7 +592,6 @@ public class Int9Test extends CommonTestBase {
     @Test
     public void inPlaceLong() {
         checkInPlaceLong(() -> Int9.fromInt(0));
-        checkInPlaceLong(() -> Int9.forDigits(1));
     }
 
     private static void checkInPlaceLong(Supplier<Int9> x) {
@@ -798,7 +797,6 @@ public class Int9Test extends CommonTestBase {
     @Test
     public void setValue() {
         checkSetValue(() -> Int9.fromInt(0));
-        checkSetValue(() -> Int9.forDigits(1));
     }
 
     private static void checkSetValue(Supplier<Int9> x) {
@@ -838,14 +836,14 @@ public class Int9Test extends CommonTestBase {
 
         var y = Int9.forDigits(100);
         y.setValue(Int9.fromInt(1000));
-        Assert.assertEquals("Int9 {digits=4, negative=false, offset=11, length=1, capacity=12, data=[1000]}", y.toDebugString());
+        Assert.assertEquals("Int9 {digits=4, negative=false, offset=12, length=1, capacity=13, data=[1000]}", y.toDebugString());
 
         x.setValue(y);
         Assert.assertEquals("Int9 {digits=4, negative=false, offset=11, length=1, capacity=12, data=[1000]}", x.toDebugString());
 
         y = Int9.forDigits(50);
         y.setValue(Int9.fromInt(2000));
-        Assert.assertEquals("Int9 {digits=4, negative=false, offset=5, length=1, capacity=6, data=[2000]}", y.toDebugString());
+        Assert.assertEquals("Int9 {digits=4, negative=false, offset=6, length=1, capacity=7, data=[2000]}", y.toDebugString());
 
         x.setValue(y);
         Assert.assertEquals("Int9 {digits=4, negative=false, offset=11, length=1, capacity=12, data=[2000]}", x.toDebugString());

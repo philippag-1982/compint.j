@@ -278,8 +278,11 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
      */
 
     public static Int9 forDigits(int digits) {
-        // reserve 1 extra space since all "inPlace" methods expect it
-        int length = /*1 + */ Calc.lengthForDigits(digits);//TODO
+        if (digits < 1) {
+            throw new IllegalArgumentException("Zero or negative digit count: " + digits);
+        }
+        // reserve 1 extra space so "inPlace" methods don't have to resize array by 1 element
+        int length = 1 +  Calc.lengthForDigits(digits);
         return new Int9(new int[length], length - 1, 1);
     }
 
