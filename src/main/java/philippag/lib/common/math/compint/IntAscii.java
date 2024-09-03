@@ -190,7 +190,7 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
             return new IntAscii(base, value.toByteArray(/*includeSign*/ false));
         }
 
-        byte[] data = new byte[Calc.checkArraySize(IntegerFormat.length(base.BASE, value))];
+        byte[] data = new byte[Calc.checkArraySize(IntegerFormat.length(base.BASE, value.countDigits()))];
         int offset = IntegerFormat.format(base, data, value.copy()); // divideInPlace() is destructive
         return new IntAscii(base, data, offset, data.length - offset);
     }
@@ -994,14 +994,16 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
 
         private static final double LOG_10 = Math.log(10);
 
-        static long length(int BASE, Int9 value) {
-            double ratio = LOG_10 / Math.log(BASE);
-            return Math.round(Math.ceil(value.countDigits() * ratio));
+        static long length(int BASE, int length) {
+            return scale(length, LOG_10 / Math.log(BASE));
         }
 
         static int lengthInv(int BASE, int length) {
-            double ratio = Math.log(BASE) / LOG_10;
-            return (int) Math.round(Math.ceil(length * ratio));
+            return (int) scale(length, Math.log(BASE) / LOG_10);
+        }
+
+        private static long scale(int length, double ratio) {
+            return Math.round(Math.ceil(length * ratio));
         }
 
         static int format(BaseConversion base, byte[] dest, Int9 n) {
