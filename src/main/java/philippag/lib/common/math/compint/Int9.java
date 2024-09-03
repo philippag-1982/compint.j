@@ -278,7 +278,8 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
      */
 
     public static Int9 forDigits(int digits) {
-        int length = Calc.lengthForDigits(digits);
+        // reserve 1 extra space since all "inPlace" methods expect it
+        int length = /*1 + */ Calc.lengthForDigits(digits);//TODO
         return new Int9(new int[length], length - 1, 1);
     }
 
@@ -590,37 +591,13 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
      * =================
      */
 
-    public Int9 multiplyInPlace(int rhs) {
-        if (rhs == Integer.MIN_VALUE) {
-            setValue(multiplySimple(this, INT_MIN));
-            return this;
-        } else if (rhs == 0) {
-            clear();
-            return this;
+    public Int9 multiplyInPlace(Int9 rhs) {
+        if (rhs.isLong()) {
+            return multiplyInPlace(rhs.toLong());
         }
-        boolean rhsNegative = rhs < 0;
-        if (rhsNegative) {
-            rhs = -rhs;
-        }
-        assert rhs > 0;
-
-        if (rhs < BASE) {
-            // fast path - everything in-place
-            ensureCapacity(0);
-            if (Calc.isPowerOfTwo(rhs)) {
-                multiplyInPlaceAbsShift(rhs);
-            } else {
-                multiplyInPlaceAbs(rhs);
-            }
-        } else {
-            // quadratic multiplication needs an interim array
-            int[] rhsArray = fromIntAbs(rhs);
-            int[] result = multiplyImpl(data, offset, length, rhsArray, 0, rhsArray.length);
-            takeValue(result);
-        }
+        takeValue(multiplyImpl(data, offset, length, rhs.data, rhs.offset, rhs.length));
         canonicalize();
-        setNegative(multiplySign(negative, rhsNegative));
-        return this;
+        return setNegative(multiplySign(negative, rhs.negative));
     }
 
     public Int9 multiplyInPlace(long rhs) {
@@ -640,7 +617,7 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
 
         if (rhs < BASE) {
             // fast path - everything in-place
-            ensureCapacity(0);
+            ensureCapacity(1);
             if (Calc.isPowerOfTwo(rhs)) {
                 multiplyInPlaceAbsShift((int) rhs);
             } else {
@@ -649,12 +626,10 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         } else {
             // quadratic multiplication needs an interim array
             int[] rhsArray = fromLongAbs(rhs);
-            int[] result = multiplyImpl(data, offset, length, rhsArray, 0, rhsArray.length);
-            takeValue(result);
+            takeValue(multiplyImpl(data, offset, length, rhsArray, 0, rhsArray.length));
         }
         canonicalize();
-        setNegative(multiplySign(negative, rhsNegative));
-        return this;
+        return setNegative(multiplySign(negative, rhsNegative));
     }
 
     private void multiplyInPlaceAbsShift(int rhs) {
@@ -678,7 +653,6 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         if (carry > 0) {
-            ensureCapacity(1);
             expandWith(carry);
         }
     }
@@ -702,7 +676,6 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         }
 
         if (carry > 0) {
-            ensureCapacity(1);
             expandWith(carry);
         }
     }

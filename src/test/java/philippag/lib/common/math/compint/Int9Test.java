@@ -1628,9 +1628,9 @@ public class Int9Test extends CommonTestBase {
         Assert.assertEquals(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, pool()).toString());
         Assert.assertEquals(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, 1, 2, pool()).toString());
 
-        if (rhs.isInt()) {
+        {
             var copy = lhs.copy();
-            copy.multiplyInPlace(rhs.toInt());
+            copy.multiplyInPlace(rhs);
             Assert.assertEquals(expected, copy.toString());
         }
         if (rhs.isLong()) {
@@ -1863,9 +1863,9 @@ public class Int9Test extends CommonTestBase {
         Assert.assertEquals(expected, Long.parseLong(Int9.parallelMultiplyKaratsuba(lhs, rhs, pool()).toString()));
         Assert.assertEquals(expected, Long.parseLong(Int9.parallelMultiplyKaratsuba(lhs, rhs, 1, 2, pool()).toString()));
 
-        if (rhs.isInt()) {
+        {
             var copy = lhs.copy();
-            copy.multiplyInPlace(rhs.toInt());
+            copy.multiplyInPlace(rhs);
             Assert.assertEquals(expected, copy.toLong());
         }
         if (rhs.isLong()) {
@@ -1938,9 +1938,9 @@ public class Int9Test extends CommonTestBase {
         checkStringRepresentation(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, pool()));
         checkStringRepresentation(expected, Int9.parallelMultiplyKaratsuba(lhs, rhs, 1, 2, pool()));
 
-        if (rhs.isInt()) {
+        {
             var copy = lhs.copy();
-            copy.multiplyInPlace(rhs.toInt());
+            copy.multiplyInPlace(rhs);
             Assert.assertEquals(expected, copy.toString());
         }
         if (rhs.isLong()) {
