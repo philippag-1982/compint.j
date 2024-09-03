@@ -288,7 +288,11 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
      */
 
     public static Int9N forDigits(int digits) {
-        int length = Calc.lengthForDigits(digits);
+        if (digits < 1) {
+            throw new IllegalArgumentException("Zero or negative digit count: " + digits);
+        }
+        // reserve 1 extra space so "inPlace" methods don't have to resize array by 1 element
+        int length = 1 +  Calc.lengthForDigits(digits);
         return new Int9N(new int[length], length - 1, 1);
     }
 
@@ -301,17 +305,17 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
             negative = true;
             value = -value; // doesn't work for Integer.MIN_VALUE
         }
-        return fromIntAbs(value).setNegative(negative);
+        return new Int9N(fromIntAbs(value)).setNegative(negative);
     }
 
-    private static Int9N fromIntAbs(int value) {
+    private static int[] fromIntAbs(int value) {
         assert value >= 0;
         if (value < BASE) {
-            return new Int9N(value);
+            return new int[] { value };
         } else if (value < DOUBLE_BASE) {
-            return new Int9N(1, value - BASE);
+            return new int[] { 1, value - BASE };
         } else {
-            return new Int9N(2, value - DOUBLE_BASE);
+            return new int[] { 2, value - DOUBLE_BASE };
         }
     }
 
@@ -324,15 +328,15 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
             negative = true;
             value = -value; // doesn't work for Long.MIN_VALUE
         }
-        return fromLongAbs(value).setNegative(negative);
+        return new Int9N(fromLongAbs(value)).setNegative(negative);
     }
 
-    private static Int9N fromLongAbs(long value) {
+    private static int[] fromLongAbs(long value) {
         assert value >= 0;
         return switch (Calc.lengthOf(value)) {
-            case 1  -> new Int9N((int)  (value));
-            case 2  -> new Int9N((int)  (value / BASE1),          (int)  (value % BASE1));
-            case 3  -> new Int9N((int) ((value / BASE2) % BASE1), (int) ((value / BASE1) % BASE1), (int) (value % BASE1));
+            case 1  -> new int[] { (int)   value };
+            case 2  -> new int[] { (int)  (value / BASE1),          (int)  (value % BASE1) };
+            case 3  -> new int[] { (int) ((value / BASE2) % BASE1), (int) ((value / BASE1) % BASE1), (int) (value % BASE1) };
             default -> throw new Error("UNREACHABLE");
         };
     }
@@ -484,6 +488,12 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         firstDigitLength = 0;
     }
 
+    private void takeValue(int[] rhs) {
+        data = rhs;
+        offset = 0;
+        length = rhs.length;
+    }
+
     public void setValue(Int9N rhs) {
         int newLength = rhs.length;
         if (data.length < newLength) {
@@ -594,25 +604,70 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
      * =================
      */
 
-    public Int9N multiplyInPlace(int rhs) {
-        if (rhs == Integer.MIN_VALUE) {
-            setValue(multiplySimple(this, INT_MIN));
+    public Int9N multiplyInPlace(Int9N rhs) {
+        if (rhs.isLong()) {
+            return multiplyInPlace(rhs.toLong());
+        }
+        takeValue(multiplyImpl(data, offset, length, rhs.data, rhs.offset, rhs.length));
+        canonicalize();
+        return setNegative(multiplySign(negative, rhs.negative));
+    }
+
+    public Int9N multiplyInPlace(long rhs) {
+        if (rhs == Long.MIN_VALUE) {
+            setValue(multiplySimple(this, LONG_MIN));
+            return this;
+        } else if (rhs == 0) {
+            clear();
             return this;
         }
-        boolean rhsNegative = rhs < 0;
-        int rhsAbs = rhsNegative ? -rhs : rhs;
-        assert rhsAbs >= 0;
 
-        if (rhsAbs < BASE) {
-            // fast path
-            ensureCapacity(1);
-            multiplyInPlaceAbs(rhsAbs);
-            setNegative(multiplySign(negative, rhsNegative));
-        } else {
-            // quadratic multiplication needs an interim array, at least
-            setValue(multiplySimple(this, fromInt(rhs)));
+        boolean rhsNegative = rhs < 0;
+        if (rhsNegative) {
+            rhs = -rhs;
         }
-        return this;
+        assert rhs > 0;
+
+        if (rhs < BASE) {
+            // fast path - everything in-place
+            ensureCapacity(1);
+            if (Calc.isPowerOfTwo(rhs)) {
+                multiplyInPlaceAbsShift((int) rhs);
+            } else {
+                multiplyInPlaceAbs((int) rhs);
+            }
+        } else {
+            // quadratic multiplication needs an interim array
+            int[] rhsArray = fromLongAbs(rhs);
+            takeValue(multiplyImpl(data, offset, length, rhsArray, 0, rhsArray.length));
+        }
+        canonicalize();
+        return setNegative(multiplySign(negative, rhsNegative));
+    }
+
+    private void multiplyInPlaceAbsShift(int rhs) {
+        assert rhs < BASE;
+        assert Calc.isPowerOfTwo(rhs);
+
+        int shift = Calc.bitLength(rhs - 1);
+        int carry = 0;
+
+        for (int i = offset + length - 1; i >= offset; --i) {
+            long lhsValue = data[i]; // force multiplication in long
+            long product = carry + (lhsValue << shift);
+            carry =   (int) (product / BASE);
+            int sum = (int) (product % BASE);
+            if (sum >= BASE) {
+                sum -= BASE;
+                assert sum < BASE;
+                carry++;
+            }
+            data[i] = sum;
+        }
+
+        if (carry > 0) {
+            expandWith(carry);
+        }
     }
 
     private void multiplyInPlaceAbs(int rhs) {
@@ -636,7 +691,6 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         if (carry > 0) {
             expandWith(carry);
         }
-        canonicalize();
     }
 
     public Int9N addInPlace(Int9N rhs) {
@@ -1153,7 +1207,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         if (lhsLength == 1 && rhsLength == 1) {
             long lhsValue = lhs.get(0); // we must multiply in long, not int.
             long rhsValue = rhs.get(0);
-            return fromLongAbs(lhsValue * rhsValue);
+            return new Int9N(fromLongAbs(lhsValue * rhsValue));
         } else if (lhsLength > rhsLength) {
             // the algorithm performs better with lhs > rhs
             return multiplyImpl(lhs, rhs);
@@ -1609,6 +1663,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         }
 
         static boolean isPowerOfTwo(long w) {
+            assert w > 0;
             return (w & (w - 1)) == 0;
         }
 
