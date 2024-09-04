@@ -605,8 +605,9 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
      */
 
     public Int9N multiplyInPlace(Int9N rhs) {
-        if (rhs.isLong()) {
-            return multiplyInPlace(rhs.toLong());
+        if (rhs.compareToAbs(BASE) < 0) {
+            // fast path for numbers < BASE
+            return multiplyInPlace(rhs.toInt());
         }
         takeValue(multiplyImpl(data, offset, length, rhs.data, rhs.offset, rhs.length));
         canonicalize();

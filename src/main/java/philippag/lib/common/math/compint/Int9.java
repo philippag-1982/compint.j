@@ -595,8 +595,9 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
      */
 
     public Int9 multiplyInPlace(Int9 rhs) {
-        if (rhs.isLong()) {
-            return multiplyInPlace(rhs.toLong());
+        if (rhs.compareToAbs(BASE) < 0) {
+            // fast path for numbers < BASE
+            return multiplyInPlace(rhs.toInt());
         }
         takeValue(multiplyImpl(data, offset, length, rhs.data, rhs.offset, rhs.length));
         canonicalize();
