@@ -1521,7 +1521,14 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
                 threshold
         );
 
-        // `middle -= (ac + bd)` => `ad + bc`
+        /*
+         * We use the distributive law here:
+         * `middle` is currently `(a + b) * (c + d)`,
+         * which distributes to
+         * `ac + ad + bc + bd`.
+         * Now, we subtract the 2 products `ac` and `bd` (below)
+         * so `middle` equals `ad + bc`.
+         */
         middle.subtractInPlaceAbsGreaterEqual(ac);
         middle.subtractInPlaceAbsGreaterEqual(bd);
         var result = new Int9N(new int[lhs.length + rhs.length]);
@@ -1587,7 +1594,14 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         var bd = _bd.join();
         var middle = _middle.join();
 
-        // `middle -= (ac + bd)` => `ad + bc`
+        /*
+         * We use the distributive law here:
+         * `middle` is currently `(a + b) * (c + d)`,
+         * which distributes to
+         * `ac + ad + bc + bd`.
+         * Now, we subtract the 2 products `ac` and `bd` (below)
+         * so `middle` equals `ad + bc`.
+         */
         middle.subtractInPlaceAbsGreaterEqual(ac);
         middle.subtractInPlaceAbsGreaterEqual(bd);
         var result = new Int9N(new int[lhs.length + rhs.length]);
