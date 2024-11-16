@@ -558,7 +558,14 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
                 threshold
         );
 
-        // `middle -= (ac + bd)` => `ad + bc`
+        /*
+         * We use the distributive law here:
+         * `middle` is currently `(a + b) * (c + d)`,
+         * which distributes to
+         * `ac + ad + bc + bd`.
+         * Now, we subtract the 2 products `ac` and `bd` (below)
+         * so `middle` equals `ad + bc`.
+         */
         middle.subtractInPlaceGreaterEqual(ac);
         middle.subtractInPlaceGreaterEqual(bd);
         var result = new IntAscii(base, new byte[lhs.length + rhs.length]);
@@ -625,7 +632,14 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
         var bd = _bd.join();
         var middle = _middle.join();
 
-        // `middle -= (ac + bd)` => `ad + bc`
+        /*
+         * We use the distributive law here:
+         * `middle` is currently `(a + b) * (c + d)`,
+         * which distributes to
+         * `ac + ad + bc + bd`.
+         * Now, we subtract the 2 products `ac` and `bd` (below)
+         * so `middle` equals `ad + bc`.
+         */
         middle.subtractInPlaceGreaterEqual(ac);
         middle.subtractInPlaceGreaterEqual(bd);
         var result = new IntAscii(base, new byte[lhs.length + rhs.length]);
