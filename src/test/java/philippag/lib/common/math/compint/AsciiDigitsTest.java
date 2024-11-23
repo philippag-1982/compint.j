@@ -12,6 +12,14 @@ import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
 public class AsciiDigitsTest extends CommonTestBase {
 
     @Test
+    public void fromScientificPlainNumber() {
+        checkFromScientific("0", "0", "0000", "+0", "-0", "0.0E1", "0.0E0");
+        checkFromScientific("5", "5");
+        checkFromScientific("6", "6E0");
+        checkFromScientific("5", "0.05E2");
+    }
+
+    @Test
     public void fromScientific() {
         checkFromScientific("0", "0E0", "0E3", "000E5", "0.0000E777");
         checkFromScientific("1", "1E0");
@@ -77,7 +85,7 @@ public class AsciiDigitsTest extends CommonTestBase {
         Assert.assertEquals(expected, actual.toString());
         Assert.assertTrue(stringsEqual(expected, actual));
         if (!period) {
-            Assert.assertEquals(expected, new BigDecimal(input).toPlainString());
+            Assert.assertEquals(expected, fixBigDecimalZeroDotZero(new BigDecimal(input).toPlainString()));
         }
         int length = actual.length();
         if (length >= 2) {
@@ -95,8 +103,16 @@ public class AsciiDigitsTest extends CommonTestBase {
         }
     }
 
+    private static String fixBigDecimalZeroDotZero(String s) {
+        return s.equals("0.0") ? "0" : s;
+    }
+
     @Test
     public void fromScientificErrors() {
+        checkFromScientificError("0.1E0"); // loss of precision
+        checkFromScientificError("0.03E1"); // loss of precision
+        checkFromScientificError("3.1E0"); // loss of precision
+        checkFromScientificError("4.03E1"); // loss of precision
         checkFromScientificError("70.034E2"); // not an integer
         checkFromScientificError("x");
         checkFromScientificError(".");
@@ -106,7 +122,6 @@ public class AsciiDigitsTest extends CommonTestBase {
         checkFromScientificError("-");
         checkFromScientificError("--");
         checkFromScientificError("--3");
-        checkFromScientificError("1");
         checkFromScientificError("E");
         checkFromScientificError("1E1000000000");
         checkFromScientificError("1E9999999999");

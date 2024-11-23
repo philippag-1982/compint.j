@@ -274,6 +274,12 @@ public class AsciiDigits {
         }
 
         if (!seenExponent) {
+            if (seenDigit && !seenDot && !seenPeriod) {
+                if (!seenNonZero) {
+                    return "0";
+                }
+                return str; // plain number
+            }
             throw new NumberFormatException("Not a scientific number (exponent missing): " + str);
         }
         if (!seenDigit) {
