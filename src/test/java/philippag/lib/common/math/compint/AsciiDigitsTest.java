@@ -35,6 +35,9 @@ public class AsciiDigitsTest extends CommonTestBase {
         checkFromScientific("70034", "70.034E3");
 
         checkFromScientific("800000000", "0.000000000000000000000000000000080E40");
+
+        checkFromScientific("3000000", "3E6", "+3E6");
+        checkFromScientific("-3000000", "-3E6");
     }
 
     @Test
@@ -54,6 +57,9 @@ public class AsciiDigitsTest extends CommonTestBase {
         checkFromScientific(p, "1", "1E0", "1E0P456");
 
         checkFromScientific(p, "77111111111", "0.077E12P1", "0.077E12P+1");
+
+        checkFromScientific(p, "8123123123123123123123123123123", "8E30P123", "+8E30P123", "8E30P+123", "+8E30P+123");
+        checkFromScientific(p, "-8123123123123123123123123123123", "-8E30P123", "-8E30P+123");
     }
 
     private static void checkFromScientific(String expected, String... inputs) {
@@ -95,6 +101,11 @@ public class AsciiDigitsTest extends CommonTestBase {
         checkFromScientificError("x");
         checkFromScientificError(".");
         checkFromScientificError("+");
+        checkFromScientificError("++");
+        checkFromScientificError("++6");
+        checkFromScientificError("-");
+        checkFromScientificError("--");
+        checkFromScientificError("--3");
         checkFromScientificError("1");
         checkFromScientificError("E");
         checkFromScientificError("1E1000000000");

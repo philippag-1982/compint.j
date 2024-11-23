@@ -184,6 +184,7 @@ public class AsciiDigits {
         var sb = new StringBuilder();
         int prev = -1;
         boolean subnormal = false; // 0.
+        boolean negative = false;
         boolean seenNonZero = false;
         boolean seenDigit = false;
         boolean seenExponent = false;
@@ -204,6 +205,13 @@ public class AsciiDigits {
                         periodStart = i + 1;
                     }
                 }
+                case '-' -> {
+                    if (!(prev == -1)) {
+                        throw new NumberFormatException("Not a scientific number (invalid negative sign): " + str + " at index " + i);
+                    }
+                    negative = true;
+                }
+
                 case 'E', 'e' -> {
                     if (seenExponent) {
                         throw new NumberFormatException("Not a scientific number (repeated exponent): " + str + " at index " + i);
@@ -287,22 +295,55 @@ public class AsciiDigits {
                 throw new NumberFormatException("Not a scientific number (empty period part): " + str);
             }
             int start = periodStart;
+            if (negative) {
+                return new AsciiString(length + 1) {
+
+                    @Override
+                    public char charAt(int index) {
+                        if (--index == -1) {
+                            return '-';
+                        }
+                        return charAtPeriod0(str, sb, digits, period, start, index);
+                    }
+
+                };
+            }
             return new AsciiString(length) {
 
                 @Override
                 public char charAt(int index) {
-                    return index < digits ? sb.charAt(index) : str.charAt(start + (index - digits) % period);
+                    return charAtPeriod0(str, sb, digits, period, start, index);
                 }
             };
         }
 
+        if (negative) {
+            return new AsciiString(length + 1) {
+
+                @Override
+                public char charAt(int index) {
+                    if (--index == -1) {
+                        return '-';
+                    }
+                    return charAt0(sb, digits, index);
+                }
+            };
+        }
         return new AsciiString(length) {
 
             @Override
             public char charAt(int index) {
-                return index < digits ? sb.charAt(index) : '0';
+                return charAt0(sb, digits, index);
             }
         };
+    }
+
+    private static char charAt0(StringBuilder sb, int digits, int index) {
+        return index < digits ? sb.charAt(index) : '0';
+    }
+
+    private static char charAtPeriod0(CharSequence str, StringBuilder sb, int digits, int period, int start, int index) {
+        return index < digits ? sb.charAt(index) : str.charAt(start + (index - digits) % period);
     }
 
     private static abstract class AsciiString implements CharSequence {
