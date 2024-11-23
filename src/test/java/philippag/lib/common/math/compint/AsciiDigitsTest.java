@@ -14,10 +14,8 @@ public class AsciiDigitsTest extends CommonTestBase {
     @Test
     public void fromScientificPlainNumber() {
         checkFromScientific("0", "0", "0000", "+0", "-0", "0.0E1", "0.0E0");
-        checkFromScientific("5", "5");
-        checkFromScientific("6", "6E0");
-        checkFromScientific("5", "0.05E2");
-
+        checkFromScientific("5", "5", "0.05E2", "+5", "5E0");
+        checkFromScientific("-10", "-10", "-10E0");
         checkFromScientific("5000000", "5E6", "5.0E6");
     }
 
@@ -111,6 +109,7 @@ public class AsciiDigitsTest extends CommonTestBase {
 
     @Test
     public void fromScientificErrors() {
+        checkFromScientificError("");
         checkFromScientificError("1E.6");
         checkFromScientificError("1.6P3E4");
         checkFromScientificError("1.5E100P3P6");

@@ -184,6 +184,7 @@ public class AsciiDigits {
         var sb = new StringBuilder();
         int prev = -1;
         boolean subnormal = false; // 0.
+        boolean positive = false;
         boolean negative = false;
         boolean seenNonZero = false;
         boolean seenDigit = false;
@@ -197,91 +198,97 @@ public class AsciiDigits {
 
         for (int i = 0, len = str.length(); i < len; i++) {
             char c = str.charAt(i);
-            boolean isDigit = false;
-            switch (c) {
-                case '+' -> {
-                    if (!(prev == -1 || prev == 'E' || prev == 'e' || prev == 'p' || prev == 'P')) {
-                        throw new NumberFormatException("Not a scientific number (invalid positive sign): " + str + " at index " + i);
-                    }
-                    if (seenPeriod) {
-                        periodStart = i + 1;
-                    }
-                }
-                case '-' -> {
-                    if (!(prev == -1)) {
-                        throw new NumberFormatException("Not a scientific number (invalid negative sign): " + str + " at index " + i);
-                    }
-                    negative = true;
-                }
+            boolean isDigit = '0' <= c && c <= '9';
 
-                case 'E', 'e' -> {
-                    if (seenExponent) {
-                        throw new NumberFormatException("Not a scientific number (repeated exponent): " + str + " at index " + i);
+            if (isDigit) {
+                if (seenPeriod) {
+                    // nothing to do
+                } else if (seenExponent) {
+                    exponent = 10 * exponent + c - '0';
+                    if (exponent > 999_999_999) {
+                        throw new NumberFormatException("Not a scientific number (exponent overflow): " + str + " at index " + i);
                     }
-                    if (seenPeriod) {
-                        throw new NumberFormatException("Not a scientific number (exponent after period): " + str + " at index " + i);
-                    }
-                    if (!lastDigit) {
-                        throw new NumberFormatException("Not a scientific number (exponent after non-digit): " + str + " at index " + i);
-                    }
-                    seenExponent = true;
-                }
-                case 'P', 'p' -> {
-                    if (!seenExponent) {
-                        throw new NumberFormatException("Not a scientific number (period without exponent): " + str + " at index " + i);
-                    }
-                    if (seenPeriod) {
-                        throw new NumberFormatException("Not a scientific number (repeated period): " + str + " at index " + i);
-                    }
-                    if (!lastDigit) {
-                        throw new NumberFormatException("Not a scientific number (period after non-digit): " + str + " at index " + i);
-                    }
-                    seenPeriod = true;
-                    periodStart = i + 1;
-                }
-                case '.' -> {
-                    if (seenDot) {
-                        throw new NumberFormatException("Not a scientific number (repeated dot): " + str + " at index " + i);
-                    }
-                    if (seenExponent) {
-                        throw new NumberFormatException("Not a scientific number (dot after exponent): " + str + " at index " + i);
-                    }
-                    if (seenPeriod) {
-                        throw new NumberFormatException("Not a scientific number (dot after period): " + str + " at index " + i);
-                    }
-                    seenDot = true;
-                    subnormal = !seenNonZero;
-                }
-                case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
-                    isDigit = true;
-                    if (seenPeriod) {
-                        // nothing to do
-                    } else if (seenExponent) {
-                        exponent = 10 * exponent + c - '0';
-                        if (exponent > 999_999_999) {
-                            throw new NumberFormatException("Not a scientific number (exponent overflow): " + str + " at index " + i);
+                } else {
+                    seenDigit = true;
+                    if (c == '0') {
+                        if (subnormal && !seenNonZero) {
+                            magnitude--;
                         }
                     } else {
-                        seenDigit = true;
-                        if (c == '0') {
-                            if (subnormal && !seenNonZero) {
-                                magnitude--;
-                            }
-                        } else {
-                            seenNonZero = true;
-                        }
-                        if (seenNonZero) {
-                            sb.append(c);
-                            if (!seenDot) {
-                                magnitude++;
-                            }
+                        seenNonZero = true;
+                    }
+                    if (seenNonZero) {
+                        sb.append(c);
+                        if (!seenDot) {
+                            magnitude++;
                         }
                     }
                 }
-                default -> {
-                    throw new NumberFormatException("Not a scientific number (invalid character): " + str + " at index " + i);
+            } else {
+                switch (c) {
+                    case '+' -> {
+                        if (prev == -1) {
+                            positive = true;
+                        } else if (prev == 'E' || prev == 'e') {
+                            // just ignore
+                        } else if (prev == 'p' || prev == 'P') {
+                            periodStart = i + 1;
+                        } else {
+                            throw new NumberFormatException("Not a scientific number (invalid positive sign): " + str + " at index " + i);
+                        }
+                    }
+                    case '-' -> {
+                        if (prev == -1) {
+                            negative = true;
+                        } else {
+                            throw new NumberFormatException("Not a scientific number (invalid negative sign): " + str + " at index " + i);
+                        }
+                    }
+
+                    case 'E', 'e' -> {
+                        if (seenExponent) {
+                            throw new NumberFormatException("Not a scientific number (repeated exponent): " + str + " at index " + i);
+                        }
+                        if (seenPeriod) {
+                            throw new NumberFormatException("Not a scientific number (exponent after period): " + str + " at index " + i);
+                        }
+                        if (!lastDigit) {
+                            throw new NumberFormatException("Not a scientific number (exponent after non-digit): " + str + " at index " + i);
+                        }
+                        seenExponent = true;
+                    }
+                    case 'P', 'p' -> {
+                        if (!seenExponent) {
+                            throw new NumberFormatException("Not a scientific number (period without exponent): " + str + " at index " + i);
+                        }
+                        if (seenPeriod) {
+                            throw new NumberFormatException("Not a scientific number (repeated period): " + str + " at index " + i);
+                        }
+                        if (!lastDigit) {
+                            throw new NumberFormatException("Not a scientific number (period after non-digit): " + str + " at index " + i);
+                        }
+                        seenPeriod = true;
+                        periodStart = i + 1;
+                    }
+                    case '.' -> {
+                        if (seenDot) {
+                            throw new NumberFormatException("Not a scientific number (repeated dot): " + str + " at index " + i);
+                        }
+                        if (seenExponent) {
+                            throw new NumberFormatException("Not a scientific number (dot after exponent): " + str + " at index " + i);
+                        }
+                        if (seenPeriod) {
+                            throw new NumberFormatException("Not a scientific number (dot after period): " + str + " at index " + i);
+                        }
+                        seenDot = true;
+                        subnormal = !seenNonZero;
+                    }
+                    default -> {
+                        throw new NumberFormatException("Not a scientific number (invalid character): " + str + " at index " + i);
+                    }
                 }
             }
+
             prev = c;
             lastDigit = isDigit;
         }
@@ -293,7 +300,8 @@ public class AsciiDigits {
         } else if (!seenNonZero) {
             return "0"; // only zero digits, shorten to '0'
         } else if (!seenExponent && !seenDot) {
-            return str; // plain number
+            // omit '+', but don't omit '-
+            return positive ? str.subSequence(1, str.length()) : str;
         }
 
         int length = magnitude + exponent;
