@@ -195,65 +195,72 @@ public class AsciiDigits {
 
         for (int i = 0, len = str.length(); i < len; i++) {
             char c = str.charAt(i);
-            if (c == '+') {
-                if (!(prev == -1 || prev == 'E' || prev == 'e' || prev == 'p' || prev == 'P')) {
-                    throw new NumberFormatException("Not a scientific number (invalid positive sign): " + str + " at index " + i);
+            switch (c) {
+                case '+' -> {
+                    if (!(prev == -1 || prev == 'E' || prev == 'e' || prev == 'p' || prev == 'P')) {
+                        throw new NumberFormatException("Not a scientific number (invalid positive sign): " + str + " at index " + i);
+                    }
+                    if (seenPeriod) {
+                        periodStart = i + 1;
+                    }
                 }
-                if (seenPeriod) {
+                case 'E', 'e' -> {
+                    if (seenExponent) {
+                        throw new NumberFormatException("Not a scientific number (repeated exponent): " + str + " at index " + i);
+                    }
+                    if (seenPeriod) {
+                        throw new NumberFormatException("Not a scientific number (exponent after period): " + str + " at index " + i);
+                    }
+                    seenExponent = true;
+                }
+                case 'P', 'p' -> {
+                    if (seenPeriod) {
+                        throw new NumberFormatException("Not a scientific number (repeated period): " + str + " at index " + i);
+                    }
+                    seenPeriod = true;
                     periodStart = i + 1;
                 }
-            } else if (c == 'E' || c == 'e') {
-                if (seenExponent) {
-                    throw new NumberFormatException("Not a scientific number (repeated exponent): " + str + " at index " + i);
-                }
-                if (seenPeriod) {
-                    throw new NumberFormatException("Not a scientific number (exponent after period): " + str + " at index " + i);
-                }
-                seenExponent = true;
-            } else if (c == 'P' || c == 'p') {
-                if (seenPeriod) {
-                    throw new NumberFormatException("Not a scientific number (repeated period): " + str + " at index " + i);
-                }
-                seenPeriod = true;
-                periodStart = i + 1;
-            } else if (c == '.') {
-                if (seenDot) {
-                    throw new NumberFormatException("Not a scientific number (repeated dot): " + str + " at index " + i);
-                }
-                if (seenExponent) {
-                    throw new NumberFormatException("Not a scientific number (dot after exponent): " + str + " at index " + i);
-                }
-                if (seenPeriod) {
-                    throw new NumberFormatException("Not a scientific number (dot after period): " + str + " at index " + i);
-                }
-                seenDot = true;
-                subnormal = !seenNonZero;
-            } else if ('0' <= c && c <= '9') {
-                if (seenPeriod) {
-                    // nothing to do
-                } else if (seenExponent) {
-                    exponent = 10 * exponent + c - '0';
-                    if (exponent > 999_999_999) {
-                        throw new NumberFormatException("Not a scientific number (exponent overflow): " + str + " at index " + i);
+                case '.' -> {
+                    if (seenDot) {
+                        throw new NumberFormatException("Not a scientific number (repeated dot): " + str + " at index " + i);
                     }
-                } else {
-                    seenDigit = true;
-                    if (c == '0') {
-                        if (subnormal && !seenNonZero) {
-                            magnitude--;
+                    if (seenExponent) {
+                        throw new NumberFormatException("Not a scientific number (dot after exponent): " + str + " at index " + i);
+                    }
+                    if (seenPeriod) {
+                        throw new NumberFormatException("Not a scientific number (dot after period): " + str + " at index " + i);
+                    }
+                    seenDot = true;
+                    subnormal = !seenNonZero;
+                }
+                case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
+                    if (seenPeriod) {
+                        // nothing to do
+                    } else if (seenExponent) {
+                        exponent = 10 * exponent + c - '0';
+                        if (exponent > 999_999_999) {
+                            throw new NumberFormatException("Not a scientific number (exponent overflow): " + str + " at index " + i);
                         }
                     } else {
-                        seenNonZero = true;
-                    }
-                    if (seenNonZero) {
-                        sb.append(c);
-                        if (!seenDot) {
-                            magnitude++;
+                        seenDigit = true;
+                        if (c == '0') {
+                            if (subnormal && !seenNonZero) {
+                                magnitude--;
+                            }
+                        } else {
+                            seenNonZero = true;
+                        }
+                        if (seenNonZero) {
+                            sb.append(c);
+                            if (!seenDot) {
+                                magnitude++;
+                            }
                         }
                     }
                 }
-            } else {
-                throw new NumberFormatException("Not a scientific number (invalid character): " + str + " at index " + i);
+                default -> {
+                    throw new NumberFormatException("Not a scientific number (invalid character): " + str + " at index " + i);
+                }
             }
             prev = c;
         }
