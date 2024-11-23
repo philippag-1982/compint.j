@@ -51,7 +51,8 @@ import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
  * This class lacks the usual random access to bits, and logical operations,
  * but instead offers random access to decimal digits.
  */
-public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharSequence {
+@SuppressWarnings("serial")
+public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitStreamable, CharSequence {
 
     private static final int BASE = 1_000_000_000;
     private static final int HALF_BASE = BASE / 2;
@@ -1631,7 +1632,6 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         return result.canonicalize();
     }
 
-    @SuppressWarnings("serial")
     private static ForkJoinTask<Int9> submit(ForkJoinPool pool, Supplier<Int9> fn) {
         return pool.submit(new RecursiveTask<Int9>() {
 
@@ -1873,5 +1873,29 @@ public final class Int9 implements Comparable<Int9>, AsciiDigitStreamable, CharS
         static int mul9(int input) {
             return (input << 3) + input;
         }
+    }
+
+    /*
+     * TODO (maybe) byteValue and shortValue with same semantic as toInt/toLong.
+     */
+
+    @Override
+    public int intValue() {
+        return toInt();
+    }
+
+    @Override
+    public long longValue() {
+        return toLong();
+    }
+
+    @Override
+    public float floatValue() {
+        return Float.parseFloat(toString());
+    }
+
+    @Override
+    public double doubleValue() {
+        return Double.parseDouble(toString());
     }
 }

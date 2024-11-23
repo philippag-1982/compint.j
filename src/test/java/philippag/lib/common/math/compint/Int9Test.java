@@ -2167,4 +2167,41 @@ public class Int9Test extends CommonTestBase {
             return (""+x).length();
         }
     }
+
+    @Test
+    public void numberApiFloat() {
+        String[] input = { "100", "77777", "6.9E30", "3.4E38", "6E40" };
+
+        for (String s : input) {
+            var x = Int9.fromScientific(s);
+            checkFloat(Float.parseFloat(s), x.floatValue());
+            checkDouble(Double.parseDouble(s), x.doubleValue());
+        }
+    }
+
+    @Test
+    public void numberApiDouble() {
+//        System.out.println(Double.MAX_VALUE);
+        String[] input = { "100", "77777", "6.9E30", "3.4E38", "1.0005E300", "1.7E308", "5E500" };
+
+        for (String s : input) {
+            var x = Int9.fromScientific(s);
+//
+//            System.out.println(s);
+//            System.out.println(x);
+//
+//            System.out.println(x.doubleValue());
+//            System.out.println();
+//
+            checkDouble(Double.parseDouble(s), x.doubleValue());
+        }
+    }
+
+    private static void checkFloat(float expected, float actual) {
+        Assert.assertEquals(expected, actual, 0.0);
+    }
+
+    private static void checkDouble(double expected, double actual) {
+        Assert.assertEquals(expected, actual, 0.0);
+    }
 }
