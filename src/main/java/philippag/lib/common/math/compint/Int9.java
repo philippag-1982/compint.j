@@ -80,6 +80,9 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         private static Int9 LONG_MIN() { return new Int9(9, 223372036, 854775808).setNegative(true); }
     }
 
+    private static final int FLOAT_MAX_LENGTH  =  5; // digit count of Float.MAX represented as Int9
+    private static final int DOUBLE_MAX_LENGTH = 35; // digit count of Double.MAX represented as Int9
+
     private boolean negative;
     private byte firstDigitLength; // cached value
     private int[] data; // integers from 000_000_000 to 999_999_999
@@ -1891,11 +1894,27 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     @Override
     public float floatValue() {
+        if (length > FLOAT_MAX_LENGTH) {
+            // short-circuit to Infinity if the number is definitely too large
+            return negative ?  Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
+        }
+        /*
+         * Note: It seems more natural to multiply-add up the digits in a loop,
+         * but that yields very imprecise results compared to parsing the string representation.
+         */
         return Float.parseFloat(toString());
     }
 
     @Override
     public double doubleValue() {
+        if (length > DOUBLE_MAX_LENGTH) {
+            // short-circuit to Infinity if the number is definitely too large
+            return negative ?  Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+        }
+        /*
+         * Note: It seems more natural to multiply-add up the digits in a loop,
+         * but that yields very imprecise results compared to parsing the string representation.
+         */
         return Double.parseDouble(toString());
     }
 }
