@@ -17,6 +17,8 @@ public class AsciiDigitsTest extends CommonTestBase {
         checkFromScientific("5", "5");
         checkFromScientific("6", "6E0");
         checkFromScientific("5", "0.05E2");
+
+        checkFromScientific("5000000", "5E6", "5.0E6");
     }
 
     @Test
@@ -109,11 +111,36 @@ public class AsciiDigitsTest extends CommonTestBase {
 
     @Test
     public void fromScientificErrors() {
-        checkFromScientificError("0.1E0"); // loss of precision
-        checkFromScientificError("0.03E1"); // loss of precision
-        checkFromScientificError("3.1E0"); // loss of precision
-        checkFromScientificError("4.03E1"); // loss of precision
-        checkFromScientificError("70.034E2"); // not an integer
+        checkFromScientificError("1E.6");
+        checkFromScientificError("1.6P3E4");
+        checkFromScientificError("1.5E100P3P6");
+        checkFromScientificError("1.1E2P3E4");
+        checkFromScientificError("1.1E2P3E4");
+        checkFromScientificError("1.1E2P3E4");
+        checkFromScientificError("1.");
+        checkFromScientificError("0.E5");
+        checkFromScientificError(".E3");
+        checkFromScientificError(".E");
+        checkFromScientificError("1.0");
+        checkFromScientificError("1.000");
+        checkFromScientificError("1e");
+        checkFromScientificError("8ep");
+        checkFromScientificError("8ep3");
+        checkFromScientificError("1EP");
+        checkFromScientificError("1EP3");
+        checkFromScientificError("EP3");
+        checkFromScientificError("5E3P");
+        checkFromScientificError("5E3P+");
+        checkFromScientificError("1p");
+        checkFromScientificError("1+");
+        checkFromScientificError("1-");
+        checkFromScientificError("1.0");
+        checkFromScientificError(".6");
+        checkFromScientificError("0.1E0");
+        checkFromScientificError("0.03E1");
+        checkFromScientificError("3.1E0");
+        checkFromScientificError("4.03E1");
+        checkFromScientificError("70.034E2");
         checkFromScientificError("x");
         checkFromScientificError(".");
         checkFromScientificError("+");
@@ -129,12 +156,14 @@ public class AsciiDigitsTest extends CommonTestBase {
         checkFromScientificError("23E65+");
         checkFromScientificError("2+3E65");
         checkFromScientificError("24E3E6");
+        checkFromScientificError("1.1E2P3E4");
         checkFromScientificError("1.5.4E1");
         checkFromScientificError("E5");
         checkFromScientificError("1E4.5");
         checkFromScientificError("1P5");
         checkFromScientificError("1P5E1");
         checkFromScientificError("1PE1");
+        checkFromScientificError("P");
         checkFromScientificError("1E5P");
         checkFromScientificError("1EEE100");
         checkFromScientificError("1E++100");

@@ -187,6 +187,7 @@ public class AsciiDigits {
         boolean negative = false;
         boolean seenNonZero = false;
         boolean seenDigit = false;
+        boolean lastDigit = false;
         boolean seenExponent = false;
         boolean seenPeriod = false;
         boolean seenDot = false;
@@ -196,6 +197,7 @@ public class AsciiDigits {
 
         for (int i = 0, len = str.length(); i < len; i++) {
             char c = str.charAt(i);
+            boolean isDigit = false;
             switch (c) {
                 case '+' -> {
                     if (!(prev == -1 || prev == 'E' || prev == 'e' || prev == 'p' || prev == 'P')) {
@@ -219,11 +221,20 @@ public class AsciiDigits {
                     if (seenPeriod) {
                         throw new NumberFormatException("Not a scientific number (exponent after period): " + str + " at index " + i);
                     }
+                    if (!lastDigit) {
+                        throw new NumberFormatException("Not a scientific number (exponent after non-digit): " + str + " at index " + i);
+                    }
                     seenExponent = true;
                 }
                 case 'P', 'p' -> {
+                    if (!seenExponent) {
+                        throw new NumberFormatException("Not a scientific number (period without exponent): " + str + " at index " + i);
+                    }
                     if (seenPeriod) {
                         throw new NumberFormatException("Not a scientific number (repeated period): " + str + " at index " + i);
+                    }
+                    if (!lastDigit) {
+                        throw new NumberFormatException("Not a scientific number (period after non-digit): " + str + " at index " + i);
                     }
                     seenPeriod = true;
                     periodStart = i + 1;
@@ -242,6 +253,7 @@ public class AsciiDigits {
                     subnormal = !seenNonZero;
                 }
                 case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
+                    isDigit = true;
                     if (seenPeriod) {
                         // nothing to do
                     } else if (seenExponent) {
@@ -271,22 +283,17 @@ public class AsciiDigits {
                 }
             }
             prev = c;
+            lastDigit = isDigit;
         }
 
-        if (!seenExponent) {
-            if (seenDigit && !seenDot && !seenPeriod) {
-                if (!seenNonZero) {
-                    return "0";
-                }
-                return str; // plain number
-            }
-            throw new NumberFormatException("Not a scientific number (exponent missing): " + str);
-        }
         if (!seenDigit) {
-            throw new NumberFormatException("Not a scientific number (no digits): " + str);
-        }
-        if (!seenNonZero) {
-            return "0";
+            throw new NumberFormatException("Not a scientific number (no significant digits): " + str);
+        } else if (!lastDigit) {
+            throw new NumberFormatException("Not a scientific number (ends with non-digit): " + str);
+        } else if (!seenNonZero) {
+            return "0"; // only zero digits, shorten to '0'
+        } else if (!seenExponent && !seenDot) {
+            return str; // plain number
         }
 
         int length = magnitude + exponent;
