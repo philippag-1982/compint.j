@@ -24,6 +24,10 @@ public class Int9Test extends CommonTestBase {
     private static final Int9 NEGATIVE_ONE = Int9.fromInt(-1);
     private static final Int9 INT_MAX      = Int9.fromInt(Integer.MAX_VALUE);
     private static final Int9 INT_MIN      = Int9.fromInt(Integer.MIN_VALUE);
+    private static final Int9 BYTE_MAX     = Int9.fromInt(Byte.MAX_VALUE);
+    private static final Int9 BYTE_MIN     = Int9.fromInt(Byte.MIN_VALUE);
+    private static final Int9 SHORT_MAX    = Int9.fromInt(Short.MAX_VALUE);
+    private static final Int9 SHORT_MIN    = Int9.fromInt(Short.MIN_VALUE);
     private static final Int9 LONG_MAX     = Int9.fromLong(Long.MAX_VALUE);
     private static final Int9 LONG_MIN     = Int9.fromLong(Long.MIN_VALUE);
 
@@ -499,6 +503,43 @@ public class Int9Test extends CommonTestBase {
     }
 
     @Test
+    public void toByte() {
+        eq(Int9.fromString(""+Byte.MAX_VALUE), BYTE_MAX);
+        eq(Int9.fromString(""+Byte.MIN_VALUE), BYTE_MIN);
+
+        byte unmappable = Byte.MIN_VALUE;
+
+        checkByte(0);
+        checkByte(67);
+        checkByte(Byte.MIN_VALUE);
+        checkByte(Byte.MIN_VALUE + 1);
+        checkByte(Byte.MAX_VALUE - 1);
+        checkByte(Byte.MAX_VALUE);
+        checkByte(/*mappable*/ false, unmappable, "128");
+        checkByte(/*mappable*/ false, unmappable, "129");
+        checkByte(/*mappable*/ false, unmappable, "-129");
+    }
+
+    @Test
+    public void toShort() {
+        eq(Int9.fromString(""+Short.MAX_VALUE), SHORT_MAX);
+        eq(Int9.fromString(""+Short.MIN_VALUE), SHORT_MIN);
+
+        short unmappable = Short.MIN_VALUE;
+
+        checkShort(0);
+        checkShort(67);
+        checkShort(1221);
+        checkShort(-31221);
+        checkShort(Short.MIN_VALUE);
+        checkShort(Short.MIN_VALUE + 1);
+        checkShort(Short.MAX_VALUE - 1);
+        checkShort(Short.MAX_VALUE);
+        checkShort(/*mappable*/ false, unmappable, "32768");
+        checkShort(/*mappable*/ false, unmappable, "-32769");
+    }
+
+    @Test
     public void toInt() {
         eq(Int9.fromString(""+Integer.MAX_VALUE), INT_MAX);
         eq(Int9.fromString(""+Integer.MIN_VALUE), INT_MIN);
@@ -517,6 +558,26 @@ public class Int9Test extends CommonTestBase {
         checkInt(Integer.MIN_VALUE + 10);
 
         checkInt(-654);
+    }
+
+    private static void checkByte(int expected) {
+        checkByte(/*mappable*/ true, expected, ""+expected);
+    }
+
+    private static void checkByte(boolean mappable, int expected, String s) {
+        var i = Int9.fromString(s);
+        Assert.assertEquals(expected, i.toByte());
+        Assert.assertEquals(mappable, i.isByte());
+    }
+
+    private static void checkShort(int expected) {
+        checkShort(/*mappable*/ true, expected, ""+expected);
+    }
+
+    private static void checkShort(boolean mappable, int expected, String s) {
+        var i = Int9.fromString(s);
+        Assert.assertEquals(expected, i.toShort());
+        Assert.assertEquals(mappable, i.isShort());
     }
 
     private static void checkInt(int expected) {

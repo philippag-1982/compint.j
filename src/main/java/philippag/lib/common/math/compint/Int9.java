@@ -63,21 +63,29 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     private static final int KARATSUBA_THRESHOLD = 40;
 
     // never return to user!
-    private static final Int9 ZERO     = Constants.ZERO();
-    private static final Int9 ONE      = Constants.ONE();
-    private static final Int9 INT_MAX  = Constants.INT_MAX();
-    private static final Int9 INT_MIN  = Constants.INT_MIN();
-    private static final Int9 LONG_MAX = Constants.LONG_MAX();
-    private static final Int9 LONG_MIN = Constants.LONG_MIN();
+    private static final Int9 ZERO      = Constants.ZERO();
+    private static final Int9 ONE       = Constants.ONE();
+    private static final Int9 BYTE_MAX  = Constants.BYTE_MAX();
+    private static final Int9 BYTE_MIN  = Constants.BYTE_MIN();
+    private static final Int9 SHORT_MAX = Constants.SHORT_MAX();
+    private static final Int9 SHORT_MIN = Constants.SHORT_MIN();
+    private static final Int9 INT_MAX   = Constants.INT_MAX();
+    private static final Int9 INT_MIN   = Constants.INT_MIN();
+    private static final Int9 LONG_MAX  = Constants.LONG_MAX();
+    private static final Int9 LONG_MIN  = Constants.LONG_MIN();
 
     private static class Constants {
 
-        private static Int9 ZERO()     { return new Int9(0); }
-        private static Int9 ONE()      { return new Int9(1); }
-        private static Int9 INT_MAX()  { return new Int9(2, 147483647); }
-        private static Int9 INT_MIN()  { return new Int9(2, 147483648).setNegative(true); }
-        private static Int9 LONG_MAX() { return new Int9(9, 223372036, 854775807); }
-        private static Int9 LONG_MIN() { return new Int9(9, 223372036, 854775808).setNegative(true); }
+        private static Int9 ZERO()      { return new Int9(0); }
+        private static Int9 ONE()       { return new Int9(1); }
+        private static Int9 BYTE_MAX()  { return new Int9(127); }
+        private static Int9 BYTE_MIN()  { return new Int9(128).setNegative(true); }
+        private static Int9 SHORT_MAX() { return new Int9(32767); }
+        private static Int9 SHORT_MIN() { return new Int9(32768).setNegative(true); }
+        private static Int9 INT_MAX()   { return new Int9(2, 147483647); }
+        private static Int9 INT_MIN()   { return new Int9(2, 147483648).setNegative(true); }
+        private static Int9 LONG_MAX()  { return new Int9(9, 223372036, 854775807); }
+        private static Int9 LONG_MIN()  { return new Int9(9, 223372036, 854775808).setNegative(true); }
     }
 
     private static final int FLOAT_MAX_LENGTH  =  5; // digit count of Float.MAX represented as Int9
@@ -377,6 +385,30 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         }
 
         return result == null ? Constants.ZERO() : new Int9(result, 0, length).setNegative(negative);
+    }
+
+    public boolean isByte() {
+        return compareToAbs(negative ? BYTE_MIN : BYTE_MAX) <= 0;
+    }
+
+    public byte toByte() {
+        if (compareToAbs(BYTE_MAX) > 0) {
+            // we use MIN_VALUE to represent unmappable values
+            return Byte.MIN_VALUE;
+        }
+        return (byte) (negative ? -toIntAbs() : toIntAbs());
+    }
+
+    public boolean isShort() {
+        return compareToAbs(negative ? SHORT_MIN : SHORT_MAX) <= 0;
+    }
+
+    public short toShort() {
+        if (compareToAbs(SHORT_MAX) > 0) {
+            // we use MIN_VALUE to represent unmappable values
+            return Short.MIN_VALUE;
+        }
+        return (short) (negative ? -toIntAbs() : toIntAbs());
     }
 
     public boolean isInt() {
@@ -1879,8 +1911,20 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     /*
-     * TODO (maybe) byteValue and shortValue with same semantic as toInt/toLong.
+     * Number API
+     * Api Note: integral-returning methods use MIN_VALUE for unmappable values.
+     * Api Note: float-returning methods use Infinity for unmappable values.
      */
+
+    @Override
+    public byte byteValue() {
+        return toByte();
+    }
+
+    @Override
+    public short shortValue() {
+        return toShort();
+    }
 
     @Override
     public int intValue() {
