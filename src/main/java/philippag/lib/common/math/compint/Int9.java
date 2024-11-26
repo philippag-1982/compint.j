@@ -1896,7 +1896,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     public float floatValue() {
         if (length > FLOAT_MAX_LENGTH) {
             // short-circuit to Infinity if the number is definitely too large
-            return negative ?  Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
+            return negative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
         }
         /*
          * Note: It seems more natural to multiply-add up the digits in a loop,
@@ -1909,7 +1909,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     public double doubleValue() {
         if (length > DOUBLE_MAX_LENGTH) {
             // short-circuit to Infinity if the number is definitely too large
-            return negative ?  Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+            return negative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
         }
         /*
          * Note: It seems more natural to multiply-add up the digits in a loop,
