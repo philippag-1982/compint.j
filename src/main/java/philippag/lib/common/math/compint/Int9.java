@@ -1942,10 +1942,6 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             // short-circuit to Infinity if the number is definitely too large
             return negative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
         }
-        /*
-         * Note: It seems more natural to multiply-add up the digits in a loop,
-         * but that yields very imprecise results compared to parsing the string representation.
-         */
         return Float.parseFloat(toString());
     }
 
@@ -1956,8 +1952,20 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             return negative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
         }
         /*
-         * Note: It seems more natural to multiply-add up the digits in a loop,
+         * Note: It seems more natural to multiply-add up the digits in a loop like the one below,
          * but that yields very imprecise results compared to parsing the string representation.
+         *
+            double result = 0;
+            for (int i = 0; i < length; i++) {
+                result = BASE * result + get(i);
+            }
+            return result;
+         */
+
+        /*
+         * TODO As soon as Double has parseDouble(CharSequence),
+           we should change this to:
+           return Double.parseDouble(this);
          */
         return Double.parseDouble(toString());
     }
