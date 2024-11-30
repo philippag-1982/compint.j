@@ -15,8 +15,11 @@ public class AsciiDigitsTest extends CommonTestBase {
     public void fromScientificPlainNumber() {
         checkFromScientific("0", "0", "0000", "+0", "-0", "0.0E1", "0.0E0");
         checkFromScientific("5", "5", "0.05E2", "+5", "5E0");
-        checkFromScientific("-10", "-10", "-10E0");
+        checkFromScientific("-10", "-10", "-10E0", "-010");
         checkFromScientific("5000000", "5E6", "5.0E6");
+
+        checkFromScientific("5", "05","+05");
+        checkFromScientific("-5", "-5", "-0005");
     }
 
     @Test
@@ -45,7 +48,12 @@ public class AsciiDigitsTest extends CommonTestBase {
         checkFromScientific("800000000", "0.000000000000000000000000000000080E40");
 
         checkFromScientific("3000000", "3E6", "+3E6");
+    }
+
+    @Test
+    public void fromScientificNegative() {
         checkFromScientific("-3000000", "-3E6");
+        checkFromScientific("-86300000000000", "-86.3E12", "-0086.3E12");
     }
 
     @Test
@@ -67,7 +75,12 @@ public class AsciiDigitsTest extends CommonTestBase {
         checkFromScientific(p, "77111111111", "0.077E12P1", "0.077E12P+1");
 
         checkFromScientific(p, "8123123123123123123123123123123", "8E30P123", "+8E30P123", "8E30P+123", "+8E30P+123");
-        checkFromScientific(p, "-8123123123123123123123123123123", "-8E30P123", "-8E30P+123");
+    }
+
+    @Test
+    public void fromScientificPeriodicNegative() {
+        boolean p = true;
+        checkFromScientific(p, "-8123123123123123123123123123123", "-8E30P123", "-8E30P+123", "-0000008E30P+123");
     }
 
     private static void checkFromScientific(String expected, String... inputs) {
@@ -75,6 +88,7 @@ public class AsciiDigitsTest extends CommonTestBase {
     }
 
     private static void checkFromScientific(boolean period, String expected, String... inputs) {
+        assert inputs.length > 0;
         for (String input : inputs) {
             checkFromScientific0(period, expected, input);
         }

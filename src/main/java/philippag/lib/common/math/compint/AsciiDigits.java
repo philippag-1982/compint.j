@@ -180,36 +180,30 @@ public class AsciiDigits {
     }
 
     public static CharSequence fromScientific(CharSequence str) {
-        // we actually need this b/c the dot (.) changes indices
-        var sb = new StringBuilder();
-        int prev = -1;
-        boolean subnormal = false; // 0.
-        boolean positive = false;
+        var sb = new StringBuilder(); // contains '-' and digits
         boolean negative = false;
+        boolean subnormal = false; // 0.
         boolean seenNonZero = false;
-        boolean seenDigit = false;
-        boolean lastDigit = false;
-        boolean seenExponent = false;
-        boolean seenPeriod = false;
         boolean seenDot = false;
-        int exponent = 0;
+        boolean prevDigit = false;
+        int prev = -1;
         int magnitude = 0;
+        int exponent = -1;
         int periodStart = -1;
 
         for (int i = 0, len = str.length(); i < len; i++) {
             char c = str.charAt(i);
-            boolean isDigit = '0' <= c && c <= '9';
+            boolean digit = '0' <= c && c <= '9';
 
-            if (isDigit) {
-                if (seenPeriod) {
+            if (digit) {
+                if (periodStart != -1) {
                     // nothing to do
-                } else if (seenExponent) {
+                } else if (exponent != -1) {
                     exponent = 10 * exponent + c - '0';
                     if (exponent > 999_999_999) {
                         throw new NumberFormatException("Not a scientific number (exponent overflow): " + str + " at index " + i);
                     }
                 } else {
-                    seenDigit = true;
                     if (c == '0') {
                         if (subnormal && !seenNonZero) {
                             magnitude--;
@@ -227,9 +221,7 @@ public class AsciiDigits {
             } else {
                 switch (c) {
                     case '+' -> {
-                        if (prev == -1) {
-                            positive = true;
-                        } else if (prev == 'E' || prev == 'e') {
+                        if (prev == -1 || prev == 'E' || prev == 'e') {
                             // just ignore
                         } else if (prev == 'p' || prev == 'P') {
                             periodStart = i + 1;
@@ -240,44 +232,44 @@ public class AsciiDigits {
                     case '-' -> {
                         if (prev == -1) {
                             negative = true;
+                            sb.append('-');
                         } else {
                             throw new NumberFormatException("Not a scientific number (invalid negative sign): " + str + " at index " + i);
                         }
                     }
 
                     case 'E', 'e' -> {
-                        if (seenExponent) {
+                        if (exponent != -1) {
                             throw new NumberFormatException("Not a scientific number (repeated exponent): " + str + " at index " + i);
                         }
-                        if (seenPeriod) {
+                        if (periodStart != -1) {
                             throw new NumberFormatException("Not a scientific number (exponent after period): " + str + " at index " + i);
                         }
-                        if (!lastDigit) {
+                        if (!prevDigit) {
                             throw new NumberFormatException("Not a scientific number (exponent after non-digit): " + str + " at index " + i);
                         }
-                        seenExponent = true;
+                        exponent = 0;
                     }
                     case 'P', 'p' -> {
-                        if (!seenExponent) {
+                        if (exponent == -1) {
                             throw new NumberFormatException("Not a scientific number (period without exponent): " + str + " at index " + i);
                         }
-                        if (seenPeriod) {
+                        if (periodStart != -1) {
                             throw new NumberFormatException("Not a scientific number (repeated period): " + str + " at index " + i);
                         }
-                        if (!lastDigit) {
+                        if (!prevDigit) {
                             throw new NumberFormatException("Not a scientific number (period after non-digit): " + str + " at index " + i);
                         }
-                        seenPeriod = true;
                         periodStart = i + 1;
                     }
                     case '.' -> {
                         if (seenDot) {
                             throw new NumberFormatException("Not a scientific number (repeated dot): " + str + " at index " + i);
                         }
-                        if (seenExponent) {
+                        if (exponent != -1) {
                             throw new NumberFormatException("Not a scientific number (dot after exponent): " + str + " at index " + i);
                         }
-                        if (seenPeriod) {
+                        if (periodStart != -1) {
                             throw new NumberFormatException("Not a scientific number (dot after period): " + str + " at index " + i);
                         }
                         seenDot = true;
@@ -290,81 +282,44 @@ public class AsciiDigits {
             }
 
             prev = c;
-            lastDigit = isDigit;
+            prevDigit = digit;
         }
 
-        if (!seenDigit) {
-            throw new NumberFormatException("Not a scientific number (no significant digits): " + str);
-        } else if (!lastDigit) {
+        if (!prevDigit) {
             throw new NumberFormatException("Not a scientific number (ends with non-digit): " + str);
         } else if (!seenNonZero) {
             return "0"; // only zero digits, shorten to '0'
-        } else if (!seenExponent && !seenDot) {
-            // omit '+', but don't omit '-
-            return positive ? str.subSequence(1, str.length()) : str;
+        } else if (exponent == -1 && !seenDot) {
+            // a plain number
+            return sb;
         }
 
-        int length = magnitude + exponent;
+        int length = magnitude + exponent + (negative ? 1 : 0);
         int digits = sb.length();
         if (digits > length) {
             throw new NumberFormatException("Not a scientific number (loss of precision for integer): " + str);
         }
 
-        if (seenPeriod) {
-            int period = str.length() - periodStart;
-            if (period == 0) {
-                throw new NumberFormatException("Not a scientific number (empty period part): " + str);
-            }
-            int start = periodStart;
-            if (negative) {
-                return new AsciiString(length + 1) {
-
-                    @Override
-                    public char charAt(int index) {
-                        if (--index == -1) {
-                            return '-';
-                        }
-                        return charAtPeriod0(str, sb, digits, period, start, index);
-                    }
-
-                };
-            }
+        if (periodStart != -1) {
+            int periodLength = str.length() - periodStart;
+            assert periodLength > 0;
+            int periodStart0 = periodStart;
             return new AsciiString(length) {
 
                 @Override
                 public char charAt(int index) {
-                    return charAtPeriod0(str, sb, digits, period, start, index);
+                    return index < digits ? sb.charAt(index) : str.charAt(periodStart0 + (index - digits) % periodLength);
                 }
             };
-        }
-
-        if (negative) {
-            return new AsciiString(length + 1) {
+        } else {
+            return new AsciiString(length) {
 
                 @Override
                 public char charAt(int index) {
-                    if (--index == -1) {
-                        return '-';
-                    }
-                    return charAt0(sb, digits, index);
+                    return index < digits ? sb.charAt(index) : '0';
                 }
             };
         }
-        return new AsciiString(length) {
-
-            @Override
-            public char charAt(int index) {
-                return charAt0(sb, digits, index);
-            }
-        };
-    }
-
-    private static char charAt0(StringBuilder sb, int digits, int index) {
-        return index < digits ? sb.charAt(index) : '0';
-    }
-
-    private static char charAtPeriod0(CharSequence str, StringBuilder sb, int digits, int period, int start, int index) {
-        return index < digits ? sb.charAt(index) : str.charAt(start + (index - digits) % period);
     }
 
     private static abstract class AsciiString implements CharSequence {
