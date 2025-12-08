@@ -60,6 +60,13 @@ public class Int9NTest extends CommonTestBase {
     }
 
     @Test
+    public void hash() {
+        Assert.assertEquals(0, Int9N.fromString("0").hashCode());
+        Assert.assertEquals(234567890, Int9N.fromString("12345678901234567890123456789012345678119012345678901234567890").hashCode());
+        Assert.assertEquals(234567891, Int9N.fromString("12345678901234567890123456789012345678119012345678901234567891").hashCode());
+    }
+
+    @Test
     public void addMulNoWriteThrough() {
         {
             var a = Int9N.fromLong(5);

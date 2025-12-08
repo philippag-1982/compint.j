@@ -748,7 +748,11 @@ public final class IntAscii implements Comparable<IntAscii>, AsciiDigitStreamabl
 
     @Override
     public int hashCode() {
-        return super.hashCode(); // that's ok
+        int result = 0;
+        for (int i = offset, end = offset + length; i < end; i++) {
+            result = 31 * result + data[i];
+        }
+        return result;
     }
 
     /*

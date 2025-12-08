@@ -58,6 +58,12 @@ public class IntAsciiTest extends CommonTestBase {
     }
 
     @Test
+    public void hash() {
+        Assert.assertEquals('0', IntAscii.fromString("0").hashCode());
+        Assert.assertEquals(799891010, IntAscii.fromString("12345678901234567890123456789012345678119012345678901234567890").hashCode());
+    }
+
+    @Test
     public void leadingZeroes() {
         checkDebugStr("IntAscii {digits=1, offset=0, length=1, capacity=1, data=[49]}", "1", "00000000000000000001");
         checkDebugStr("IntAscii {digits=1, offset=0, length=1, capacity=1, data=[49]}", "1", "0000000000000000000000000000000000001");

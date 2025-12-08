@@ -503,7 +503,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     @Override
     public int hashCode() {
-        return super.hashCode(); // that's ok
+        return get(length - 1);
     }
 
     public void clear() {
