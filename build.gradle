@@ -42,7 +42,7 @@ tasks.withType(Test) {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
-    // options.compilerArgs.add('-Werror'); // TODO System::load is now restricted, triggereing a javac warning
+    options.compilerArgs.add('-Werror');
     options.compilerArgs.add('-Xlint:all');
 }
 

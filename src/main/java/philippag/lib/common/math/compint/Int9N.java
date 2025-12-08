@@ -1873,6 +1873,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
          * 2) When classes are loaded from a JAR file, the .so file is expected to be located
          *    next to the JAR file in the file system.
          */
+        @SuppressWarnings("restricted")
         private static boolean loadAsResource(Class<?> cls, String libName, boolean autoExtract) {
             var url = cls.getResource("/" + libName);
             if (url == null) {
