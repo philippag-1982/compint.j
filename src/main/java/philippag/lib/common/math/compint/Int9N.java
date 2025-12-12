@@ -113,7 +113,6 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
     }
 
     public boolean isZero() {
-        assert data[offset] > 0 || length == 1; // canonical form
         return data[offset] == 0;
     }
 
@@ -274,7 +273,14 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         if (isZero()) {
             negative = false; // can happen e.g. -1.addInPlace(1) => 0
         }
+        assert canonicalized();
         return this;
+    }
+
+    private boolean canonicalized() {
+        assert data[offset] > 0 || length == 1; // canonical form
+        assert !isZero() || !negative; // zero is never negative
+        return true;
     }
 
     private int firstDigitLength() {
@@ -1035,28 +1041,32 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         int idx = offset + length - 1;
         if (data[idx] + 1 == BASE ) { // carry case
             ensureCapacity(Calc.addInPlaceCapacity(length, 1));
-            addInPlaceAbs(1);
+            addInPlaceAbs(1); // calls canonicalize()
         } else { // no carry
             data[idx]++;
         }
-        canonicalize();
+        assert canonicalized();
     }
 
     private void decrementInPlaceAbs() {
         int idx = offset + length - 1;
         if (data[idx] == 0) { // carry case
+            assert (length == 1) == isZero();
             if (length == 1) { // we are zero
                 data[idx] = 1;
                 negative = true;
             } else {
                 // every other number is greater equal to one (in abs)
-                subtractInPlaceAbsGreaterEqual(1);
+                subtractInPlaceAbsGreaterEqual(1); // calls canonicalize()
             }
         } else { // no carry
             assert data[idx] > 0;
             data[idx]--;
+            if (isZero()) {
+                negative = false; // can happen e.g. -1.addInPlace(1) => 0
+            }
         }
-        canonicalize();
+        assert canonicalized();
     }
 
     /* =======================================
