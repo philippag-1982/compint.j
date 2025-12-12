@@ -1044,6 +1044,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
             addInPlaceAbs(1); // calls canonicalize()
         } else { // no carry
             data[idx]++;
+            canonicalize();
         }
         assert canonicalized();
     }
@@ -1062,9 +1063,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
         } else { // no carry
             assert data[idx] > 0;
             data[idx]--;
-            if (isZero()) {
-                negative = false; // can happen e.g. -1.addInPlace(1) => 0
-            }
+            canonicalize();
         }
         assert canonicalized();
     }
