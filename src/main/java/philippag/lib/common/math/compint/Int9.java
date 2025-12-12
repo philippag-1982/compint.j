@@ -92,7 +92,6 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     private static final int DOUBLE_MAX_LENGTH = 35; // digit count of Double.MAX represented as Int9
 
     private boolean negative;
-    private byte firstDigitLength; // cached value
     private int[] data; // integers from 000_000_000 to 999_999_999
     private int offset;
     private int length;
@@ -270,7 +269,6 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
         length = length - i + offset;
         offset = i;
-        firstDigitLength = 0;
 
         if (isZero()) {
             negative = false; // can happen e.g. -1.addInPlace(1) => 0
@@ -286,8 +284,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private int firstDigitLength() {
-        int result = firstDigitLength;
-        return result == 0 ? firstDigitLength = (byte) IntegerFormat.length(data[offset]) : result;
+        return IntegerFormat.length(data[offset]);
     }
 
     /* ===============
@@ -517,7 +514,6 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         length = 1;
         data[offset] = 0;
         negative = false;
-        firstDigitLength = 0;
     }
 
     private void takeValue(int[] rhs) {
@@ -539,7 +535,6 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         offset = newOffset;
         length = newLength;
         negative = rhs.negative;
-        firstDigitLength = 0;
     }
 
     public void setValue(long rhs) {
@@ -563,7 +558,6 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
         offset = data.length - newLength;
         length = newLength;
-        firstDigitLength = 0;
 
         int i = offset + length - 1;
         data[i] = (int) (rhs % BASE);
