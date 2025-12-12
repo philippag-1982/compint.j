@@ -1064,7 +1064,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             addInPlaceAbs(1); // calls canonicalize()
         } else { // no carry
             data[idx]++;
-            canonicalize();
+//            canonicalize(); // not needed
         }
         assert canonicalized();
     }
@@ -1083,7 +1083,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         } else { // no carry
             assert data[idx] > 0;
             data[idx]--;
-            canonicalize();
+            canonicalize(); // needed for change to zero
         }
         assert canonicalized();
     }
