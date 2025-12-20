@@ -1,5 +1,6 @@
 .gitattributes  text eol=lf
 .gitignore      text eol=lf
+.editorconfig   text eol=lf
 gradlew         text eol=lf
 gradlew.bat     text eol=crlf
 *.properties    text eol=lf
