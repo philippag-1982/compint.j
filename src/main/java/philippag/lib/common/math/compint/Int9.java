@@ -24,6 +24,17 @@ SOFTWARE.
 
 package philippag.lib.common.math.compint;
 
+import static philippag.lib.common.math.compint.Int9.Sealed.BYTE_MAX;
+import static philippag.lib.common.math.compint.Int9.Sealed.BYTE_MIN;
+import static philippag.lib.common.math.compint.Int9.Sealed.INT_MAX;
+import static philippag.lib.common.math.compint.Int9.Sealed.INT_MIN;
+import static philippag.lib.common.math.compint.Int9.Sealed.LONG_MAX;
+import static philippag.lib.common.math.compint.Int9.Sealed.LONG_MIN;
+import static philippag.lib.common.math.compint.Int9.Sealed.ONE;
+import static philippag.lib.common.math.compint.Int9.Sealed.SHORT_MAX;
+import static philippag.lib.common.math.compint.Int9.Sealed.SHORT_MIN;
+import static philippag.lib.common.math.compint.Int9.Sealed.ZERO;
+
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
@@ -62,22 +73,11 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     private static final int SIZE = 9;
     private static final int KARATSUBA_THRESHOLD = 40;
 
-    // never return to user!
-    private static final Int9 ZERO      = Constants.ZERO();
-    private static final Int9 ONE       = Constants.ONE();
-    private static final Int9 BYTE_MAX  = Constants.BYTE_MAX();
-    private static final Int9 BYTE_MIN  = Constants.BYTE_MIN();
-    private static final Int9 SHORT_MAX = Constants.SHORT_MAX();
-    private static final Int9 SHORT_MIN = Constants.SHORT_MIN();
-    private static final Int9 INT_MAX   = Constants.INT_MAX();
-    private static final Int9 INT_MIN   = Constants.INT_MIN();
-    private static final Int9 LONG_MAX  = Constants.LONG_MAX();
-    private static final Int9 LONG_MIN  = Constants.LONG_MIN();
-
-    private static class Constants {
+    private static final class Constants { // mutable!
 
         private static Int9 ZERO()      { return new Int9(0); }
         private static Int9 ONE()       { return new Int9(1); }
+        private static Int9 MINUS_ONE() { return new Int9(1).setNegative(true); }
         private static Int9 BYTE_MAX()  { return new Int9(127); }
         private static Int9 BYTE_MIN()  { return new Int9(128).setNegative(true); }
         private static Int9 SHORT_MAX() { return new Int9(32767); }
@@ -86,6 +86,21 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         private static Int9 INT_MIN()   { return new Int9(2, 147483648).setNegative(true); }
         private static Int9 LONG_MAX()  { return new Int9(9, 223372036, 854775807); }
         private static Int9 LONG_MIN()  { return new Int9(9, 223372036, 854775808).setNegative(true); }
+    }
+
+    public static final class Sealed {
+
+        public static Int9 ZERO      = Constants.ZERO().seal();
+        public static Int9 ONE       = Constants.ONE().seal();
+        public static Int9 MINUS_ONE = Constants.MINUS_ONE().seal();
+        public static Int9 BYTE_MAX  = Constants.BYTE_MAX().seal();
+        public static Int9 BYTE_MIN  = Constants.BYTE_MIN().seal();
+        public static Int9 SHORT_MAX = Constants.SHORT_MAX().seal();
+        public static Int9 SHORT_MIN = Constants.SHORT_MIN().seal();
+        public static Int9 INT_MAX   = Constants.INT_MAX().seal();
+        public static Int9 INT_MIN   = Constants.INT_MIN().seal();
+        public static Int9 LONG_MAX  = Constants.LONG_MAX().seal();
+        public static Int9 LONG_MIN  = Constants.LONG_MIN().seal();
     }
 
     private static final int FLOAT_MAX_LENGTH  =  5; // digit count of Float.MAX represented as Int9
@@ -541,7 +556,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     private int calcHashCode() {
         int result = -1;
         for (int i = 0; i < length; i++) {
-        	result = 31 * result - get(i);
+            result = 31 * result - get(i);
         }
         return result == 0 ? Integer.MIN_VALUE : negative ? result : -result;
     }

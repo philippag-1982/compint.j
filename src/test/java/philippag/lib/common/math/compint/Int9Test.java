@@ -19,17 +19,17 @@ import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitArraySink;
 
 public class Int9Test extends CommonTestBase {
 
-    private static final Int9 ZERO         = Int9.fromInt(0);
-    private static final Int9 ONE          = Int9.fromInt(1);
-    private static final Int9 NEGATIVE_ONE = Int9.fromInt(-1);
-    private static final Int9 INT_MAX      = Int9.fromInt(Integer.MAX_VALUE);
-    private static final Int9 INT_MIN      = Int9.fromInt(Integer.MIN_VALUE);
-    private static final Int9 BYTE_MAX     = Int9.fromInt(Byte.MAX_VALUE);
-    private static final Int9 BYTE_MIN     = Int9.fromInt(Byte.MIN_VALUE);
-    private static final Int9 SHORT_MAX    = Int9.fromInt(Short.MAX_VALUE);
-    private static final Int9 SHORT_MIN    = Int9.fromInt(Short.MIN_VALUE);
-    private static final Int9 LONG_MAX     = Int9.fromLong(Long.MAX_VALUE);
-    private static final Int9 LONG_MIN     = Int9.fromLong(Long.MIN_VALUE);
+    private static final Int9 ZERO      = Int9.fromInt(0).seal();
+    private static final Int9 ONE       = Int9.fromInt(1).seal();
+    private static final Int9 MINUS_ONE = Int9.fromInt(-1).seal();
+    private static final Int9 INT_MAX   = Int9.fromInt(Integer.MAX_VALUE).seal();
+    private static final Int9 INT_MIN   = Int9.fromInt(Integer.MIN_VALUE).seal();
+    private static final Int9 BYTE_MAX  = Int9.fromInt(Byte.MAX_VALUE).seal();
+    private static final Int9 BYTE_MIN  = Int9.fromInt(Byte.MIN_VALUE).seal();
+    private static final Int9 SHORT_MAX = Int9.fromInt(Short.MAX_VALUE).seal();
+    private static final Int9 SHORT_MIN = Int9.fromInt(Short.MIN_VALUE).seal();
+    private static final Int9 LONG_MAX  = Int9.fromLong(Long.MAX_VALUE).seal();
+    private static final Int9 LONG_MIN  = Int9.fromLong(Long.MIN_VALUE).seal();
 
     private static boolean canAddInPlace(Int9 lhs, Int9 rhs) {
         return true;
@@ -53,11 +53,40 @@ public class Int9Test extends CommonTestBase {
         // self-test this test didn't modify it's own constants
         Assert.assertEquals("0", ZERO.toString());
         Assert.assertEquals("1", ONE.toString());
-        Assert.assertEquals("-1", NEGATIVE_ONE.toString());
+        Assert.assertEquals("-1", MINUS_ONE.toString());
+        Assert.assertEquals(""+Byte.MAX_VALUE, BYTE_MAX.toString());
+        Assert.assertEquals(""+Byte.MIN_VALUE, BYTE_MIN.toString());
+        Assert.assertEquals(""+Short.MAX_VALUE, SHORT_MAX.toString());
+        Assert.assertEquals(""+Short.MIN_VALUE, SHORT_MIN.toString());
         Assert.assertEquals(""+Integer.MAX_VALUE, INT_MAX.toString());
-        Assert.assertEquals(""+Long.MAX_VALUE, LONG_MAX.toString());
         Assert.assertEquals(""+Integer.MIN_VALUE, INT_MIN.toString());
+        Assert.assertEquals(""+Long.MAX_VALUE, LONG_MAX.toString());
         Assert.assertEquals(""+Long.MIN_VALUE, LONG_MIN.toString());
+
+        Assert.assertEquals(ZERO, Int9.Sealed.ZERO);
+        Assert.assertEquals(ONE, Int9.Sealed.ONE);
+        Assert.assertEquals(MINUS_ONE, Int9.Sealed.MINUS_ONE);
+        Assert.assertEquals(BYTE_MIN, Int9.Sealed.BYTE_MIN);
+        Assert.assertEquals(SHORT_MIN, Int9.Sealed.SHORT_MIN);
+        Assert.assertEquals(INT_MIN, Int9.Sealed.INT_MIN);
+        Assert.assertEquals(LONG_MIN, Int9.Sealed.LONG_MIN);
+        Assert.assertEquals(BYTE_MAX, Int9.Sealed.BYTE_MAX);
+        Assert.assertEquals(SHORT_MAX, Int9.Sealed.SHORT_MAX);
+        Assert.assertEquals(INT_MAX, Int9.Sealed.INT_MAX);
+        Assert.assertEquals(LONG_MAX, Int9.Sealed.LONG_MAX);
+
+        checkSealed(ZERO, ONE, MINUS_ONE);
+        checkSealed(BYTE_MIN, SHORT_MIN, INT_MIN, LONG_MIN);
+        checkSealed(BYTE_MAX, SHORT_MAX, INT_MAX, LONG_MAX);
+        checkSealed(Int9.Sealed.ZERO, Int9.Sealed.ONE, Int9.Sealed.MINUS_ONE);
+        checkSealed(Int9.Sealed.BYTE_MIN, Int9.Sealed.SHORT_MIN, Int9.Sealed.INT_MIN, Int9.Sealed.LONG_MIN);
+        checkSealed(Int9.Sealed.BYTE_MAX, Int9.Sealed.SHORT_MAX, Int9.Sealed.INT_MAX, Int9.Sealed.LONG_MAX);
+    }
+
+    private static void checkSealed(Int9...values) {
+        for (var value : values) {
+            attemptToModify(value);
+        }
     }
 
     @Test
@@ -127,6 +156,11 @@ public class Int9Test extends CommonTestBase {
     @Test
     public void aboutToModify() {
         var i = Int9.fromInt(1001).seal();
+        attemptToModify(i);
+        Assert.assertEquals(1001, i.toInt());
+    }
+
+    private static void attemptToModify(Int9 i) {
         Assert.assertFalse(i.isModifiable());
         try {
             i.addInPlace(5);
@@ -224,7 +258,6 @@ public class Int9Test extends CommonTestBase {
         } catch (IllegalStateException e) {
             System.out.println(e);
         }
-        Assert.assertEquals(1001, i.toInt());
         Assert.assertFalse(i.isModifiable());
     }
 
@@ -874,11 +907,11 @@ public class Int9Test extends CommonTestBase {
         x.incrementInPlace();
         checkValue(1_000_000_000_000_000_000L, x);
 
-        x.setValue(NEGATIVE_ONE);
+        x.setValue(MINUS_ONE);
         x.addInPlace(ONE);
         checkValue(0, x);
 
-        x.setValue(NEGATIVE_ONE);
+        x.setValue(MINUS_ONE);
         x.incrementInPlace();
         checkValue(0, x);
 
@@ -1097,7 +1130,7 @@ public class Int9Test extends CommonTestBase {
         x.setValue(Long.MIN_VALUE);
         Assert.assertEquals("Int9 {digits=19, negative=true, offset=0, length=3, capacity=3, data=[9, 223372036, 854775808]}", x.toDebugString());
 
-        x.setValue(NEGATIVE_ONE);
+        x.setValue(MINUS_ONE);
         Assert.assertEquals("Int9 {digits=1, negative=true, offset=2, length=1, capacity=3, data=[1]}", x.toDebugString());
     }
 
