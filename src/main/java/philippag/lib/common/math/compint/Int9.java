@@ -95,6 +95,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     private int[] data; // integers from 000_000_000 to 999_999_999
     private int offset;
     private int length;
+    private int hashCode; // zero => modifiable, non-zero => sealed
 
     //@VisibleForTesting
     Int9(int... data) {
@@ -118,6 +119,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public Int9 setNegative(boolean b) {
+        aboutToModify();
         negative = b && !isZero();
         return this;
     }
@@ -210,6 +212,10 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         return sb.toString();
     }
 
+    private int size() {
+        return Math.min(length, data.length);
+    }
+
     private int extent() {
         return Math.min(offset + length, data.length);
     }
@@ -227,12 +233,14 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void expandWith(int value) {
+        assert isModifiable();
         assert offset > 0;
         data[--offset] = value;
         length++;
     }
 
     private void expandBy(int by) {
+        assert isModifiable();
         assert by >= 0;
         if (by == 0) {
             return;
@@ -243,6 +251,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private Int9 shiftLeft(int by) {
+        assert isModifiable();
         if (!isZero()) {
             length += by;
         }
@@ -261,6 +270,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
      * - no representation of ZERO is ever negative
      */
     private Int9 canonicalize() {
+        assert isModifiable();
         int i = offset;
         int max = extent() - 1;
         while (i < max && data[i] == 0) {
@@ -506,10 +516,38 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     @Override
     public int hashCode() {
-        return get(length - 1);
+        if (isModifiable()) {
+            throw new IllegalStateException("hashCode on modifiable instance");
+        }
+        return hashCode;
+    }
+
+    public boolean isModifiable() {
+        return hashCode == 0;
+    }
+
+    private void aboutToModify() {
+        if (!isModifiable()) {
+            throw new IllegalStateException("Attempt to modify sealed instance");
+        }
+    }
+
+    public Int9 seal() {
+        hashCode = calcHashCode();
+        assert hashCode != 0;
+        return this;
+    }
+
+    private int calcHashCode() {
+        int result = -1;
+        for (int i = 0; i < length; i++) {
+        	result = 31 * result - get(i);
+        }
+        return result == 0 ? Integer.MIN_VALUE : negative ? result : -result;
     }
 
     public void clear() {
+        aboutToModify();
         offset = data.length - 1; // make all space at the left available
         length = 1;
         data[offset] = 0;
@@ -517,12 +555,14 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void takeValue(int[] rhs) {
+        assert isModifiable();
         data = rhs;
         offset = 0;
         length = rhs.length;
     }
 
     public void setValue(Int9 rhs) {
+        aboutToModify();
         int newLength = rhs.length;
         if (data.length < newLength) {
             data = new int[newLength];
@@ -538,6 +578,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public void setValue(long rhs) {
+        aboutToModify();
         if (rhs == Long.MIN_VALUE) {
             setValue(LONG_MIN);
             return;
@@ -571,7 +612,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     private int[] copyFullSizeArray() {
         // undo "trailingZeroesForm" storage optimization
         int[] newData = new int[length];
-        System.arraycopy(data, offset, newData, 0, Math.min(length, data.length));
+        System.arraycopy(data, offset, newData, 0, size());
         return newData;
     }
 
@@ -581,7 +622,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         return new Int9(Arrays.copyOfRange(data, offset, extent()), 0, length).setNegative(negative);
     }
 
-    private Int9 copyFullSize() {
+    public Int9 copyFullSize() {
         return new Int9(copyFullSizeArray()).setNegative(negative);
     }
 
@@ -593,6 +634,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void ensureCapacity(int minOffset) {
+        assert isModifiable();
         // Note: this might do 2 resizes, we could collapse them into one,
         // though both resizes happening is not very likely
         if (trailingZeroesForm()) {
@@ -604,6 +646,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void resize(int newOffset) {
+        assert isModifiable();
         int[] newData = new int[data.length + newOffset];
         System.arraycopy(data, offset, newData, newOffset, length);
         offset = newOffset;
@@ -611,6 +654,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void carryRest(int accumulator, int i) {
+        assert isModifiable();
         int carry = AddWithCarry.carry(accumulator);
         assert carry > 0;
 
@@ -631,6 +675,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
      */
 
     public Int9 multiplyInPlace(Int9 rhs) {
+        aboutToModify();
         if (rhs.compareToAbs(BASE) < 0) {
             // fast path for numbers < BASE
             return multiplyInPlace(rhs.toInt());
@@ -641,6 +686,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public Int9 multiplyInPlace(long rhs) {
+        aboutToModify();
         if (rhs == Long.MIN_VALUE) {
             setValue(multiplySimple(this, LONG_MIN));
             return this;
@@ -673,6 +719,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void multiplyInPlaceAbsShift(int rhs) {
+        assert isModifiable();
         assert rhs < BASE;
         assert Calc.isPowerOfTwo(rhs);
 
@@ -698,6 +745,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void multiplyInPlaceAbs(int rhs) {
+        assert isModifiable();
         assert rhs < BASE;
 
         int carry = 0;
@@ -721,6 +769,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public Int9 addInPlace(Int9 rhs) {
+        aboutToModify();
         if (rhs.isZero()) {
             return this;
         }
@@ -751,6 +800,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void addInPlaceAbs(Int9 rhs) {
+        assert isModifiable();
         if (length >= rhs.length) {
             addInPlaceAbsLongerEqual(rhs);
         } else {
@@ -761,6 +811,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     // beware: caller must call canonicalize()!
     private void addInPlaceAbsShorter(Int9 rhs) {
+        assert isModifiable();
         int accumulator = 0;
         int i = offset + length - 1;
         int j = rhs.length - 1;
@@ -782,10 +833,12 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     // beware: caller must call canonicalize()!
     private void addInPlaceAbsLongerEqual(Int9 rhs) {
+        assert isModifiable();
         addInPlaceAbsLongerEqualCore(rhs.data, rhs.offset, rhs.length);
     }
 
     private void addInPlaceAbsLongerEqualCore(int[] rhs, int rhsOffset, int rhsLength) {
+        assert isModifiable();
         assert length >= rhsLength;
 
         int accumulator = 0;
@@ -810,6 +863,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public Int9 addInPlace(long rhs) {
+        aboutToModify();
         if (rhs == Long.MIN_VALUE) {
             // we can't do absolute (i.e. positive) arithmetic with LONG_MIN
             addInPlace(LONG_MIN);
@@ -849,6 +903,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void addInPlaceAbs(long rhs) {
+        assert isModifiable();
         assert rhs > 0;
 
         int i = offset + length - 1;
@@ -873,6 +928,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public Int9 subtractInPlace(Int9 rhs) {
+        aboutToModify();
         if (rhs.isZero()) {
             return this;
         }
@@ -903,11 +959,13 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void subtractInPlaceAbsGreaterEqual(Int9 rhs) {
+        assert isModifiable();
         assert compareToAbs(rhs) >= 0; // we are the bigger number or equal
         subtractInPlaceAbsGreaterEqualCore(rhs.data, rhs.offset, rhs.length);
     }
 
     private void subtractInPlaceAbsGreaterEqualCore(int[] rhs, int rhsOffset, int rhsLength) {
+        assert isModifiable();
         int accumulator = 0;
         int rhsMax = rhsOffset + rhsLength;
         int i = offset + length - 1;
@@ -933,6 +991,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void subtractInPlaceAbsLessThan(Int9 rhs) {
+        assert isModifiable();
         assert length <= rhs.length;
         assert compareToAbs(rhs) < 0; // we are the smaller number
 
@@ -955,6 +1014,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public Int9 subtractInPlace(long rhs) {
+        aboutToModify();
         if (rhs == Long.MIN_VALUE) {
             // we can't do absolute (i.e. positive) arithmetic with LONG_MIN
             subtractInPlace(LONG_MIN);
@@ -993,6 +1053,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void subtractInPlaceAbsGreaterEqual(long rhs) {
+        assert isModifiable();
         assert rhs > 0;
         assert compareToAbsImpl(rhs) >= 0; // we are the bigger number or equal
 
@@ -1015,6 +1076,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void subtractInPlaceAbsLessThan(long rhs) {
+        assert isModifiable();
         assert rhs > 0;
         assert compareToAbsImpl(rhs) < 0; // we are the smaller number
 
@@ -1038,6 +1100,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public Int9 incrementInPlace() {
+        aboutToModify();
         ensureCapacity(0);
         if (negative) {
             decrementInPlaceAbs();
@@ -1048,6 +1111,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public Int9 decrementInPlace() {
+        aboutToModify();
         ensureCapacity(0);
         if (negative) {
             incrementInPlaceAbs();
@@ -1058,6 +1122,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void incrementInPlaceAbs() {
+        assert isModifiable();
         int idx = offset + length - 1;
         if (data[idx] + 1 == BASE ) { // carry case
             ensureCapacity(Calc.addInPlaceCapacity(length, 1));
@@ -1070,6 +1135,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private void decrementInPlaceAbs() {
+        assert isModifiable();
         int idx = offset + length - 1;
         if (data[idx] == 0) { // carry case
             assert (length == 1) == isZero();
@@ -1350,11 +1416,13 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     // returns true if original number was odd, i.e. a carry of 1 remains
     public boolean halfInPlace() {
+        aboutToModify();
         ensureCapacity(0);
         return halfInPlaceImpl();
     }
 
     private boolean halfInPlaceImpl() {
+        assert isModifiable();
         int carry = 0;
         for (int i = offset, max = offset + length; i < max; i++) {
             int value = data[i];
@@ -1369,11 +1437,13 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     // returns true if number had to grow by one place
     public void doubleInPlace() {
+        aboutToModify();
         ensureCapacity(1); // one extra space might be needed
         doubleInPlaceImpl();
     }
 
     private void doubleInPlaceImpl() {
+        assert isModifiable();
         int carry = 0;
         for (int i = offset + length - 1; i >= offset; --i) {
             int value = data[i];
@@ -1398,6 +1468,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     // returns remainder
     // Note: divisor cannot be long, otherwise the "carry * BASE1" multiplication might overflow.
     public int divideInPlace(int divisorArg) {
+        aboutToModify();
         if (divisorArg == 0) {
             throw new ArithmeticException("Division by zero");
         }
@@ -1437,6 +1508,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private long divideInPlaceAbsShiftAnd(long divisor) {
+        assert isModifiable();
         assert Calc.isPowerOfTwo(divisor);
         long mask = divisor - 1;
         int shift = Calc.bitLength(mask);
@@ -1452,6 +1524,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private long divideInPlaceAbsBy3() {
+        assert isModifiable();
         long carry = 0;
         for (int i = offset, max = offset + length; i < max; i++) {
             long value = data[i] + carry * BASE1;
@@ -1464,6 +1537,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private long divideInPlaceAbsDivMod(long divisor) {
+        assert isModifiable();
         long carry = 0;
         for (int i = offset, max = offset + length; i < max; i++) {
             long value = data[i] + carry * BASE1;
@@ -1711,7 +1785,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     @Override
     public Int9 subSequence(int start, int end) {
-        // we must not return `this` b/c of mutability
+        // we must not return `this` b/c of mutability TODO
         return fromString(this, start, end);
     }
 

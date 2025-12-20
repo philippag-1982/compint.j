@@ -61,10 +61,171 @@ public class Int9Test extends CommonTestBase {
     }
 
     @Test
-    public void hash() {
-        Assert.assertEquals(0, Int9.fromString("0").hashCode());
-        Assert.assertEquals(234567890, Int9.fromString("12345678901234567890123456789012345678119012345678901234567890").hashCode());
-        Assert.assertEquals(234567891, Int9.fromString("12345678901234567890123456789012345678119012345678901234567891").hashCode());
+    public void copyFullSize() {
+        {
+            var i = Int9.fromString("3".repeat(3000));
+            var j = i.copyFullSize();
+            Assert.assertEquals(i, j);
+        }
+        {
+            var i = Int9.fromScientific("1E1000");
+            var j = i.copyFullSize();
+            Assert.assertEquals(i, j);
+        }
+        {
+            var i = Int9.fromScientific("1E1000");
+            var j = i.copyFullSize();
+            Assert.assertEquals(i, j);
+            j.setValue(100);
+            var k = j.copyFullSize();
+            Assert.assertEquals(k, j);
+        }
+    }
+
+    @Test
+    public void hashCodeZero() {
+        for (int i = -1<<24; i < 1<<24; i++) {
+            int h = Int9.fromInt(i).seal().hashCode();
+            assert h != 0;
+        }
+    }
+
+    @Test
+    public void hashCodeAndSeal() {
+        var i = Int9.fromInt(100);
+        try {
+            i.hashCode();
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        Assert.assertTrue(i.isModifiable());
+        i.seal();
+        Assert.assertFalse(i.isModifiable());
+        i.hashCode();
+        Assert.assertEquals(131, i.hashCode());
+        Assert.assertEquals(100, i.toInt());
+
+        var j = Int9.fromInt(0).seal();
+        Assert.assertEquals(31, j.hashCode());
+
+        Assert.assertEquals(-693491762, Int9.fromString("12345678901234567890123456789012345678119012345678901234567890").seal().hashCode());
+        Assert.assertEquals(31, Int9.fromString("0").seal().hashCode());
+        Assert.assertEquals(32, Int9.fromString("1").seal().hashCode());
+        Assert.assertEquals(-32, Int9.fromString("-1").seal().hashCode());
+
+        var k = Int9.fromScientific("1E4444").seal();
+        k.hashCode();
+
+        var m = Int9.fromInt(10000000).seal();
+
+        Assert.assertEquals(m.toArrayString(), k.toArrayString());
+        Assert.assertNotEquals(m, k);
+        Assert.assertNotEquals(m.hashCode(), k.hashCode());
+    }
+
+    @Test
+    public void aboutToModify() {
+        var i = Int9.fromInt(1001).seal();
+        Assert.assertFalse(i.isModifiable());
+        try {
+            i.addInPlace(5);
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.addInPlace(Int9.fromString("3".repeat(31311)));
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.subtractInPlace(423);
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.subtractInPlace(Int9.fromString("3".repeat(31311)));
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.incrementInPlace();
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.decrementInPlace();
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.multiplyInPlace(543);
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.multiplyInPlace(Int9.fromString("56".repeat(33)));
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.halfInPlace();
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.doubleInPlace();
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.divideInPlace(5);
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.setNegative(true);
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.setNegative(false);
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.setValue(44);
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.setValue(Int9.fromInt(4444));
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        try {
+            i.clear();
+            Assert.fail("Expecting IllegalStateException");
+        } catch (IllegalStateException e) {
+            System.out.println(e);
+        }
+        Assert.assertEquals(1001, i.toInt());
+        Assert.assertFalse(i.isModifiable());
     }
 
     @Test
@@ -1363,7 +1524,18 @@ public class Int9Test extends CommonTestBase {
             rhs = random(rnd, min, Long.MAX_VALUE - 1);
             checkFromInt((int) lhs);
             checkFromLong(rhs);
+
+            checkHashCode(lhs);
+            checkHashCode(rhs);
         }
+    }
+
+    private static void checkHashCode(long v) {
+        Int9.fromLong(v).seal().hashCode();
+    }
+
+    private static void checkHashCode(String v) {
+        Int9.fromString(v).seal().hashCode();
     }
 
     @Test
@@ -1756,6 +1928,9 @@ public class Int9Test extends CommonTestBase {
                     checkAddStrBig(lhsInt.add(rhsInt).toString(), lhs, rhs);
                     checkSubtractStrBig(lhsInt.subtract(rhsInt).toString(), lhs, rhs);
                 }
+
+                checkHashCode(lhs);
+                checkHashCode(rhs);
             }
         }
     }
