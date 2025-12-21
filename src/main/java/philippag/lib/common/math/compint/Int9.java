@@ -554,11 +554,10 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private int calcHashCode() {
-        int result = -1;
-        for (int i = 0; i < length; i++) {
-            result = 31 * result - get(i);
-        }
-        return result == 0 ? Integer.MIN_VALUE : negative ? result : -result;
+        // last 9 decimal digits with length + negative
+        // assumption is that digits most likely differ at the end.
+        int h = -length * 31 - get(length - 1);
+        return negative ? h : -h;
     }
 
     public void clear() {
