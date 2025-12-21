@@ -106,11 +106,11 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     private static final int FLOAT_MAX_LENGTH  =  5; // digit count of Float.MAX represented as Int9
     private static final int DOUBLE_MAX_LENGTH = 35; // digit count of Double.MAX represented as Int9
 
-    private boolean negative;
     private int[] data; // integers from 000_000_000 to 999_999_999
     private int offset;
     private int length;
-    private int hashCode; // zero => modifiable, non-zero => sealed
+    private boolean negative;
+    private boolean sealed;
 
     //@VisibleForTesting
     Int9(int... data) {
@@ -534,11 +534,18 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         if (isModifiable()) {
             throw new IllegalStateException("hashCode on modifiable instance");
         }
-        return hashCode;
+        return calcHashCode();
+    }
+
+    private int calcHashCode() {
+        // last 9 decimal digits with length + negative
+        // assumption is that digits most likely differ at the end.
+        int h = -length * 31 - get(length - 1);
+        return negative ? h : -h;
     }
 
     public boolean isModifiable() {
-        return hashCode == 0;
+        return !sealed;
     }
 
     private void aboutToModify() {
@@ -548,16 +555,8 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public Int9 seal() {
-        hashCode = calcHashCode();
-        assert hashCode != 0;
+    	sealed = true;
         return this;
-    }
-
-    private int calcHashCode() {
-        // last 9 decimal digits with length + negative
-        // assumption is that digits most likely differ at the end.
-        int h = -length * 31 - get(length - 1);
-        return negative ? h : -h;
     }
 
     public void clear() {
