@@ -112,6 +112,30 @@ public class Int9Test extends CommonTestBase {
     }
 
     @Test
+    public void negate() {
+        {
+            var x = Int9.Sealed.ZERO;
+            var y = x.negate();
+            Assert.assertNotSame(x, y);
+            Assert.assertEquals(x, y);
+
+            Assert.assertFalse(x.isNegative());
+            Assert.assertFalse(y.isNegative());
+            Assert.assertTrue(x.isZero());
+            Assert.assertTrue(y.isZero());
+        }
+        {
+            var x = Int9.Sealed.ONE;
+            var y = x.negate();
+            Assert.assertEquals(-1, y.toInt());
+            y.setNegative(true);
+            Assert.assertEquals(-1, y.toInt());
+            y.setNegative(false);
+            Assert.assertEquals(1, y.toInt());
+        }
+    }
+
+    @Test
     public void hashCodeZero() {
         for (int i = -1<<24; i < 1<<24; i++) {
             int h = Int9.fromInt(i).seal().hashCode();

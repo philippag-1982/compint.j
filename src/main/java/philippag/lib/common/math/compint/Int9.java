@@ -77,15 +77,15 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
         private static Int9 ZERO()      { return new Int9(0); }
         private static Int9 ONE()       { return new Int9(1); }
-        private static Int9 MINUS_ONE() { return new Int9(1).setNegative(true); }
+        private static Int9 MINUS_ONE() { return new Int9(1).setNegative0(); }
         private static Int9 BYTE_MAX()  { return new Int9(127); }
-        private static Int9 BYTE_MIN()  { return new Int9(128).setNegative(true); }
+        private static Int9 BYTE_MIN()  { return new Int9(128).setNegative0(); }
         private static Int9 SHORT_MAX() { return new Int9(32767); }
-        private static Int9 SHORT_MIN() { return new Int9(32768).setNegative(true); }
+        private static Int9 SHORT_MIN() { return new Int9(32768).setNegative0(); }
         private static Int9 INT_MAX()   { return new Int9(2, 147483647); }
-        private static Int9 INT_MIN()   { return new Int9(2, 147483648).setNegative(true); }
+        private static Int9 INT_MIN()   { return new Int9(2, 147483648).setNegative0(); }
         private static Int9 LONG_MAX()  { return new Int9(9, 223372036, 854775807); }
-        private static Int9 LONG_MIN()  { return new Int9(9, 223372036, 854775808).setNegative(true); }
+        private static Int9 LONG_MIN()  { return new Int9(9, 223372036, 854775808).setNegative0(); }
     }
 
     public static final class Sealed {
@@ -109,8 +109,13 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     private int[] data; // integers from 000_000_000 to 999_999_999
     private int offset;
     private int length;
-    private boolean negative;
-    private boolean sealed;
+
+    private static final class Flags {
+
+        private static final byte NEGATIVE = 1 << 0;
+        private static final byte SEALED   = 1 << 1;
+    }
+    private byte flags;
 
     //@VisibleForTesting
     Int9(int... data) {
@@ -133,19 +138,40 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         return data[offset] == 0;
     }
 
-    public Int9 setNegative(boolean b) {
-        aboutToModify();
-        negative = b && !isZero();
+    private Int9 setNegative0() {
+        assert isModifiable();
+        flags |= Flags.NEGATIVE;
         return this;
+    }
+
+    private Int9 clearNegative0() {
+        assert isModifiable();
+        flags &= ~Flags.NEGATIVE;
+        return this;
+    }
+
+    private Int9 setNegative0(boolean negative) {
+        assert isModifiable();
+        assert !isZero() || !isNegative();
+        return isZero() ? this : negative ? setNegative0() : clearNegative0();
+    }
+
+    public Int9 setNegative(boolean negative) {
+        aboutToModify();
+        return setNegative0(negative);
     }
 
     @Override
     public boolean isNegative() {
-        return negative;
+        return (flags & Flags.NEGATIVE) != 0;
+    }
+
+    public boolean isSealed() {
+        return (flags & Flags.SEALED) != 0;
     }
 
     public Int9 negate() {
-        return copy().setNegative(!negative);
+        return copy().setNegative0(!isNegative());
     }
 
     //does not include sign
@@ -176,7 +202,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public byte[] toByteArray(boolean includeSign) {
-        boolean emitNegativeSign = includeSign && negative;
+        boolean emitNegativeSign = includeSign && isNegative();
         byte[] dest = new byte[emitNegativeSign ? 1 + countDigits() : countDigits()];
         int right = dest.length;
 
@@ -203,7 +229,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
         sb.append("Int9");
         sb.append(" {digits=").append(countDigits());
-        sb.append(", negative=").append(negative);
+        sb.append(", negative=").append(isNegative());
         sb.append(", offset=").append(offset);
         sb.append(", length=").append(length);
         sb.append(", capacity=").append(data.length);
@@ -296,7 +322,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         offset = i;
 
         if (isZero()) {
-            negative = false; // can happen e.g. -1.addInPlace(1) => 0
+            clearNegative0(); // can happen e.g. -1.addInPlace(1) => 0
         }
         assert canonicalized();
         return this;
@@ -304,7 +330,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     private boolean canonicalized() {
         assert data[offset] > 0 || length == 1; // canonical form
-        assert !isZero() || !negative; // zero is never negative
+        assert !isZero() || !isNegative(); // zero is never negative
         return true;
     }
 
@@ -335,7 +361,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             negative = true;
             value = -value; // doesn't work for Integer.MIN_VALUE
         }
-        return new Int9(fromIntAbs(value)).setNegative(negative);
+        return new Int9(fromIntAbs(value)).setNegative0(negative);
     }
 
     private static int[] fromIntAbs(int value) {
@@ -358,7 +384,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             negative = true;
             value = -value; // doesn't work for Long.MIN_VALUE
         }
-        return new Int9(fromLongAbs(value)).setNegative(negative);
+        return new Int9(fromLongAbs(value)).setNegative0(negative);
     }
 
     private static int[] fromLongAbs(long value) {
@@ -412,11 +438,11 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             }
         }
 
-        return result == null ? Constants.ZERO() : new Int9(result, 0, length).setNegative(negative);
+        return result == null ? Constants.ZERO() : new Int9(result, 0, length).setNegative0(negative);
     }
 
     public boolean isByte() {
-        return compareToAbs(negative ? BYTE_MIN : BYTE_MAX) <= 0;
+        return compareToAbs(isNegative() ? BYTE_MIN : BYTE_MAX) <= 0;
     }
 
     public byte toByte() {
@@ -424,11 +450,11 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             // we use MIN_VALUE to represent unmappable values
             return Byte.MIN_VALUE;
         }
-        return (byte) (negative ? -toIntAbs() : toIntAbs());
+        return (byte) (isNegative() ? -toIntAbs() : toIntAbs());
     }
 
     public boolean isShort() {
-        return compareToAbs(negative ? SHORT_MIN : SHORT_MAX) <= 0;
+        return compareToAbs(isNegative() ? SHORT_MIN : SHORT_MAX) <= 0;
     }
 
     public short toShort() {
@@ -436,11 +462,11 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             // we use MIN_VALUE to represent unmappable values
             return Short.MIN_VALUE;
         }
-        return (short) (negative ? -toIntAbs() : toIntAbs());
+        return (short) (isNegative() ? -toIntAbs() : toIntAbs());
     }
 
     public boolean isInt() {
-        return compareToAbs(negative ? INT_MIN : INT_MAX) <= 0;
+        return compareToAbs(isNegative() ? INT_MIN : INT_MAX) <= 0;
     }
 
     public int toInt() {
@@ -448,7 +474,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             // we use MIN_VALUE to represent unmappable values
             return Integer.MIN_VALUE;
         }
-        return negative ? -toIntAbs() : toIntAbs();
+        return isNegative() ? -toIntAbs() : toIntAbs();
     }
 
     private int toIntAbs() {
@@ -461,7 +487,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public boolean isLong() {
-        return compareToAbs(negative ? LONG_MIN : LONG_MAX) <= 0;
+        return compareToAbs(isNegative() ? LONG_MIN : LONG_MAX) <= 0;
     }
 
     public long toLong() {
@@ -469,7 +495,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             // we use MIN_VALUE to represent unmappable values
             return Long.MIN_VALUE;
         }
-        return negative ? -toLongAbs() : toLongAbs();
+        return isNegative() ? -toLongAbs() : toLongAbs();
     }
 
     private long toLongAbs() {
@@ -484,8 +510,8 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public int compareTo(long o) {
-        int cmp = -Boolean.compare(negative, o < 0);
-        return cmp != 0 ? cmp : negative ? -compareToAbs(o) : compareToAbs(o);
+        int cmp = -Boolean.compare(isNegative(), o < 0);
+        return cmp != 0 ? cmp : isNegative() ? -compareToAbs(o) : compareToAbs(o);
     }
 
     public int compareToAbs(long o) {
@@ -499,8 +525,8 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     @Override
     public int compareTo(Int9 o) {
-        int cmp = -Boolean.compare(negative, o.negative);
-        return cmp != 0 ? cmp : negative ? -compareToAbs(o) : compareToAbs(o);
+        int cmp = -Boolean.compare(isNegative(), o.isNegative());
+        return cmp != 0 ? cmp : isNegative() ? -compareToAbs(o) : compareToAbs(o);
     }
 
     public int compareToAbs(Int9 o) {
@@ -541,11 +567,11 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         // last 9 decimal digits with length + negative
         // assumption is that digits most likely differ at the end.
         int h = -length * 31 - get(length - 1);
-        return negative ? h : -h;
+        return isNegative() ? h : -h;
     }
 
     public boolean isModifiable() {
-        return !sealed;
+        return !isSealed();
     }
 
     private void aboutToModify() {
@@ -555,7 +581,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     public Int9 seal() {
-    	sealed = true;
+        flags |= Flags.SEALED;
         return this;
     }
 
@@ -564,7 +590,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         offset = data.length - 1; // make all space at the left available
         length = 1;
         data[offset] = 0;
-        negative = false;
+        clearNegative0();
     }
 
     private void takeValue(int[] rhs) {
@@ -587,7 +613,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
         offset = newOffset;
         length = newLength;
-        negative = rhs.negative;
+        setNegative0(rhs.isNegative());
     }
 
     public void setValue(long rhs) {
@@ -600,7 +626,8 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             return;
         }
 
-        if (negative = rhs < 0) {
+        setNegative0(rhs < 0);
+        if (rhs < 0) {
             rhs = -rhs;
         }
         assert rhs > 0;
@@ -632,18 +659,18 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     public Int9 copy() {
         // copy only relevant region
         // does not undo "trailingZeroesForm" storage optimization
-        return new Int9(Arrays.copyOfRange(data, offset, extent()), 0, length).setNegative(negative);
+        return new Int9(Arrays.copyOfRange(data, offset, extent()), 0, length).setNegative0(isNegative());
     }
 
     public Int9 copyFullSize() {
-        return new Int9(copyFullSizeArray()).setNegative(negative);
+        return new Int9(copyFullSizeArray()).setNegative0(isNegative());
     }
 
     private Int9 copyDoubleSize() {
         int newOffset = length << 1;
         int[] newData = new int[newOffset + length];
         System.arraycopy(data, offset, newData, newOffset, Math.min(length, data.length));
-        return new Int9(newData, newOffset, length).setNegative(negative);
+        return new Int9(newData, newOffset, length).setNegative0(isNegative());
     }
 
     private void ensureCapacity(int minOffset) {
@@ -695,7 +722,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         }
         takeValue(multiplyImpl(data, offset, length, rhs.data, rhs.offset, rhs.length));
         canonicalize();
-        return setNegative(multiplySign(negative, rhs.negative));
+        return setNegative0(multiplySign(isNegative(), rhs.isNegative()));
     }
 
     public Int9 multiplyInPlace(long rhs) {
@@ -728,7 +755,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             takeValue(multiplyImpl(data, offset, length, rhsArray, 0, rhsArray.length));
         }
         canonicalize();
-        return setNegative(multiplySign(negative, rhsNegative));
+        return setNegative0(multiplySign(isNegative(), rhsNegative));
     }
 
     private void multiplyInPlaceAbsShift(int rhs) {
@@ -786,7 +813,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         if (rhs.isZero()) {
             return this;
         }
-        if (negative == rhs.negative) {
+        if (isNegative() == rhs.isNegative()) {
             // a1: (-3) + (-4) = -7
             // a2: (+3) + (+4) = +7
             // b1: (-4) + (-3) = -7
@@ -802,7 +829,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             ensureCapacity(Calc.subtractInPlaceCapacity(length, rhs.length));
             if (cmp < 0) { // a1, a2
                 subtractInPlaceAbsLessThan(rhs);
-                setNegative(!negative);
+                setNegative0(!isNegative());
             } else if (cmp > 0) { // b1, b2
                 subtractInPlaceAbsGreaterEqual(rhs);
             } else {
@@ -889,7 +916,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         rhs = Math.abs(rhs);
         assert rhs > 0;
 
-        if (negative == rhsNegative) {
+        if (isNegative() == rhsNegative) {
             // a1: (-3) + (-4) = -7
             // a2: (+3) + (+4) = +7
             // b1: (-4) + (-3) = -7
@@ -905,7 +932,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             ensureCapacity(Calc.subtractInPlaceCapacity(length, Calc.lengthOf(rhs)));
             if (cmp < 0) { // a1, a2
                 subtractInPlaceAbsLessThan(rhs);
-                setNegative(!negative);
+                setNegative0(!isNegative());
             } else if (cmp > 0) { // b1, b2
                 subtractInPlaceAbsGreaterEqual(rhs);
             } else {
@@ -945,7 +972,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         if (rhs.isZero()) {
             return this;
         }
-        if (negative == rhs.negative) {
+        if (isNegative() == rhs.isNegative()) {
             // a1: (-3) - (-4) = +1
             // a2: (+3) - (+4) = -1
             // b1: (-4) - (-3) = -1
@@ -954,7 +981,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             ensureCapacity(Calc.subtractInPlaceCapacity(length, rhs.length));
             if (cmp < 0) { // a1, a2
                 subtractInPlaceAbsLessThan(rhs);
-                setNegative(!negative);
+                setNegative0(!isNegative());
             } else if (cmp > 0) { // b1, b2
                 subtractInPlaceAbsGreaterEqual(rhs);
             } else {
@@ -1039,7 +1066,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
         rhs = Math.abs(rhs);
         assert rhs > 0;
 
-        if (negative == rhsNegative) {
+        if (isNegative() == rhsNegative) {
             // a1: (-3) + (-4) = -7
             // a2: (+3) + (+4) = +7
             // b1: (-4) + (-3) = -7
@@ -1048,7 +1075,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             ensureCapacity(Calc.subtractInPlaceCapacity(length, Calc.lengthOf(rhs)));
             if (cmp < 0) { // a1, a2
                 subtractInPlaceAbsLessThan(rhs);
-                setNegative(!negative);
+                setNegative0(!isNegative());
             } else if (cmp > 0) { // b1, b2
                 subtractInPlaceAbsGreaterEqual(rhs);
             } else {
@@ -1115,7 +1142,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     public Int9 incrementInPlace() {
         aboutToModify();
         ensureCapacity(0);
-        if (negative) {
+        if (isNegative()) {
             decrementInPlaceAbs();
         } else {
             incrementInPlaceAbs();
@@ -1126,7 +1153,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     public Int9 decrementInPlace() {
         aboutToModify();
         ensureCapacity(0);
-        if (negative) {
+        if (isNegative()) {
             incrementInPlaceAbs();
         } else {
             decrementInPlaceAbs();
@@ -1154,7 +1181,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             assert (length == 1) == isZero();
             if (length == 1) { // we are zero
                 data[idx] = 1;
-                negative = true;
+                setNegative0(true);
             } else {
                 // every other number is greater equal to one (in abs)
                 subtractInPlaceAbsGreaterEqual(1); // calls canonicalize()
@@ -1212,10 +1239,10 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
      */
 
     public static Int9 add(Int9 lhs, Int9 rhs) {
-        if (lhs.negative == rhs.negative) { // equal signs => addition
-            return addAbs(lhs, rhs).setNegative(lhs.negative);
+        if (lhs.isNegative() == rhs.isNegative()) { // equal signs => addition
+            return addAbs(lhs, rhs).setNegative0(lhs.isNegative());
         } else { // opposite signs => subtraction
-            return lhs.negative ? subtractForward(rhs, lhs) : subtractForward(lhs, rhs);
+            return lhs.isNegative() ? subtractForward(rhs, lhs) : subtractForward(lhs, rhs);
         }
     }
 
@@ -1253,16 +1280,16 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     public static Int9 subtract(Int9 lhs, Int9 rhs) {
         int cmp = lhs.compareToAbs(rhs);
-        if (lhs.negative == rhs.negative) { // equal signs => subtraction
-            return cmp == 0 ? Constants.ZERO() : subtractForward(cmp, lhs, rhs).setNegative(lhs.negative ? cmp > 0 : cmp < 0);
+        if (lhs.isNegative() == rhs.isNegative()) { // equal signs => subtraction
+            return cmp == 0 ? Constants.ZERO() : subtractForward(cmp, lhs, rhs).setNegative0(lhs.isNegative() ? cmp > 0 : cmp < 0);
         } else { // opposite signs => addition
-            return addAbs(lhs, rhs).setNegative(lhs.negative);
+            return addAbs(lhs, rhs).setNegative0(lhs.isNegative());
         }
     }
 
     private static Int9 subtractForward(Int9 lhs, Int9 rhs) {
         int cmp = lhs.compareToAbs(rhs);
-        return cmp == 0 ? Constants.ZERO() : subtractForward(cmp, lhs, rhs).setNegative(cmp < 0);
+        return cmp == 0 ? Constants.ZERO() : subtractForward(cmp, lhs, rhs).setNegative0(cmp < 0);
     }
 
     private static Int9 subtractForward(int cmp, Int9 lhs, Int9 rhs) {
@@ -1295,7 +1322,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     }
 
     private Int9 multiplySign(Int9 lhs, Int9 rhs) {
-        return setNegative(multiplySign(lhs.negative, rhs.negative));
+        return setNegative0(multiplySign(lhs.isNegative(), rhs.isNegative()));
     }
 
     private static boolean multiplySign(boolean lhs, boolean rhs) {
@@ -1494,8 +1521,8 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
             divisor = -divisor; // long can represent -(Integer.MIN_VALUE)
         }
         assert divisor > 0;
-        boolean wasNegative = negative;
-        setNegative(multiplySign(wasNegative, divNegative));
+        boolean wasNegative = isNegative();
+        setNegative0(multiplySign(wasNegative, divNegative));
         if (divisor == 1) {
             return 0; // nothing to do
         }
@@ -1773,7 +1800,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     @Override
     public int length() {
-        return (negative ? 1 : 0) + countDigits();
+        return (isNegative() ? 1 : 0) + countDigits();
     }
 
     // random access to a digit w/o needing to materialize a string
@@ -1782,7 +1809,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     // and actually performed worse than this...
     @Override
     public char charAt(int index) {
-        if (negative) {
+        if (isNegative()) {
             if (index == 0) {
                 return '-';
             }
@@ -1798,7 +1825,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
 
     @Override
     public Int9 subSequence(int start, int end) {
-        // we must not return `this` b/c of mutability TODO
+        // we must not return `this` b/c of mutability
         return fromString(this, start, end);
     }
 
@@ -2030,7 +2057,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     public float floatValue() {
         if (length > FLOAT_MAX_LENGTH) {
             // short-circuit to Infinity if the number is definitely too large
-            return negative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
+            return isNegative() ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
         }
         return Float.parseFloat(toString());
     }
@@ -2039,7 +2066,7 @@ public final class Int9 extends Number implements Comparable<Int9>, AsciiDigitSt
     public double doubleValue() {
         if (length > DOUBLE_MAX_LENGTH) {
             // short-circuit to Infinity if the number is definitely too large
-            return negative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+            return isNegative() ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
         }
         /*
          * Note: It seems more natural to multiply-add up the digits in a loop like the one below,
