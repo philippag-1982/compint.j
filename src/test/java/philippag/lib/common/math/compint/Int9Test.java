@@ -152,9 +152,9 @@ public class Int9Test extends CommonTestBase {
         } catch (IllegalStateException e) {
             System.out.println(e);
         }
-        Assert.assertTrue(i.isModifiable());
+        Assert.assertFalse(i.isSealed());
         i.seal();
-        Assert.assertFalse(i.isModifiable());
+        Assert.assertTrue(i.isSealed());
         i.hashCode();
         Assert.assertEquals(131, i.hashCode());
         Assert.assertEquals(100, i.toInt());
@@ -192,7 +192,7 @@ public class Int9Test extends CommonTestBase {
     }
 
     private static void attemptToModify(Int9 i) {
-        Assert.assertFalse(i.isModifiable());
+        Assert.assertTrue(i.isSealed());
         try {
             i.addInPlace(5);
             Assert.fail("Expecting IllegalStateException");
@@ -289,7 +289,7 @@ public class Int9Test extends CommonTestBase {
         } catch (IllegalStateException e) {
             //System.out.println(e);
         }
-        Assert.assertFalse(i.isModifiable());
+        Assert.assertTrue(i.isSealed());
     }
 
     @Test
