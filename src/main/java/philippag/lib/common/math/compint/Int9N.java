@@ -1878,7 +1878,7 @@ public final class Int9N implements Comparable<Int9N>, AsciiDigitStreamable, Cha
          */
         @SuppressWarnings("restricted")
         private static boolean loadAsResource(Class<?> cls, String libName, boolean autoExtract) {
-            var url = cls.getResource("/" + libName);
+            var url = cls.getResource(libName); // package-qualified
             if (url == null) {
                 System.err.printf("ERROR [%s]: Native library '%s' not found in class path\n", cls.getName(), libName);
                 return false;
