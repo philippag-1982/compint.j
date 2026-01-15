@@ -5,9 +5,9 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.function.Function;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import philippag.lib.common.math.Assert;
 import philippag.lib.common.math.CommonTestBase;
 
 public class BigIntMemoryPerformance extends CommonTestBase {

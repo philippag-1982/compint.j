@@ -6,7 +6,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import philippag.lib.common.math.CommonTestBase;
 

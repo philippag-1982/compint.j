@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-import org.junit.AssumptionViolatedException;
+import org.junit.jupiter.api.Assumptions;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -88,9 +88,7 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void multiplySimpleInt9N(Blackhole blackhole) {
-        if (!Int9N.nativeLibAvailable) {
-            throw new AssumptionViolatedException("Native library not available, skipping benchmark");
-        }
+    	Assumptions.assumeTrue(Int9N.nativeLibAvailable, "Native library not available, skipping benchmark");
         perform(Args.INT_9N, Int9N::multiplySimple, blackhole);
     }
 
@@ -101,9 +99,7 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void parseAndMultiplySimpleInt9N(Blackhole blackhole) {
-        if (!Int9N.nativeLibAvailable) {
-            throw new AssumptionViolatedException("Native library not available, skipping benchmark");
-        }
+    	Assumptions.assumeTrue(Int9N.nativeLibAvailable, "Native library not available, skipping benchmark");
         parseAndPerform(Args.STRING, Int9N::fromString, Int9N::multiplySimple, blackhole);
     }
 
@@ -115,9 +111,7 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void multiplyKaratsubaInt9N(Blackhole blackhole) {
-        if (!Int9N.nativeLibAvailable) {
-            throw new AssumptionViolatedException("Native library not available, skipping benchmark");
-        }
+    	Assumptions.assumeTrue(Int9N.nativeLibAvailable, "Native library not available, skipping benchmark");
         BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.multiplyKaratsuba(lhs, rhs, karatsubaThreshold);
         perform(Args.INT_9N, operator, blackhole);
     }
@@ -136,9 +130,7 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void parallelMultiplyKaratsubaInt9N(Blackhole blackhole) {
-        if (!Int9N.nativeLibAvailable) {
-            throw new AssumptionViolatedException("Native library not available, skipping benchmark");
-        }
+    	Assumptions.assumeTrue(Int9N.nativeLibAvailable, "Native library not available, skipping benchmark");
         BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
         perform(Args.INT_9N, operator, blackhole);
     }
@@ -151,9 +143,7 @@ public class Int9MultiplyBenchmark {
 
     @Benchmark
     public void parseAndParallelMultiplyKaratsubaInt9N(Blackhole blackhole) {
-        if (!Int9N.nativeLibAvailable) {
-            throw new AssumptionViolatedException("Native library not available, skipping benchmark");
-        }
+    	Assumptions.assumeTrue(Int9N.nativeLibAvailable, "Native library not available, skipping benchmark");
         BinaryOperator<Int9N> operator = (lhs, rhs) -> Int9N.parallelMultiplyKaratsuba(lhs, rhs, karatsubaThreshold, maxDepth, forkJoinPool);
         parseAndPerform(Args.STRING, Int9N::fromString, operator, blackhole);
     }

@@ -20,7 +20,9 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.vintage:junit-vintage-engine:5.14.1'
+    testImplementation(platform("org.junit:junit-bom:6.0.2"))
+	testImplementation("org.junit.jupiter:junit-jupiter")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 sourceSets.main.java.srcDirs += 'src/main/native'
@@ -28,6 +30,7 @@ sourceSets.test.java.srcDirs += 'src/perf/java'
 task 'perf' (type: Test)
 
 tasks.withType(Test) {
+	useJUnitPlatform()
     if ('test'.equals(it.name)) {
         jvmArgs '-ea'
         exclude '**/*Performance.class'

@@ -8,12 +8,12 @@ import java.util.Random;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Supplier;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
+import philippag.lib.common.math.Assert;
 import philippag.lib.common.math.CommonTestBase;
 import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitArraySink;
 
@@ -39,12 +39,12 @@ public class Int9Test extends CommonTestBase {
         return true;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void constantsBefore() {
         checkConstants();
     }
 
-    @AfterClass
+    @AfterAll
     public static void constantsAfter() {
         checkConstants();
     }
@@ -465,7 +465,7 @@ public class Int9Test extends CommonTestBase {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void divideInPlaceBigRandomExhaustive() {
         int REPEATS = 1;
         var rnd = new Random();
@@ -654,7 +654,7 @@ public class Int9Test extends CommonTestBase {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void anatolyDemo() {
         long x = 999412;
         long y = 12349933L;
@@ -1743,7 +1743,7 @@ public class Int9Test extends CommonTestBase {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void mulDev() {
         // change Int9.BASE to 10 for simple numbers
         {

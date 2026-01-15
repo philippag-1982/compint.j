@@ -3,9 +3,9 @@ package philippag.lib.common.math.compint;
 import java.math.BigDecimal;
 import java.util.function.Function;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import philippag.lib.common.math.Assert;
 import philippag.lib.common.math.CommonTestBase;
 import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitStreamable;
 

@@ -9,8 +9,8 @@ import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import philippag.lib.common.math.CommonTestBase;
 
@@ -370,7 +370,7 @@ public class BigIntPerformance extends CommonTestBase {
         System.out.printf(Locale.ROOT, "%12s %25s %,15d total %,15d op %,15d diff\n", impl, op, t0 / 1000, top / 1000, (t0 - top) / 1000);
     }
 
-    @After
+    @AfterEach
     public void after() {
         System.out.println("=".repeat(120));
     }

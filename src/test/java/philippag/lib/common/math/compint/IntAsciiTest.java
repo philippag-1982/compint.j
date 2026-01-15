@@ -6,11 +6,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.concurrent.ForkJoinPool;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
+import philippag.lib.common.math.Assert;
 import philippag.lib.common.math.CommonTestBase;
 import philippag.lib.common.math.compint.AsciiDigits.AsciiDigitArraySink;
 import philippag.lib.common.math.compint.IntAscii.BaseConversion;
@@ -36,12 +36,12 @@ public class IntAsciiTest extends CommonTestBase {
 
     private static final IntAscii ZERO = IntAscii.fromInt(0);
 
-    @BeforeClass
+    @BeforeAll
     public static void constantsBefore() {
         checkConstants();
     }
 
-    @AfterClass
+    @AfterAll
     public static void constantsAfter() {
         checkConstants();
     }
