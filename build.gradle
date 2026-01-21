@@ -27,7 +27,12 @@ dependencies {
 
 sourceSets.main.java.srcDirs += 'src/main/native'
 sourceSets.test.java.srcDirs += 'src/perf/java'
-task 'perf' (type: Test)
+
+task 'perf' (type: Test) {
+	// required since Gradle 9:
+    testClassesDirs = testing.suites.test.sources.output.classesDirs
+    classpath = testing.suites.test.sources.runtimeClasspath
+}
 
 tasks.withType(Test) {
 	useJUnitPlatform()
